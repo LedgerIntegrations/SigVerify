@@ -1,0 +1,14 @@
+#verify-sig-container {
+    min-height: 500px;
+    background-color: rgba(255, 255, 255, 0.877);
+    padding: 50px 20px;
+}
+
+#verify-sig-container > div {
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding:10px 30px;
+}
+

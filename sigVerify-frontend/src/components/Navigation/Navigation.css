@@ -1,0 +1,27 @@
+#nav-container {
+    background-color: white;
+    display: flex;
+    gap: 20px;
+    padding: 20px 30px;
+}
+
+#nav-logo > img {
+    height: 50px;
+    width: 50px;
+    border-radius: 10px;
+}
+
+#nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#nav-links > a {
+    text-decoration: none;
+    color: rgb(224, 134, 15);
+    font-size: 1em;
+    border: 1px solid rgb(224, 134, 15);
+    padding: 5px 10px;
+    border-radius: 5px;
+}

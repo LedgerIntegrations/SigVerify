@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani&family=Varela+Round&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Varela+Round&display=swap');
 :root {
-  font-family: 'Varela Round', sans-serif;  line-height: 1.5;
+  font-family: 'Varela Round', sans-serif;
+  line-height: 1.5;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(227, 120, 44, 0.87);
   background-color: #353535;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
