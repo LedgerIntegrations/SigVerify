@@ -10,7 +10,7 @@
 
 #upload-document-container > section {
     width: 100%;
-    max-width: 300px;
+    max-width: 250px;
     height: 150px;
     background-color: rgba(226, 226, 226, 0.553);
     padding: 30px;
@@ -101,7 +101,7 @@
 #payloadDataDiv > a > img {
     height: 120px;
     width: 120px;
-    margin-top: 50px;
+    margin-top: 30px;
 }
 
 #userPromptMessage {
