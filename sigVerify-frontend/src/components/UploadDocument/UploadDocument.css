@@ -72,21 +72,42 @@
     background-color: purple;
 }
 
-#display-div {
-    max-width: 500px;
-    padding: 20px;
-    background-color: white;
-}
-
-#display-div > div > p {
+#payloadDataDiv {
+    color: black;
     width: 90%;
-    word-break: break-all;
-    white-space: normal;
-    font-size: .7em;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#display-div > button {
+#payloadDataDiv > p {
+    word-wrap: break-word;
+    width: 100%;
+    font-size: .9em;
+}
+
+#payloadDataDiv > p > em {
+    color:rgb(255, 128, 0);
+}
+
+#payloadDataDiv > p:nth-child(3) {
+    color: rgb(128, 0, 255);
     font-size: .8em;
+    text-align: center;
+    max-width: 160px;
+}
+
+#payloadDataDiv > a > img {
+    height: 120px;
+    width: 120px;
+    margin-top: 50px;
+}
+
+#userPromptMessage {
+    max-width: 300px;
+    text-align: center;
+    color: rgb(111, 0, 255);
 }
 
 @media screen and (min-width: 620px) {

@@ -1,6 +1,9 @@
 const { XummSdk } = require('xumm-sdk');
 require('dotenv').config();
 const Sdk = new XummSdk(process.env.XUMM_API_KEY, process.env.XUMM_API_SECRET);
+const xrpl = require('xrpl');
+//current temp wallet
+const sigverifyWallet = "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo";
 
 exports.createXummSigninPayload = async (req, res) => {
     try {
@@ -60,3 +63,39 @@ exports.subscribeToPayload = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     };
 };
+
+exports.createTransactionPayload = async (rAddress, documentHash) => {
+    try {
+
+        console.log("rAddress: ", rAddress);
+        console.log("document hash: ", documentHash);
+
+        const txPayloadForPaymentToSelfWithDocHashInMemo = await Sdk.payload.create({
+            "TransactionType": "Payment",
+            "Account": rAddress.toString(),
+            "Destination": sigverifyWallet,
+            "Amount": "1",
+            "Fee": "12",
+            "Memos": [
+              {
+                "Memo": {
+                  "MemoData": xrpl.convertStringToHex(documentHash)
+                }
+              }
+            ]
+        });
+
+        console.log("Transaction payload create response: ", txPayloadForPaymentToSelfWithDocHashInMemo);
+        const response = {
+            documentHash: documentHash,
+            uuid: txPayloadForPaymentToSelfWithDocHashInMemo?.uuid,
+            qrLink: txPayloadForPaymentToSelfWithDocHashInMemo?.next.always,
+            qrImage: txPayloadForPaymentToSelfWithDocHashInMemo?.refs.qr_png
+        };
+
+        return response;
+
+    } catch (error) {
+        console.error("Error while creating payment transaction:", error.message);
+    };
+}
