@@ -27,7 +27,6 @@ function UploadDocument() {
 
     return (
         <div id="upload-document-container">
-            <h2>Welcome to <em>SigVerify</em></h2>
             <p>Upload document you desire to sign.</p>
             <section>
                 <label id="fileLabel">

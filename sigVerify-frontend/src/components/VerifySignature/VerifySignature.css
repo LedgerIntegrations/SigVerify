@@ -1,7 +1,10 @@
 #verify-sig-container {
-    min-height: 500px;
+    min-height: 400px;
     background-color: rgba(255, 255, 255, 0.877);
     padding: 50px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #verify-sig-container > div {

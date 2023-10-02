@@ -8,18 +8,6 @@
     align-items: center;
 }
 
-#upload-document-container h2 {
-    font-size: 1.5em;
-    color: orange;
-    font-weight: 700;
-    font-family: 'Rajdhani', sans-serif;
-}
-
-#upload-document-container > h2 > em{
-    color: rgb(255, 143, 38);
-    font-size: 1.3em;
-}
-
 #upload-document-container > section {
     width: 100%;
     max-width: 300px;

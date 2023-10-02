@@ -1,15 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Varela+Round&display=swap');
 :root {
   font-family: 'Varela Round', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: rgba(227, 120, 44, 0.87);
-  background-color: #353535;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  /* text-align: center; */
+}
+
+body {
+  min-height: 100vh;
+  margin: 0px;
 }
 
 *, *::before, *::after {

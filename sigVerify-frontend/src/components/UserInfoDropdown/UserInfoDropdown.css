@@ -1,0 +1,38 @@
+.user-info-dropdown {
+    color: black;
+}
+
+#profile-logo > img {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    z-index: 10;
+}
+
+.user-info-content {
+    position: fixed;
+    top: 65px;
+    background-color: bisque;
+    right: 0px;
+    z-index: 2;
+    padding: 20px;
+    font-size: .7em;
+    border-radius: 10px 0px 0px 10px;  
+}
+
+.user-info-content > div {
+    display: flex;
+    gap: 6px;
+}
+
+.user-info-content > div > p {
+    color: rgb(255, 153, 0);
+}
+
+.user-info-content > button {
+    margin-top: 8px;
+}
+
+.user-info-content > div > * {
+    margin: 0px;
+}

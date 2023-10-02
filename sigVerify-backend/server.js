@@ -7,6 +7,7 @@ const cors = require('cors');
 // const storage = multer.memoryStorage(); // Store the file data in memory
 // const upload = multer({ storage: storage });
 const documentRoutes = require('./routes/documentRoutes');
+const userRoutes = require('./routes/userRoutes')
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
 });
 
 // Use imported routes
+app.use(userRoutes);
 app.use(documentRoutes);
 
 app.listen(PORT, () => {
