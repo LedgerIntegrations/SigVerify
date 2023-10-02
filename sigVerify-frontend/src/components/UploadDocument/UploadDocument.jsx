@@ -29,11 +29,13 @@ function UploadDocument() {
         <div id="upload-document-container">
             <p>Upload document you desire to sign.</p>
             <section>
-                <label id="fileLabel">
-                    Choose File
-                    <input type="file" id="fileInput" onChange={(e) => setFile(e.target.files[0])} />
-                </label>
-                <span id="fileName">{file ? file.name : 'No file chosen'}</span>
+                <div>
+                    <label id="fileLabel">
+                        Choose File
+                        <input type="file" id="fileInput" onChange={(e) => setFile(e.target.files[0])} />
+                    </label>
+                    <span id="fileName">{file ? file.name : 'No file chosen'}</span>
+                </div>
                 <button onClick={handleSubmit}>Upload</button>
             </section>
             {signedFileResponse ? (

@@ -8,7 +8,7 @@
 }
 
 #verify-sig-container > div {
-    max-width: 500px;
+    max-width: 350px;
     display: flex;
     flex-direction: column;
     gap: 10px;

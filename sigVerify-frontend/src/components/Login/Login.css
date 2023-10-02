@@ -9,18 +9,18 @@
 }
 
 .loginComponent {
-    backdrop-filter: blur(0px);
-    min-height: 40vh;
-    width: 78vw;
-    max-width: 340px;
+    min-height: 35vh;
+    width: 75vw;
+    max-width: 320px;
+    min-width: 250px;
     display: flex;
     position: absolute;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient(to bottom left, rgba(255, 134, 42, 0.795) 10%, #ff8f05f1);
+    background-image: linear-gradient(to bottom left, rgba(251, 147, 67, 0.86) 10%, #ffac05f1);
     padding: 1rem;
-    border-radius: 25px;
+    border-radius: 10px;
     margin-top: 10vh;
     box-shadow: 0px 10px 18px 0px #242a49cb;
 }
