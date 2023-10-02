@@ -18,7 +18,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient(to bottom left, rgba(35, 35, 35, 0.718) 10%, #e69027a7);
+    background-image: linear-gradient(to bottom left, rgba(255, 134, 42, 0.795) 10%, #ff8f05f1);
     padding: 1rem;
     border-radius: 25px;
     margin-top: 10vh;
@@ -26,7 +26,7 @@
 }
 
 .loginComponent h1 {
-    color: #f4ad28;
+    color: #ffffff;
     -webkit-text-stroke: 1px white;
     margin-bottom: 0px;
     font-family: 'Rajdhani', sans-serif;

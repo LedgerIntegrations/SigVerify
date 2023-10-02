@@ -1,38 +1,74 @@
+/* General Styles */
 .user-info-dropdown {
-    color: black;
+    position: relative;
+    cursor: pointer;
 }
 
-#profile-logo > img {
+/* Profile Logo Styles */
+#profile-logo {
+    display: inline-block;
+    border-radius: 50%;
+    overflow: hidden;
     width: 50px;
     height: 50px;
-    position: relative;
-    z-index: 10;
+    border: 2px solid #4CAF50;
 }
 
+#profile-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Dropdown Styles */
 .user-info-content {
-    position: fixed;
-    top: 65px;
-    background-color: bisque;
-    right: 0px;
-    z-index: 2;
-    padding: 20px;
-    font-size: .7em;
-    border-radius: 10px 0px 0px 10px;  
+    position: absolute;
+    top: 120%;
+    right: -15px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    width: 98vw; 
+    padding: 15px;
+    z-index: 1000;
 }
 
-.user-info-content > div {
-    display: flex;
-    gap: 6px;
+.user-info-content div {
+    margin-bottom: 10px;
 }
 
-.user-info-content > div > p {
-    color: rgb(255, 153, 0);
+.user-info-content h6 {
+    margin: 0;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
 }
 
-.user-info-content > button {
-    margin-top: 8px;
+.user-info-content p {
+    margin: 0;
+    color: #555;
+    word-break: break-all;
+    white-space: normal;
+    font-size: .9em;
 }
 
-.user-info-content > div > * {
-    margin: 0px;
+.user-info-content button {
+    display: block;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 100%;
+    max-width: 100px;
+    padding: 10px 15px;
+    background-color: #4CAF50; 
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.user-info-content button:hover {
+    background-color: #45a049;
 }

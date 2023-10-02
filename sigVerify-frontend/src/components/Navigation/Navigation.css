@@ -3,20 +3,23 @@
     background-color: white;
     display: flex;
     gap: 20px;
-    padding: 20px 30px;
+    padding: 20px 20px;
     font-size: .7em;
     justify-content: space-between;
+    align-items: center;
 }
 
 #left-side-nav {
     display: flex;
     gap: 10px;
-}
+    font-size: .8em;
+}   
 
 #nav-logo > img {
     height: 50px;
     width: 50px;
     border-radius: 10px;
+    object-fit: cover;
 }
 
 #nav-links {
@@ -28,9 +31,9 @@
 #nav-links > a {
     text-decoration: none;
     color: rgb(224, 134, 15);
-    font-size: .5em;
+    font-size: 1.2em;
     border: 1px solid rgb(224, 134, 15);
-    padding: 10px 10px;
+    padding: 7px 16px;
     border-radius: 5px;
 }
 

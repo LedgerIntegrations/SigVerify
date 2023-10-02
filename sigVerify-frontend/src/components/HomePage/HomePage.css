@@ -14,11 +14,27 @@
     font-family: 'Rajdhani', sans-serif;
 }
 
-#home-page-container > a {
-    width: fit-content;
-}
-
 #home-page-container > h2 > em{
     color: rgb(255, 143, 38);
     font-size: 1.3em;
 }
+
+#home-page-container > a {
+    width: fit-content;
+    border-radius: 10px;
+}
+
+#home-page-container > a > button {
+    background-color: rgb(249, 145, 1);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: .7em;
+}
+
+/* #home-page-container > a > button {
+    border-radius: 5px;
+    padding: 10px 20px;
+} */
+

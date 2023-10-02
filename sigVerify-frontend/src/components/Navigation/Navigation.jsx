@@ -1,4 +1,3 @@
-// components/Navigation/Navigation.js
 import './Navigation.css'
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,13 +17,13 @@ function Navigation() {
         <div id="nav-links">
           {accountObject.loggedIn ? (
             <>
-              <Link to="/sign">Sign Doc</Link>
-              <Link to="/verify">Verify Signature</Link>
+              <Link to="/sign" className='buttonPop'>Sign Doc</Link>
+              <Link to="/verify" className='buttonPop'>Verify Signature</Link>
             </>
           ) : (
             <>
-              <Link to="/">Home</Link>
-              <Link to="/login">Login</Link>
+              <Link to="/" className='buttonPop'>Home</Link>
+              <Link to="/login" className='buttonPop'>Login</Link>
             </>
           )}
         </div>

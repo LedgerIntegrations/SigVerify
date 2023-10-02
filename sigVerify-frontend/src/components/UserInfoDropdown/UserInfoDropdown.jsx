@@ -20,8 +20,8 @@ function UserInfoDropdown({ userInfo }) {
     };
 
     return (
-        <div onClick={toggleDropdown} className="user-info-dropdown">
-            <span id="profile-logo">
+        <div className="user-info-dropdown">
+            <span onClick={toggleDropdown} id="profile-logo" >
                 <img src={profileImg} />    
             </span> 
             {isOpen && (

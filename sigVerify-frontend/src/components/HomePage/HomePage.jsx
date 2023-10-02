@@ -7,7 +7,7 @@ function HomePage() {
         <div id="home-page-container">
             <h2>Welcome to <em>SigVerify</em></h2>
             {/* <button></button> */}
-            <Link to="/login">
+            <Link to="/login" className='buttonPop'>
                 <button>Connect XRPL Wallet</button>
             </Link>
         </div>
