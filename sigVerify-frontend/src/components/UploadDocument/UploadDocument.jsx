@@ -1,6 +1,7 @@
 import './UploadDocument.css'
 import React, { useContext, useState } from 'react';
 import { AccountContext } from '../../App';
+import DocumentPreview from '../DocumentPreview/DocumentPreview';
 
 function UploadDocument() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
@@ -71,6 +72,7 @@ function UploadDocument() {
                 </div>
                 <button onClick={handleSubmit}>Upload</button>
             </section>
+           
             {txPayloadForPaymentToSelfWithDocHashInMemo ? (
                 <div id="payloadDataDiv">
                     <p>Document Hash: <em>{txPayloadForPaymentToSelfWithDocHashInMemo.documentHash}</em></p>
@@ -80,6 +82,9 @@ function UploadDocument() {
                     <p>Waiting for payload to be signed via XUMM...</p>
                 </div>
             ) : <p id="userPromptMessage"> {userPromptMessage}</p>}
+             <div id="upload-document-container">
+                <DocumentPreview file={file} />
+            </div>
         </div>
     );
 }
