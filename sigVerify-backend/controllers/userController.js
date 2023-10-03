@@ -2,6 +2,8 @@ const { XummSdk } = require('xumm-sdk');
 require('dotenv').config();
 const Sdk = new XummSdk(process.env.XUMM_API_KEY, process.env.XUMM_API_SECRET);
 const xrpl = require('xrpl');
+const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+
 //current temp wallet
 const sigverifyWallet = "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo";
 
@@ -99,7 +101,7 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
         console.error("Error while creating payment transaction:", error.message);
     };
 
-    exports.findAllAccountPaymentTransactionsToSigVerifyWalletMemoDocumentHashes = async (accountRAddress) => {
+    exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (accountRAddress) => {
 
         const convertUnixToReadableTime = (rippleTime) => {
             const unixTimestamp = rippleTime + 946684800;
@@ -120,33 +122,26 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
         });
         await client.disconnect();
         const objectArray = response.result.transactions;
-        let arrayOfPaymentTransactionToSigVerifyAccount = [];
+        let arrayOfPaymentTransactionsWithMemoToSigVerifyAccount = [];
         for (const object of objectArray) {
             //clean data to have exactly same properties on each object even if some have empty fields.
             if (object.tx.TransactionType === "Payment" && object.tx.Destination === "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo") {
                 const newObject = {
-                    Account: object.tx.Account ? object.tx.Account : "",
+                    Signer: object.tx.Account ? object.tx.Account : "",
                     Amount: object.tx.Amount ? (Math.round((object.tx.Amount / 1000000) * 100) / 100).toFixed(2) : "",
                     Destination: object.tx.Destination ? object.tx.Destination : "",
-                    Memo: object.tx.Memos ? object.tx.Memos : false,
-                    Fee: object.tx.Fee ? object.tx.Fee : "",
-                    LastLedgerSequence: object.tx.LastLedgerSequence ? object.tx.LastLedgerSequence : "",
-                    Sequence: object.tx.Sequence ? object.tx.Sequence : "",
+                    DocumentHash: object.tx.Memos ? xrpl.convertHexToString(object.tx.Memos[0].Memo.MemoData) : false, Fee: object.tx.Fee ? object.tx.Fee : "",
                     SigningPubKey: object.tx.SigningPubKey ? object.tx.SigningPubKey : "",
                     TransactionType: object.tx.TransactionType ? object.tx.TransactionType : "",
-                    TxnSignature: object.tx.TxnSignature ? object.tx.TxnSignature : "",
-                    hash: object.tx.hash ? object.tx.hash : "",
-                    ledger_index: object.tx.ledger_index ? object.tx.ledger_index : "",
+                    TransactionHash: object.tx.hash ? object.tx.hash : "",
                     date: object.tx.date ? convertUnixToReadableTime(object.tx.date) : ""
                 };
-                arrayOfPaymentTransactionToSigVerifyAccount.push(newObject);
+                console.log(newObject)
+                arrayOfPaymentTransactionsWithMemoToSigVerifyAccount.push(newObject);
             };
         };
 
-        // console.log("newObjectArray: ", arrayOfPaymentTransactionToSigVerifyAccount)
-        const accountMemosHashes = [];
-        arrayOfPaymentTransactionToSigVerifyAccount.forEach(obj => { if (obj.Memo) { accountMemosHashes.push(xrpl.convertHexToString(obj.Memo[0].Memo.MemoData)) } });
-        //return array of all document hashes as strings from this accounts payment txs to sigVerify wallet
-        return accountMemosHashes;
-    }
+        //return array of all payment transactions from logged in account to sigVerify temp wallet
+        return arrayOfPaymentTransactionsWithMemoToSigVerifyAccount;
+    };
 }
