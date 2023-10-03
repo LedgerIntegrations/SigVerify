@@ -7,7 +7,7 @@ import HomePage from './components/HomePage/HomePage';
 import Login from './components/Login/Login';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import VerifySignature from './components/VerifySignature/VerifySignature';
-
+import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
 export const AccountContext = createContext();
 
 function useSessionStorage(key, initialValue) {
@@ -51,6 +51,7 @@ function App() {
         <Routes>
           <Route path="/" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <HomePage />} />
           <Route path="/login" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <Login />} />
+          <Route path="/mysigs" element={accountObject.loggedIn ? <AccountSigsPage /> : <Navigate to="/" replace />} />
           <Route path="/verify" element={accountObject.loggedIn ? <VerifySignature /> : <Navigate to="/" replace />} />
           <Route path="/sign" element={accountObject.loggedIn ? <UploadDocument /> : <Navigate to="/" replace />} />
         </Routes>

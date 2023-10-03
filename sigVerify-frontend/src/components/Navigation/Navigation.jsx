@@ -18,7 +18,8 @@ function Navigation() {
           {accountObject.loggedIn ? (
             <>
               <Link to="/sign" className='buttonPop'>Sign Doc</Link>
-              <Link to="/verify" className='buttonPop'>Verify Signature</Link>
+              <Link to="/mysigs" className='buttonPop'>My Sigs</Link>
+              {/* <Link to="/verify" className='buttonPop'>Verify Signature</Link> */}
             </>
           ) : (
             <>

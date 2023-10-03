@@ -2,7 +2,6 @@ const { XummSdk } = require('xumm-sdk');
 require('dotenv').config();
 const Sdk = new XummSdk(process.env.XUMM_API_KEY, process.env.XUMM_API_SECRET);
 const xrpl = require('xrpl');
-const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
 
 //current temp wallet
 const sigverifyWallet = "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo";
@@ -100,29 +99,38 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
     } catch (error) {
         console.error("Error while creating payment transaction:", error.message);
     };
+};
 
-    exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (accountRAddress) => {
+exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
+    const rAddress = req.body.rAddress;
+    const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
 
-        const convertUnixToReadableTime = (rippleTime) => {
-            const unixTimestamp = rippleTime + 946684800;
-            const dateObj = new Date(unixTimestamp * 1000);
-            const readableDate = dateObj.toUTCString();
-            return readableDate;
-        }
+    const convertUnixToReadableTime = (rippleTime) => {
+        const unixTimestamp = rippleTime + 946684800;
+        const dateObj = new Date(unixTimestamp * 1000);
+        const readableDate = dateObj.toUTCString();
+        return readableDate;
+    };
+
+    console.log("rAddress in findAllAccountPaymentTransactionsToSigVerifyWallet: ", rAddress);
+
+    try {
 
         await client.connect();
         const response = await client.request({
             "id": 2,
             "command": "account_tx",
-            "account": accountRAddress,
+            "account": rAddress,
             "ledger_index_min": -1,
             "ledger_index_max": -1,
             "binary": false,
             "forward": false
         });
         await client.disconnect();
+
         const objectArray = response.result.transactions;
         let arrayOfPaymentTransactionsWithMemoToSigVerifyAccount = [];
+        
         for (const object of objectArray) {
             //clean data to have exactly same properties on each object even if some have empty fields.
             if (object.tx.TransactionType === "Payment" && object.tx.Destination === "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo") {
@@ -142,6 +150,8 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
         };
 
         //return array of all payment transactions from logged in account to sigVerify temp wallet
-        return arrayOfPaymentTransactionsWithMemoToSigVerifyAccount;
-    };
-}
+        res.json(arrayOfPaymentTransactionsWithMemoToSigVerifyAccount);
+    } catch (err) {
+        console.log(err)
+    }
+};

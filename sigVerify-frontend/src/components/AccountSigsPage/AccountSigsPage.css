@@ -1,0 +1,33 @@
+#accountSigsPageMainContainer {
+    padding: 30px;
+}
+
+#accountSigsPageMainContainer > p {
+    margin-left: 50px;
+    font-size: 2em;
+}
+
+#accountSigsPageContainer {
+    padding: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    margin-inline: auto;
+
+}
+
+.sigTxDiv {
+    font-size: .6em;
+    word-break: break-all;
+    width: 300px;
+    padding: 20px;
+}
+
+.sigTxDiv > p {
+    margin: 0px;
+    margin-bottom: 1px;
+}
+
+.sigTxDiv > p > strong:nth-child(1) {
+    color: purple;
+    text-transform: capitalize;
+}
