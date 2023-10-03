@@ -58,7 +58,6 @@
     #home-page-container > a > button {
         margin-left: 10vw;
     }
-
 }
 
 @media screen and (min-width:430px) {
@@ -79,12 +78,5 @@
         font-size: 5em;
     }
 }
-/* #home-page-container > a > button:hover {
-    background-color: rgb(239, 239, 239);
-} */
 
-/* #home-page-container > a > button {
-    border-radius: 5px;
-    padding: 10px 20px;
-} */
 
