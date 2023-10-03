@@ -77,11 +77,11 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
             "Amount": "1",
             "Fee": "12",
             "Memos": [
-              {
-                "Memo": {
-                  "MemoData": xrpl.convertStringToHex(documentHash)
+                {
+                    "Memo": {
+                        "MemoData": xrpl.convertStringToHex(documentHash)
+                    }
                 }
-              }
             ]
         });
 
@@ -98,4 +98,55 @@ exports.createTransactionPayload = async (rAddress, documentHash) => {
     } catch (error) {
         console.error("Error while creating payment transaction:", error.message);
     };
+
+    exports.findAllAccountPaymentTransactionsToSigVerifyWalletMemoDocumentHashes = async (accountRAddress) => {
+
+        const convertUnixToReadableTime = (rippleTime) => {
+            const unixTimestamp = rippleTime + 946684800;
+            const dateObj = new Date(unixTimestamp * 1000);
+            const readableDate = dateObj.toUTCString();
+            return readableDate;
+        }
+
+        await client.connect();
+        const response = await client.request({
+            "id": 2,
+            "command": "account_tx",
+            "account": accountRAddress,
+            "ledger_index_min": -1,
+            "ledger_index_max": -1,
+            "binary": false,
+            "forward": false
+        });
+        await client.disconnect();
+        const objectArray = response.result.transactions;
+        let arrayOfPaymentTransactionToSigVerifyAccount = [];
+        for (const object of objectArray) {
+            //clean data to have exactly same properties on each object even if some have empty fields.
+            if (object.tx.TransactionType === "Payment" && object.tx.Destination === "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo") {
+                const newObject = {
+                    Account: object.tx.Account ? object.tx.Account : "",
+                    Amount: object.tx.Amount ? (Math.round((object.tx.Amount / 1000000) * 100) / 100).toFixed(2) : "",
+                    Destination: object.tx.Destination ? object.tx.Destination : "",
+                    Memo: object.tx.Memos ? object.tx.Memos : false,
+                    Fee: object.tx.Fee ? object.tx.Fee : "",
+                    LastLedgerSequence: object.tx.LastLedgerSequence ? object.tx.LastLedgerSequence : "",
+                    Sequence: object.tx.Sequence ? object.tx.Sequence : "",
+                    SigningPubKey: object.tx.SigningPubKey ? object.tx.SigningPubKey : "",
+                    TransactionType: object.tx.TransactionType ? object.tx.TransactionType : "",
+                    TxnSignature: object.tx.TxnSignature ? object.tx.TxnSignature : "",
+                    hash: object.tx.hash ? object.tx.hash : "",
+                    ledger_index: object.tx.ledger_index ? object.tx.ledger_index : "",
+                    date: object.tx.date ? convertUnixToReadableTime(object.tx.date) : ""
+                };
+                arrayOfPaymentTransactionToSigVerifyAccount.push(newObject);
+            };
+        };
+
+        // console.log("newObjectArray: ", arrayOfPaymentTransactionToSigVerifyAccount)
+        const accountMemosHashes = [];
+        arrayOfPaymentTransactionToSigVerifyAccount.forEach(obj => { if (obj.Memo) { accountMemosHashes.push(xrpl.convertHexToString(obj.Memo[0].Memo.MemoData)) } });
+        //return array of all document hashes as strings from this accounts payment txs to sigVerify wallet
+        return accountMemosHashes;
+    }
 }
