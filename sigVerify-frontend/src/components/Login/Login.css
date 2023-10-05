@@ -34,10 +34,10 @@
 }
 
 .loginComponent button {
-    border: solid 1px #3F3D58;
+    border: solid 1px #e48e14;
     background: white;
     text-decoration: underline;
-    color: #3F3D58;
+    color: #e78d0e;
     padding: 6px;
     border-radius: 10px;
     font-size: 1rem;
@@ -68,46 +68,22 @@
 }
 
 #signInMsg {
-    color: #3F3D58;
+    color: #ffffff;
     text-align: start;
-    background-color: white;
-    border: solid white 2px;
-    padding-inline: 7px;
-    padding-block: 3px;
+    background-color: rgba(248, 187, 89, 0.564);
+    border: solid rgb(240, 180, 127) 1px;
+    padding: 7px;
     border-radius: 10px;
     font-size: .7rem;
-    max-width: 85vw;
+    max-width: 80%;
     font-family: 'Rajdhani', sans-serif;
     margin-block-start: 0px;
     margin-block-end: 20px;
     font-weight: bold;
-    box-shadow: inset 1px 1px 1px 0px rgba(73, 73, 73, 0.5),
-        7px 7px 20px 0px rgba(0, 0, 0, .1),
+    box-shadow: inset 1px 1px 2px 1px rgba(73, 73, 73, 0.5),
+        3px 3px 20px 0px rgba(0, 0, 0, .1),
         4px 4px 5px 0px rgba(0, 0, 0, .1);
 }
-
-#successP {
-    color: rgb(120, 246, 120);
-    font-weight: bold;
-}
-
-#failureP {
-    color: rgb(250, 246, 0);
-    font-weight: bold;
-    font-size: .8rem;
-}
-
-.buttonPop {
-    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-    7px 7px 20px 0px rgba(0, 0, 0, .1),
-    4px 4px 5px 0px rgba(0, 0, 0, .1);
-  }
-  
-  .buttonPop:hover {
-    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
-    7px 7px 20px 0px rgba(0, 0, 0, .1),
-    0px 0px 0px 0px rgba(0, 0, 0, .1);
-  }
 
 @media screen and (min-width: 440px) {
     .loginComponent {

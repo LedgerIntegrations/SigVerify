@@ -55,6 +55,7 @@ export default function Login() {
                     // navigate('/profile');
                 } else {
                     console.log("User Failed to sign in.");
+                    setPayloadCreate({});
                     setPayloadMessage("Account 'sign-in' QR was rejected. Please reload web-page or click 'Genereate QR' again. Cannot proceed to 'Profile' without signing from XUMM wallet.");
                 };
             })

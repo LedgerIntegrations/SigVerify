@@ -24,7 +24,7 @@ function Navigation() {
           ) : (
             <>
               <Link to="/" className='buttonPop'>Home</Link>
-              <Link to="/login" className='buttonPop'>Login</Link>
+              <Link to="/login" className='buttonPop' id="loginLink">Login</Link>
             </>
           )}
         </div>

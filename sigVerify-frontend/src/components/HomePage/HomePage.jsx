@@ -7,11 +7,14 @@ function HomePage() {
     return (
         <div id="home-page-container">
             <img src={encDocs} />
-            <h2>Welcome to <br /><em>SigVerify</em></h2>
-            {/* <button></button> */}
-            <Link to="/login" >
-                <button className='buttonPop'>Connect XRPL Wallet</button>
-            </Link>
+            <div id="home-call-to-action-section">
+                <h2>Welcome to <br /><em>SigVerify</em></h2>
+                {/* <button></button> */}
+                <Link to="/login" >
+                    <button className='buttonPop'>Connect XRPL Wallet</button>
+                </Link>
+            </div>
+
         </div>
     );
 }

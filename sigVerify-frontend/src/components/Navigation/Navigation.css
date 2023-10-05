@@ -11,8 +11,10 @@
 
 #left-side-nav {
     display: flex;
+    justify-content: space-between;
     gap: 10px;
     font-size: .8em;
+    width: 100%;
 }   
 
 #nav-logo > img {
@@ -26,6 +28,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-grow: stretch;
 }
 
 #nav-links > a {
@@ -35,6 +38,10 @@
     border: 1px solid rgb(224, 134, 15);
     padding: 7px 16px;
     border-radius: 5px;
+}
+
+#loginLink {
+    justify-self: flex-end;
 }
 
 @media screen and (min-width: 700px) {

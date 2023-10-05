@@ -8,6 +8,9 @@ import Login from './components/Login/Login';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import VerifySignature from './components/VerifySignature/VerifySignature';
 import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
+
+import './App.css'
+
 export const AccountContext = createContext();
 
 function useSessionStorage(key, initialValue) {
