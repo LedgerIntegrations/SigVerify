@@ -35,12 +35,14 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ### Xumm Functionality
 - Wallet Authentication / Verification.
 - Login authentication.
+- Transaction signing.
 
 ### XRPL Functionality
-- Specified Transaction Queries
-- Signature Verification
-- Storing of document hashes in tx memo field
-- Immutable timestamped signature authentication 
+- Transaction and document hash storage on ledger.
+- Specified Transaction Queries.
+- Signature Verification.
+- Storing of document hashes in tx memo field.
+- Immutable timestamped signature authentication.
 
 ### Base Functionality
 - Document upload ( currently .pdf or .txt for mvp ).
