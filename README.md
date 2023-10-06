@@ -33,6 +33,7 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ## Current Functionalities 🌟
 
 ### Xumm Functionality
+- Management of xrpl keypairs
 - Wallet Authentication / Verification.
 - Login authentication.
 - Transaction signing.
@@ -81,5 +82,6 @@ XUMM_API_KEY = "api key here" <br>
 XUMM_API_SECRET = "api secret here"
 5. execute 'npm run start' in sigVerify-backend terminal.
 6. open second terminal and cd to sigVerify-frontend and execute 'npm run dev' in terminal and navigate to the outputted localhost url.
+7. For current development and testing switch xumm advanced setting to use xrpl test node: wss://testnet.xrpl-labs.com. xrpl backend web socket is already pre-configured to the xrpl testnet: wss://s.altnet.rippletest.net:51233 for you.
 
 
