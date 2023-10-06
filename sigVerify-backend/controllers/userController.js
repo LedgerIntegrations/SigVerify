@@ -155,3 +155,59 @@ exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (req, res) =>
         console.log(err)
     }
 };
+
+exports.hasAccountSignedThisDocument = async (targetRAddress, documentHash) => {
+
+    const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+
+    const convertUnixToReadableTime = (rippleTime) => {
+        const unixTimestamp = rippleTime + 946684800;
+        const dateObj = new Date(unixTimestamp * 1000);
+        const readableDate = dateObj.toUTCString();
+        return readableDate;
+    };
+
+    console.log("rAddress in findAllAccountPaymentTransactionsToSigVerifyWallet: ", targetRAddress);
+
+    try {
+
+        await client.connect();
+        const response = await client.request({
+            "id": 2,
+            "command": "account_tx",
+            "account": targetRAddress,
+            "ledger_index_min": -1,
+            "ledger_index_max": -1,
+            "binary": false,
+            "forward": false
+        });
+        await client.disconnect();
+
+        const objectArray = response.result.transactions;
+        let arrayOfPaymentTransactionsWithMemoToSigVerifyAccount = [];
+        
+        for (const object of objectArray) {
+            //clean data to have exactly same properties on each object even if some have empty fields.
+            if (object.tx.TransactionType === "Payment" && object.tx.Destination === "rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo" && (xrpl.convertHexToString(object.tx.Memos[0].Memo.MemoData) === documentHash)) {
+                const newObject = {
+                    Signer: object.tx.Account ? object.tx.Account : "",
+                    Amount: object.tx.Amount ? (Math.round((object.tx.Amount / 1000000) * 100) / 100).toFixed(2) : "",
+                    Destination: object.tx.Destination ? object.tx.Destination : "",
+                    DocumentHash: object.tx.Memos ? xrpl.convertHexToString(object.tx.Memos[0].Memo.MemoData) : false, 
+                    Fee: object.tx.Fee ? object.tx.Fee : "",
+                    SigningPubKey: object.tx.SigningPubKey ? object.tx.SigningPubKey : "",
+                    TransactionType: object.tx.TransactionType ? object.tx.TransactionType : "",
+                    TransactionHash: object.tx.hash ? object.tx.hash : "",
+                    date: object.tx.date ? convertUnixToReadableTime(object.tx.date) : ""
+                };
+                console.log(newObject)
+                arrayOfPaymentTransactionsWithMemoToSigVerifyAccount.push(newObject);
+            };
+        };
+
+        //return array of all payment transactions from logged in account to sigVerify temp wallet
+        return arrayOfPaymentTransactionsWithMemoToSigVerifyAccount;
+    } catch (err) {
+        console.log(err)
+    }
+};
