@@ -21,22 +21,21 @@
     height: 50px;
     width: 50px;
     border-radius: 10px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 #nav-links {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-grow: stretch;
+    gap: 8px;
 }
 
 #nav-links > a {
     text-decoration: none;
     color: rgb(224, 134, 15);
-    font-size: 1.2em;
+    font-size: .9em;
     border: 1px solid rgb(224, 134, 15);
-    padding: 7px 16px;
+    padding: 7px;
     border-radius: 5px;
 }
 
@@ -44,6 +43,11 @@
     justify-self: flex-end;
 }
 
+@media screen and (min-width: 600px) {
+    #nav-container {
+        padding-inline: 50px;
+    }
+}
 @media screen and (min-width: 700px) {
     #nav-links > a {
         font-size: 1em;

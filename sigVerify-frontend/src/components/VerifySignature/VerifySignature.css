@@ -3,15 +3,78 @@
     background-color: rgba(255, 255, 255, 0.877);
     padding: 50px 20px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-#verify-sig-container > div {
-    max-width: 350px;
+#verify-sig-head {
+    margin-bottom: 5vh;
+}
+
+#verify-sig-head > h3 {
+    word-break: break-all;
+    margin-block: 0px;
+}
+
+#verify-sig-head > em {
+    font-size: .7em;
+    max-width: 300px;
+}
+
+#verify-sig-main {
+    /* max-width: 350px; */
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding:10px 30px;
 }
 
+#verify-input-label-div {
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    gap: 20px;
+}
+
+#fileName {
+    display: block;
+    margin-top: 0px;
+    font-size: .8em;
+    width: fit-content;
+}
+
+#upload-doc-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* Align to the top */
+    align-items: center;
+    overflow-y: auto;  /* Allow scrolling if content overflows */
+    max-height: 40vh;
+}
+
+#target-address-input {
+
+}
+
+#verified-sigs-found {
+
+}
+
+.verified-sig {
+    font-size: .7em;
+    border: 1px solid rgb(255, 145, 0);
+    max-width: 200px;
+    text-align: start;
+    word-break: break-all;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.verified-sig > p {
+    margin-block: 4px;
+}
+
+.verified-sig > p > em {
+    color: rgb(255, 145, 0);
+}

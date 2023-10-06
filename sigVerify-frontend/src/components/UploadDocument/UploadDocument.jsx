@@ -1,14 +1,21 @@
 import './UploadDocument.css'
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { AccountContext } from '../../App';
 import DocumentPreview from '../DocumentPreview/DocumentPreview';
 
 function UploadDocument() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
+    const abortController = useRef(new AbortController()); // for aborting the fetch request
 
     const [userPromptMessage, setUserPromptMessage] = useState("Waiting for upload of document...");
     const [file, setFile] = useState(null);
     const [txPayloadForPaymentToSelfWithDocHashInMemo, settxPayloadForPaymentToSelfWithDocHashInMemo] = useState(null);
+
+    const resetPayload = () => {
+        settxPayloadForPaymentToSelfWithDocHashInMemo(null);
+        abortController.current.abort(); // Abort the previous fetch request if it's ongoing
+        abortController.current = new AbortController(); // Reset the abort controller for future use
+    };
 
     const handleSubmit = async () => {
         if (!file) return;
@@ -37,6 +44,7 @@ function UploadDocument() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ payloadUuid: result.uuid }),
+                signal: abortController.current.signal // Pass the signal to the fetch request
             });
 
             const subscriptionToPaymentTxResponseJson = await subscriptionToPaymentTx.json();
@@ -52,38 +60,47 @@ function UploadDocument() {
                 setFile(null);
             }
         } catch (err) {
-            console.log(err);
+            if (err.name === 'AbortError') {
+                console.log("Fetch request has been aborted");
+            } else {
+                console.log(err);
+            }
         };
     };
 
     return (
         <div id="upload-document-container">
-            <p>Upload document you desire to sign.</p>
+            <div id="sign-doc-head">
+                <h3>Sign Document</h3>
+                <em>Upload document you desire to sign, click upload, and sign qr code via XUMM app.</em>
+            </div>
             <section>
                 <div>
                     <label id="fileLabel">
                         Choose File
                         <input type="file" id="fileInput" onChange={(e) => {
+                            resetPayload(); // Reset the payload when a new file is selected
                             setFile(e.target.files[0]);
+                            setUserPromptMessage("Document uploaded. Review it below before proceeding.");
                             e.target.value = null;
                         }} />
                     </label>
-                    <span id="fileName">{file ? file.name : 'No file chosen'}</span>
+                    <span id="upload-fileName">{file ? file.name : 'No file chosen'}</span>
                 </div>
                 <button onClick={handleSubmit}>Upload</button>
             </section>
-           
+
             {txPayloadForPaymentToSelfWithDocHashInMemo ? (
                 <div id="payloadDataDiv">
-                    <p>Document Hash: <em>{txPayloadForPaymentToSelfWithDocHashInMemo.documentHash}</em></p>
-                    <a href={txPayloadForPaymentToSelfWithDocHashInMemo.qrLink} target='_blank'>
-                        <img src={txPayloadForPaymentToSelfWithDocHashInMemo.qrImage} />
+                    {/* <p>Document Hash: <em>{txPayloadForPaymentToSelfWithDocHashInMemo.documentHash}</em></p> */}
+                    <a href={txPayloadForPaymentToSelfWithDocHashInMemo.qrLink} target='_blank' rel="noreferrer">
+                        <img src={txPayloadForPaymentToSelfWithDocHashInMemo.qrImage} alt="QR Code" />
                     </a>
-                    <p>Waiting for payload to be signed via XUMM...</p>
+                    <p id="sign-msg">Waiting for payload to be signed via XUMM...</p>
                 </div>
             ) : <p id="userPromptMessage"> {userPromptMessage}</p>}
-             <div id="upload-document-container">
-                <DocumentPreview file={file} />
+            <div id="upload-document-container-preview">
+                <DocumentPreview file={file} id="doc-preview" />
             </div>
         </div>
     );

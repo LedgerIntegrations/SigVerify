@@ -8,6 +8,8 @@ function AccountSigsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    console.log(sigObjects)
+
     useEffect(() => {
         const fetchSigObjects = async () => {
             try {
@@ -45,9 +47,13 @@ function AccountSigsPage() {
                 <div id="accountSigsPageContainer">
                     {sigObjects.map(sigObject => (
                         <div key={sigObject.TransactionHash} className='sigTxDiv'>
-                            {Object.entries(sigObject).map(([key, value]) => (
+                            {/* {Object.entries(sigObject).map(([key, value]) => (
                                 <p key={key}><strong>{key}:</strong> {String(value)}</p>
-                            ))}
+                            ))} */}
+                            <p><strong>Signer:</strong> {sigObject.Signer}</p>
+                            <p><strong>Document Hash:</strong> {sigObject.DocumentHash}</p> 
+                            <p><strong>Date Signed:</strong> {sigObject.date}</p>
+                           
                         </div>
                     ))}
                 </div>

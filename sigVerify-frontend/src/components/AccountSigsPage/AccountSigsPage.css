@@ -20,6 +20,7 @@
     word-break: break-all;
     width: 300px;
     padding: 20px;
+    text-align: start;
 }
 
 .sigTxDiv > p {

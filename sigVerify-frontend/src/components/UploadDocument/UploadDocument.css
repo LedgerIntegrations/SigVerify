@@ -8,29 +8,24 @@
     align-items: center;
 }
 
-#upload-document-container > section {
-    width: 100%;
-    max-width: 250px;
-    height: 150px;
-    background-color: rgba(226, 226, 226, 0.553);
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 15px;
+#sign-doc-head {
+    margin-bottom: 5vh;
 }
 
-#upload-document-container > section > div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+#sign-doc-head > h3 {
+    word-break: break-all;
+    margin-block: 0px;
+}
+
+#sign-doc-head > em {
+    font-size: .7em;
+    max-width: 300px;
 }
 
 #fileLabel {
     width: fit-content;
     display: inline-block;
-    background-color: #e79530;
+    background-color: #6b6b6b;
     color: white;
     padding: 7px 16px;
     cursor: pointer;
@@ -41,35 +36,54 @@
 }
 
 #fileLabel:hover {
-    background-color:#e58612;
+    background-color:#8f8f8f;
 }
 
 #fileInput {
     display: none; /* this hides the actual input */
 }
 
-#fileName {
+#upload-fileName {
     display: block;
-    margin-top: 5px;
+    margin-top: 0px;
     font-size: .8em;
     width: fit-content;
+    overflow-x:auto;
+}
+
+#upload-document-container > section {
+    /* width: 100%; */
+    /* max-width: 250px; */
+    background-color: rgba(236, 235, 235, 0.877);
+    padding: 20px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* align-items: center; */
+    border-radius: 15px;
+}
+
+#upload-document-container > section > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #upload-document-container > section > button {
-    width: 100px;
+    /* width: 100px; */
     margin-top: 10px;
-    margin-inline: auto;
     border-radius: 5px;
-    border: 1px solid purple;
-    color: purple;
+    border: 1px solid rgb(249, 149, 35);
+    color: rgb(249, 149, 35);
     background-color: white;
     font-size: .8em;
+    padding: 5px;
     transition: background-color 0.3s ease;
 }
 
 #upload-document-container > section > button:hover {
     color: white;
-    background-color: purple;
+    background-color: rgb(249, 149, 35);
 }
 
 #payloadDataDiv {
@@ -89,10 +103,11 @@
 
 #payloadDataDiv > p > em {
     color:rgb(255, 128, 0);
+    text-align: start;
 }
 
-#payloadDataDiv > p:nth-child(3) {
-    color: rgb(128, 0, 255);
+#sign-msg {
+    color: rgb(199, 35, 249);
     font-size: .8em;
     text-align: center;
     max-width: 160px;
@@ -107,8 +122,19 @@
 #userPromptMessage {
     max-width: 300px;
     text-align: center;
-    color: rgb(111, 0, 255);
+    color: rgb(249, 142, 35);
+    font-size: .8em
 }
+
+#upload-document-container-preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* Align to the top */
+    align-items: center;
+    overflow-y: auto;  /* Allow scrolling if content overflows */
+    max-height: 40vh;
+ }
+ 
 
 @media screen and (min-width: 620px) {
     #upload-document-container {
