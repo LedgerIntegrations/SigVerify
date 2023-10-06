@@ -81,3 +81,12 @@ XUMM_API_KEY = "api key here" <br>
 XUMM_API_SECRET = "api secret here"
 5. execute 'npm run start' in sigVerify-backend terminal.
 6. open second terminal and cd to sigVerify-frontend and execute 'npm run dev' in terminal and navigate to the outputted localhost url.
+
+## Demo
+
+<!-- ![Demo Video]('./assets/demo_vid.mov') -->
+<video width="400" height="540" controls>
+  <source src="./assets/demo_vid.mov" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+
