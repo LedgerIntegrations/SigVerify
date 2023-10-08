@@ -3,20 +3,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const cors = require('cors');
 
-// const multer = require('multer');
-// const storage = multer.memoryStorage(); // Store the file data in memory
-// const upload = multer({ storage: storage });
 const documentRoutes = require('./routes/documentRoutes');
 const userRoutes = require('./routes/userRoutes')
 
 app.use(cors());
 app.use(express.json());
 
+// test route not needed can delete
 app.get('/', (req, res) => {
   res.send("Server has recieved your get request!");
 });
 
-// Use imported routes
+// imported routes
 app.use(userRoutes);
 app.use(documentRoutes);
 
