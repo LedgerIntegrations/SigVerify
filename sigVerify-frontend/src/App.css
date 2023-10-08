@@ -7,7 +7,8 @@
 
 #appContainer {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  max-height: fit-content;
   background-color: rgb(236, 235, 235);
 }
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
@@ -11,7 +12,11 @@ function PdfPreview({ file }) {
     const [pageNumber, setPageNumber] = useState(1);
     const [width, setWidth] = useState(window.innerWidth);
     const [previewSource, setPreviewSource] = useState(null);
-
+    const [scale, setScale] = useState(1);
+    const [pdfWidth, setPdfWidth] = useState(390); // Set initial value
+    
+    const padding = 20; // Desired padding on each side
+    
     useEffect(() => {
         if (!file) return;
         const reader = new FileReader();
@@ -24,6 +29,7 @@ function PdfPreview({ file }) {
     useEffect(() => {
         const resizeListener = () => {
             setWidth(window.innerWidth);
+            setDynamicScaleAndWidth(window.innerWidth);
         };
         window.addEventListener('resize', resizeListener);
         return () => {
@@ -31,34 +37,39 @@ function PdfPreview({ file }) {
         };
     }, []);
 
+    const setDynamicScaleAndWidth = (width) => {
+        const availableWidth = width - 2 * padding; // Width minus padding on both sides
+        const minWidth = 390; // Adjust as per requirement
+        
+        if (availableWidth < minWidth) {
+            setScale(availableWidth / minWidth);
+            setPdfWidth(minWidth);
+        } else {
+            setScale(1);
+            setPdfWidth(Math.min(minWidth, availableWidth));
+        }
+    };
+
+    useEffect(() => {
+        setDynamicScaleAndWidth(window.innerWidth);
+    }, []);
+
     const onDocumentLoadSuccess = ({ numPages }) => {
         setNumPages(numPages);
     };
 
-    let pdfWidth = width;
-    let pdfScale = 1;
-    
-    if (width <= 420) {
-        pdfWidth = width;
-        pdfScale = 1;
-    } else if (width > 420) {
-        pdfWidth = Math.min(width * 0.8, 800);  // Use Math.min to cap the width at 500px
-        pdfScale = 0.8;
-    }
-    
-
     return (
-        <div>
+        <div style={{minHeight: '70vh', padding: `10px`}}>
             {previewSource && (
                 <Document
                     file={previewSource}
                     onLoadSuccess={onDocumentLoadSuccess}
                 >
-                    <Page pageNumber={pageNumber} width={pdfWidth} scale={pdfScale} />
+                    <Page pageNumber={pageNumber} width={pdfWidth} scale={scale}/>
                 </Document>
             )}
             {numPages && (
-                <p>
+                <p style={{marginBottom: "6vh"}}>
                     Page {pageNumber} of {numPages}
                 </p>
             )}
@@ -67,4 +78,3 @@ function PdfPreview({ file }) {
 }
 
 export default PdfPreview;
-

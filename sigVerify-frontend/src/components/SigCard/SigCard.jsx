@@ -15,7 +15,7 @@ function SigCard({ sigObject }) {
                 <p><strong><br />{sigObject.DocumentHash}</strong></p>
             </div>
             {/* need to make click function for this still */}
-            <button className='expand-sig-button'>See all details</button> need
+            <button className='expand-sig-button'>See all details</button>
         </div>
     )
 }
