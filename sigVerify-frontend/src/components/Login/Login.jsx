@@ -66,6 +66,11 @@ export default function Login() {
 
     return (
         <div className='loginMain'>
+            <div id="login-header">
+                <h2 id="login-head">Connect your XUMM Wallet Below.</h2>
+                <p id="login-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Esse sed voluptates explicabo.</p>    
+            </div>
+            
             <div className='loginComponent'>
                 <h1>Connect</h1>
                 {

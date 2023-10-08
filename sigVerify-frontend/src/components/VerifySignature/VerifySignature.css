@@ -1,29 +1,33 @@
 #verify-sig-container {
-    min-height: 400px;
-    background-color: rgba(255, 255, 255, 0.877);
+    min-height: 80vh;
+    max-height: fit-content;
     padding: 50px 20px;
+    padding-top: 14vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
 }
 
 #verify-sig-head {
     margin-bottom: 5vh;
+    text-align: start;
+    max-width: 70vw;
+    max-width: 500px;
 }
 
 #verify-sig-head > h3 {
+    font-size: 2em;
     word-break: break-all;
     margin-block: 0px;
 }
 
-#verify-sig-head > em {
-    font-size: .7em;
+#verify-sig-head > p {
+    font-size: 1em;
     max-width: 300px;
 }
 
 #verify-sig-main {
-    /* max-width: 350px; */
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -47,9 +51,9 @@
 #upload-doc-container {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;  /* Align to the top */
+    justify-content: flex-start;
     align-items: center;
-    overflow-y: auto;  /* Allow scrolling if content overflows */
+    overflow-y: auto;
     max-height: 40vh;
 }
 

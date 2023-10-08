@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
@@ -8,10 +10,21 @@ import Login from './components/Login/Login';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import VerifySignature from './components/VerifySignature/VerifySignature';
 import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
-
 import './App.css'
 
 export const AccountContext = createContext();
+
+const withNavigation = (Component) => {
+  return function WrappedComponent(props) {
+    return (
+      <>
+        <Navigation />
+        <Component {...props} />
+      </>
+    );
+  }
+};
+
 
 function useSessionStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
@@ -48,19 +61,18 @@ function App() {
 
   return (
     <Router>
-    <AccountContext.Provider value={[accountObject, setAccountObject]}>
-      <div id='appContainer'>
-        <Navigation />
-        <Routes>
-          <Route path="/" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <HomePage />} />
-          <Route path="/login" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <Login />} />
-          <Route path="/mysigs" element={accountObject.loggedIn ? <AccountSigsPage /> : <Navigate to="/" replace />} />
-          <Route path="/verify" element={accountObject.loggedIn ? <VerifySignature /> : <Navigate to="/" replace />} />
-          <Route path="/sign" element={accountObject.loggedIn ? <UploadDocument /> : <Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    </AccountContext.Provider>
-  </Router>
+      <AccountContext.Provider value={[accountObject, setAccountObject]}>
+        <div id='appContainer'>
+          <Routes>
+            <Route path="/" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <HomePage />} />
+            <Route path="/login" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : React.createElement(withNavigation(Login))} />
+            <Route path="/mysigs" element={accountObject.loggedIn ? React.createElement(withNavigation(AccountSigsPage)) : <Navigate to="/" replace />} />
+            <Route path="/verify" element={accountObject.loggedIn ? React.createElement(withNavigation(VerifySignature)) : <Navigate to="/" replace />} />
+            <Route path="/sign" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocument)) : <Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </AccountContext.Provider>
+    </Router>
   );
 }
 

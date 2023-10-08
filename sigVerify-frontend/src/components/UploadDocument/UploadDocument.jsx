@@ -72,7 +72,7 @@ function UploadDocument() {
         <div id="upload-document-container">
             <div id="sign-doc-head">
                 <h3>Sign Document</h3>
-                <em>Upload document you desire to sign, click upload, and sign qr code via XUMM app.</em>
+                <p>Upload document you desire to sign, click upload, and sign qr code via XUMM app.</p>
             </div>
             <section>
                 <div>
@@ -87,7 +87,7 @@ function UploadDocument() {
                     </label>
                     <span id="upload-fileName">{file ? file.name : 'No file chosen'}</span>
                 </div>
-                <button onClick={handleSubmit}>Upload</button>
+                <button onClick={handleSubmit} className='buttonPop'>Upload</button>
             </section>
 
             {txPayloadForPaymentToSelfWithDocHashInMemo ? (

@@ -24,10 +24,7 @@ function TxtPreview({ file }) {
         };
     }, []);
 
-    let scale = 1;
-    if (width > 420) {
-        scale = 0.8;
-    }
+    let scale = .9;
 
     const containerStyle = {
         maxWidth: Math.min(width * scale, 500), // This ensures it won't go beyond 500px
@@ -42,7 +39,7 @@ function TxtPreview({ file }) {
 
     return (
         <div style={containerStyle}>
-            <pre>{content}</pre>
+            <p style={{fontSize: "10px"}}>{content}</p>
         </div>
     );
 }

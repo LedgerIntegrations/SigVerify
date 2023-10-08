@@ -1,34 +1,42 @@
 #accountSigsPageMainContainer {
-    padding: 30px;
+    padding-top: 12vh;
+    padding-bottom: 10vh;
+    max-width: 90vw;
+    margin-inline: auto;
 }
 
 #accountSigsPageMainContainer > p {
-    margin-left: 50px;
     font-size: 2em;
 }
 
 #accountSigsPageContainer {
-    padding: 40px;
     display: flex;
     flex-wrap: wrap;
     margin-inline: auto;
-
+    max-width: 900px;
+    justify-content: center;
+    gap: 6px;
+    background-color: white;
+    border-radius: 5px;
+    padding-block: 5px;
 }
 
-.sigTxDiv {
-    font-size: .6em;
-    word-break: break-all;
-    width: 300px;
-    padding: 20px;
+#sigs-header {
     text-align: start;
+    margin-bottom: 6vh;
 }
 
-.sigTxDiv > p {
-    margin: 0px;
-    margin-bottom: 1px;
+#sigs-header > h2 {
+    font-size: 1em;
+    margin-bottom: 4px;    
 }
 
-.sigTxDiv > p > strong:nth-child(1) {
-    color: purple;
-    text-transform: capitalize;
+#sigs-header > h2 > em {
+    margin-left: 1vw;
+    text-transform: initial;
+}
+
+#sigs-header > p {
+    margin-top: 0px;
+    font-size: 1.4em;
 }

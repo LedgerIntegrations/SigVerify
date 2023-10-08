@@ -44,7 +44,7 @@ function VerifySignature() {
     <div id="verify-sig-container">
       <div id="verify-sig-head">
         <h3>Verify Signature</h3>
-        <em>Enter document and account address of person you want to check has signed the document.</em>
+        <p>Enter document and account address of person you want to check has signed the document.</p>
       </div>
       
       <div id="verify-sig-main">

@@ -9,6 +9,9 @@
 body {
   min-height: 100vh;
   margin: 0px;
+  /* background-image: url('./assets/windowToNature.png');
+  background-position: contain;
+  background-position: center; */
 }
 
 *, *::before, *::after {

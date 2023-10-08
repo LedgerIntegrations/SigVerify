@@ -1,6 +1,7 @@
 import './AccountSigsPage.css';
 import React, { useContext, useEffect, useState } from 'react';
 import { AccountContext } from '../../App';
+import SigCard from '../SigCard/SigCard';
 
 function AccountSigsPage() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
@@ -39,6 +40,10 @@ function AccountSigsPage() {
 
     return (
         <div id="accountSigsPageMainContainer">
+            <div id="sigs-header">
+                <h2>ACCOUNT SIGNATURES <em>...{accountObject.wallet.slice(accountObject.wallet.length - 7, accountObject.wallet.length)}</em></h2>
+                <p>Signatures: {sigObjects? sigObjects.length : "No signatures found."}</p>
+            </div>
             {isLoading ? (
                 <p>Loading...</p>
             ) : error ? (
@@ -46,15 +51,7 @@ function AccountSigsPage() {
             ) : sigObjects ? (
                 <div id="accountSigsPageContainer">
                     {sigObjects.map(sigObject => (
-                        <div key={sigObject.TransactionHash} className='sigTxDiv'>
-                            {/* {Object.entries(sigObject).map(([key, value]) => (
-                                <p key={key}><strong>{key}:</strong> {String(value)}</p>
-                            ))} */}
-                            <p><strong>Signer:</strong> {sigObject.Signer}</p>
-                            <p><strong>Document Hash:</strong> {sigObject.DocumentHash}</p> 
-                            <p><strong>Date Signed:</strong> {sigObject.date}</p>
-                           
-                        </div>
+                        <SigCard sigObject={sigObject} />
                     ))}
                 </div>
             ) : (

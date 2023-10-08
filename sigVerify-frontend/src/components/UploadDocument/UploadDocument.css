@@ -1,24 +1,29 @@
 #upload-document-container {
-    background-color: white;
-    padding: 30px 30px;
-    min-height: 50vh;
+    padding: 50px 20px;
+    padding-top: 14vh;
+    min-height: 80vh;
+    max-height: fit-content;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
 }
 
 #sign-doc-head {
     margin-bottom: 5vh;
+    text-align: start;
+    max-width: 70vw;
+    max-width: 500px;
 }
 
 #sign-doc-head > h3 {
+    font-size: 2em;
     word-break: break-all;
     margin-block: 0px;
 }
 
-#sign-doc-head > em {
-    font-size: .7em;
+#sign-doc-head > p {
+    font-size: 1em;
     max-width: 300px;
 }
 
@@ -52,38 +57,36 @@
 }
 
 #upload-document-container > section {
-    /* width: 100%; */
-    /* max-width: 250px; */
-    background-color: rgba(236, 235, 235, 0.877);
-    padding: 20px 40px;
+    min-height: fit-content;
+    width: 75vw;
+    max-width: 320px;
+    min-width: 250px;
+    background-color: white;
     display: flex;
+    position: relative;
     flex-direction: column;
-    justify-content: space-between;
-    /* align-items: center; */
-    border-radius: 15px;
+    justify-content: center;
+    align-items: start;
+    padding: 2rem;
+    border-radius: 24px;
+    box-shadow: 0px 4px 8px 0px #242a49cb;
 }
 
 #upload-document-container > section > div {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
 }
 
 #upload-document-container > section > button {
-    /* width: 100px; */
-    margin-top: 10px;
-    border-radius: 5px;
-    border: 1px solid rgb(249, 149, 35);
-    color: rgb(249, 149, 35);
-    background-color: white;
     font-size: .8em;
-    padding: 5px;
-    transition: background-color 0.3s ease;
-}
-
-#upload-document-container > section > button:hover {
+    border: 1px solid gray;
+    margin-top: 1.5vh;
+    padding: 5px 20px;
+    border-radius: 20px;
+    background-color: black;
     color: white;
-    background-color: rgb(249, 149, 35);
 }
 
 #payloadDataDiv {
@@ -122,16 +125,17 @@
 #userPromptMessage {
     max-width: 300px;
     text-align: center;
-    color: rgb(249, 142, 35);
-    font-size: .8em
+    color: rgb(177, 177, 177);
+    font-size: .8em;
+    margin-top: 4vh;
 }
 
 #upload-document-container-preview {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;  /* Align to the top */
+    justify-content: flex-start;
     align-items: center;
-    overflow-y: auto;  /* Allow scrolling if content overflows */
+    overflow-y: auto;
     max-height: 40vh;
  }
  

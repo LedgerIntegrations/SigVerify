@@ -1,0 +1,62 @@
+.sigTxDiv {
+    word-break: break-all;
+    width: 100%;
+    height: fit-content;
+    max-width: 350px;
+    text-align: start;
+    border-bottom: 1px solid rgb(189, 189, 189);
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card-left {
+    height: 80%;
+    width: 15%;
+    border-radius: 0px;
+    padding: 5px;
+    color: white;
+    display: flex;
+    justify-content: center;
+}
+
+.card-left > h6 {
+    margin-block: 0px;
+}
+
+.card-right {
+    height: 80%;
+    width: 85%;
+    padding: 6px;
+    padding-top: 10px;
+}
+
+.card-right > p {
+    margin: 0px;
+    margin-bottom: 1px;
+    font-size: .6em;
+    color: rgb(138, 137, 137);
+    line-height: 7px;    
+}
+
+.card-right > p > strong:nth-child(1) {
+    color: rgb(0, 0, 0);
+    text-transform: capitalize;
+    font-size: 1em;
+    font-weight: 800;
+}
+
+.expand-sig-button {
+    width: 100%;
+    border: 1px solid rgb(197, 197, 197);
+    font-size: .8em;
+    color: rgb(189, 157, 41);
+    background-color: white;
+    padding: 5px;
+    margin: 5px;
+}
+
+.green-check {
+    height: 30px;
+    width: 30px;
+    margin-top: 10px;
+}
