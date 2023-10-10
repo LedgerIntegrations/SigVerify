@@ -5,20 +5,18 @@
     margin-inline: auto;
 }
 
-#accountSigsPageMainContainer > p {
-    font-size: 2em;
-}
+/* #accountSigsPageMainContainer > p {
+} */
 
 #accountSigsPageContainer {
-    display: flex;
-    flex-wrap: wrap;
     margin-inline: auto;
-    max-width: 900px;
+    max-width: fit-content;
     justify-content: center;
     gap: 6px;
     background-color: white;
     border-radius: 5px;
     padding-block: 5px;
+    margin-bottom: 8vh;
 }
 
 #sigs-header {
@@ -26,17 +24,50 @@
     margin-bottom: 6vh;
 }
 
-#sigs-header > h2 {
+#sigs-header>h2 {
     font-size: 1em;
-    margin-bottom: 4px;    
+    margin-bottom: 4px;
 }
 
-#sigs-header > h2 > em {
+#sigs-header>h2>em {
     margin-left: 1vw;
     text-transform: initial;
 }
 
-#sigs-header > p {
+#sigs-header>p {
     margin-top: 0px;
     font-size: 1.4em;
+}
+
+#sigs-header>p>em {
+    font-size: .8em;
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-circle {
+    border: 4px solid rgb(255, 255, 255);
+    border-radius: 50%;
+    border-top: 4px solid #6d6d6d;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(120deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

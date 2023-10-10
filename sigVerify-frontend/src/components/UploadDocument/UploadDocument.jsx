@@ -7,7 +7,7 @@ function UploadDocument() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const abortController = useRef(new AbortController()); // for aborting the fetch request
 
-    const [userPromptMessage, setUserPromptMessage] = useState("Waiting for upload of document...");
+    const [userPromptMessage, setUserPromptMessage] = useState("Waiting for upload of document");
     const [file, setFile] = useState(null);
     const [txPayloadForPaymentToSelfWithDocHashInMemo, settxPayloadForPaymentToSelfWithDocHashInMemo] = useState(null);
 
@@ -72,9 +72,15 @@ function UploadDocument() {
         <div id="upload-document-container">
             <div id="sign-doc-head">
                 <h3>Sign Document</h3>
-                <p>Upload document you desire to sign, click upload, and sign qr code via XUMM app.</p>
+                <ol>
+                    <li>Upload document you desire to sign.</li>
+                    <li>Review document.</li>
+                    <li>Click 'Verify'</li>
+                    <li>Sign generated QR via XUMM app.</li>
+                </ol>
             </div>
-            <section>
+            <section id='upload-document-section'>
+                <h4>Upload Document</h4>
                 <div>
                     <label id="fileLabel">
                         Choose File
@@ -87,7 +93,7 @@ function UploadDocument() {
                     </label>
                     <span id="upload-fileName">{file ? file.name : 'No file chosen'}</span>
                 </div>
-                <button onClick={handleSubmit} className='buttonPop'>Upload</button>
+               
             </section>
 
             {txPayloadForPaymentToSelfWithDocHashInMemo ? (
@@ -98,7 +104,18 @@ function UploadDocument() {
                     </a>
                     <p id="sign-msg">Waiting for payload to be signed via XUMM...</p>
                 </div>
-            ) : <p id="userPromptMessage"> {userPromptMessage}</p>}
+            ) :
+                <p id="userPromptMessage">
+                    {userPromptMessage}
+                    <em className="loading-dots">
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                    </em>
+                </p>}
+                {
+                    file && <button onClick={handleSubmit} className='buttonPop verifyButton'>Verify</button>
+                }
             <div id="upload-document-container-preview">
                 <DocumentPreview file={file} id="doc-preview" />
             </div>

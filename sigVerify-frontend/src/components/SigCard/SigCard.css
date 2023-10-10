@@ -7,15 +7,17 @@
     border-bottom: 1px solid rgb(189, 189, 189);
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .card-left {
-    height: 80%;
+    min-height: 61px;
     width: 15%;
     border-radius: 0px;
     padding: 5px;
     color: white;
     display: flex;
+    align-items: center;
     justify-content: center;
 }
 
@@ -46,17 +48,30 @@
 }
 
 .expand-sig-button {
-    width: 100%;
+    min-width: 240px;
     border: 1px solid rgb(197, 197, 197);
     font-size: .8em;
     color: rgb(189, 157, 41);
     background-color: white;
     padding: 5px;
-    margin: 5px;
+    margin-bottom: 10px;
 }
 
 .green-check {
     height: 30px;
     width: 30px;
     margin-top: 10px;
+}
+
+.detailsDiv {
+    max-width: 200px;
+    font-size: .7em;
+}
+
+.detailsDiv > p {
+}
+
+.detailsDiv > p > em {
+    font-size: .8em;
+    color: gray;
 }

@@ -11,7 +11,7 @@ app.use(express.json());
 
 // test route not needed can delete
 app.get('/', (req, res) => {
-  res.send("Server has recieved your get request!");
+  res.send("You have reached the sigVerify server!");
 });
 
 // imported routes

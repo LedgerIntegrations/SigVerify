@@ -4,6 +4,7 @@ import DocumentPreview from '../DocumentPreview/DocumentPreview';
 
 function VerifySignature() {
   const [file, setFile] = useState(null);
+  const [userPromptMessage, setUserPromptMessage] = useState("Waiting for upload of document");
   const [targetRAddress, setTargetRAddress] = useState('');
   const [returnedMatchingTxsArray, setReturnedMatchingTxsArray] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -21,7 +22,7 @@ function VerifySignature() {
 
     try {
       const response = await fetch('http://localhost:3001/api/verify', { method: 'POST', body: formData });
-      
+
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
@@ -31,9 +32,11 @@ function VerifySignature() {
       setReturnedMatchingTxsArray(result);
 
       if (Array.isArray(result) && result.length > 0) {
-        setSearchMessage("Search of this document signature in target account was found!");
+        setFile(null);
+        setSearchMessage("The target user HAS signed this document!");
       } else {
-        setSearchMessage("Search of this document signature in target account not found!");
+        setSearchMessage("The target user HAS NOT signed this document!");
+        setFile(null);
       }
     } catch (error) {
       setErrorMessage(error.message);
@@ -44,26 +47,40 @@ function VerifySignature() {
     <div id="verify-sig-container">
       <div id="verify-sig-head">
         <h3>Verify Signature</h3>
-        <p>Enter document and account address of person you want to check has signed the document.</p>
+        <p>Enter users account address and document in which you would like to verify.</p>
       </div>
-      
+      <p id="userPromptMessage">
+                    {userPromptMessage}
+                    <em className="loading-dots">
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                    </em>
+                </p>
       <div id="verify-sig-main">
-        <div id='verify-input-label-div'>
-          <label id="fileLabel">
-            Choose File
-            <input type="file" id="fileInput" onChange={(e) => {
-              setFile(e.target.files[0]);
-              e.target.value = null;
-            }} />
-          </label>
-          <span id="fileName">{file ? file.name : 'No file chosen'}</span>
-        </div>
+        <section id='upload-document-section'>
+          <h4>Upload Document</h4>
+          <div>
+            <label id="fileLabel">
+              Choose File
+              <input type="file" id="fileInput" onChange={(e) => {
+                setFile(e.target.files[0]);
+                setUserPromptMessage("Document uploaded. Review it below before proceeding.");
+                e.target.value = null;
+              }} />
+            </label>
+            <span id="upload-fileName">{file ? file.name : 'No file chosen'}</span>
+          </div>
+
+        </section>
 
         <div id="target-address-input">
-          <input type="text" placeholder="Enter Target Account" onChange={(e) => setTargetRAddress(e.target.value)} />
-          <button onClick={handleSubmit}>Verify</button>
+          <input id="addressInput" type="text" placeholder="Enter Target Account" onChange={(e) => setTargetRAddress(e.target.value)} />
+          {
+            file && targetRAddress && <button onClick={handleSubmit} className='buttonPop verifyButton'>Verify</button>
+          }
         </div>
-        
+
         {errorMessage && <p className="error-message">{errorMessage}</p>}
         {searchMessage && <p className="search-message">{searchMessage}</p>}
 

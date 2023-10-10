@@ -1,7 +1,12 @@
 import './SigCard.css'
-import React from 'react';
+import React, { useState } from 'react';
 
 function SigCard({ sigObject }) {
+    const [allDetailsFlag, setAllDetailsFlag] = useState(false);
+
+    function dropDownTrigger() {
+        setAllDetailsFlag(!allDetailsFlag);
+    }
     return (
         <div key={sigObject.TransactionHash} className='sigTxDiv'>
             <div className="card-left">
@@ -14,8 +19,22 @@ function SigCard({ sigObject }) {
                 <p><strong><br />{sigObject.Signer}</strong></p>
                 <p><strong><br />{sigObject.DocumentHash}</strong></p>
             </div>
-            {/* need to make click function for this still */}
-            <button className='expand-sig-button'>See all details</button>
+            <div>
+                <button className='expand-sig-button' onClick={dropDownTrigger}>See all details</button>
+                {
+                    allDetailsFlag ? (
+                        <div className='detailsDiv'>
+                            {Object.entries(sigObject).map(([key, value]) => (
+                                <p key={key}>
+                                    {key}: <em>{value}</em>
+                                </p>
+                            ))}
+                        </div>
+                    ) : null
+                }
+            </div>
+
+
         </div>
     )
 }

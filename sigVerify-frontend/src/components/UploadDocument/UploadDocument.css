@@ -1,7 +1,8 @@
 #upload-document-container {
     padding: 50px 20px;
     padding-top: 14vh;
-    min-height: 130vh;
+    padding-bottom: 12vh;
+    min-height: 10vh;
     max-height: fit-content;
     display: flex;
     flex-direction: column;
@@ -10,27 +11,65 @@
 }
 
 #sign-doc-head {
-    margin-bottom: 5vh;
+    margin-bottom: 2vh;
     text-align: start;
-    max-width: 70vw;
     max-width: 500px;
 }
 
-#sign-doc-head > h3 {
-    font-size: 2em;
+#sign-doc-head>h3 {
+    font-size: 1.7em;
     word-break: break-all;
     margin-block: 0px;
 }
 
-#sign-doc-head > p {
-    font-size: 1em;
+#sign-doc-head>ol>li {
+    font-size: .9em;
     max-width: 300px;
+    color: rgb(70, 70, 70);
+}
+
+#upload-document-section {
+    min-height: fit-content;
+    max-width: 320px;
+    min-width: 300px;
+    background-color: white;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    padding: 1.5rem 1.8rem;
+    border: 3px dashed rgb(60, 60, 60);
+    border-radius: 24px;
+    box-shadow: 0px 4px 4px 0px #242a49cb;
+}
+
+#upload-document-section>h4 {
+    margin-top: 0px;
+    font-size: 1.2em;
+}
+
+#upload-document-section>div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.verifyButton {
+    font-size: .8em;
+    border: 1px solid gray;
+    margin-bottom: 2vh;
+    padding: 5px 20px;
+    border-radius: 20px;
+    background-color: rgb(13, 91, 26);
+    color: white;
 }
 
 #fileLabel {
     width: fit-content;
     display: inline-block;
-    background-color: #6b6b6b;
+    background-color: #4CAF50;
     color: white;
     padding: 7px 16px;
     cursor: pointer;
@@ -41,11 +80,12 @@
 }
 
 #fileLabel:hover {
-    background-color:#8f8f8f;
+    background-color: #1a8e1d;
 }
 
 #fileInput {
-    display: none; /* this hides the actual input */
+    display: none;
+    /* this hides the actual input */
 }
 
 #upload-fileName {
@@ -53,40 +93,7 @@
     margin-top: 0px;
     font-size: .8em;
     width: fit-content;
-    overflow-x:auto;
-}
-
-#upload-document-container > section {
-    min-height: fit-content;
-    width: 75vw;
-    max-width: 320px;
-    min-width: 250px;
-    background-color: white;
-    display: flex;
-    position: relative;
-    flex-direction: column;
-    justify-content: center;
-    align-items: start;
-    padding: 2rem;
-    border-radius: 24px;
-    box-shadow: 0px 4px 8px 0px #242a49cb;
-}
-
-#upload-document-container > section > div {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-}
-
-#upload-document-container > section > button {
-    font-size: .8em;
-    border: 1px solid gray;
-    margin-top: 1.5vh;
-    padding: 5px 20px;
-    border-radius: 20px;
-    background-color: black;
-    color: white;
+    overflow-x: auto;
 }
 
 #payloadDataDiv {
@@ -98,36 +105,72 @@
     align-items: center;
 }
 
-#payloadDataDiv > p {
+#payloadDataDiv>p {
     word-wrap: break-word;
     width: 100%;
     font-size: .9em;
 }
 
-#payloadDataDiv > p > em {
-    color:rgb(255, 128, 0);
+#payloadDataDiv>p>em {
+    color: rgb(78, 78, 78);
     text-align: start;
 }
 
 #sign-msg {
-    color: #b8562c;
+    color: #4b4b4b;
     font-size: .8em;
     text-align: center;
     max-width: 160px;
 }
 
-#payloadDataDiv > a > img {
+#payloadDataDiv>a>img {
     height: 120px;
     width: 120px;
     margin-top: 30px;
 }
 
 #userPromptMessage {
-    max-width: 300px;
-    text-align: center;
-    color: #b8562c;
+    width: 230px;
+    text-align: start;
+    color: #20881e;
     font-size: .8em;
-    margin-top: 4vh;
+    margin-top: 2vh;
+}
+
+.loading-dots {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.dot {
+    display: inline-block;
+    background-color: #19712a;
+    border-radius: 50%;
+    width: 3px;
+    height: 3px;
+    margin-right: 2px;
+    animation: load 1s infinite;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes load {
+
+    0%,
+    80%,
+    100% {
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 100;
+    }
 }
 
 #upload-document-container-preview {
@@ -138,8 +181,8 @@
     overflow-y: auto;
     max-height: 70vh;
     padding-bottom: 10vh;
- }
- 
+}
+
 
 @media screen and (min-width: 620px) {
     #upload-document-container {

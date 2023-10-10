@@ -42,10 +42,13 @@ function AccountSigsPage() {
         <div id="accountSigsPageMainContainer">
             <div id="sigs-header">
                 <h2>ACCOUNT SIGNATURES <em>...{accountObject.wallet.slice(accountObject.wallet.length - 7, accountObject.wallet.length)}</em></h2>
-                <p>Signatures: {sigObjects? sigObjects.length : "No signatures found."}</p>
+                <p>Signatures: <em>{sigObjects ? sigObjects.length : "No signatures found."}</em></p>
             </div>
             {isLoading ? (
-                <p>Loading...</p>
+                <div className="spinner-container">
+                    <div className="spinner-circle">
+                    </div>
+                </div>
             ) : error ? (
                 <p>Error: {error}</p>
             ) : sigObjects ? (
