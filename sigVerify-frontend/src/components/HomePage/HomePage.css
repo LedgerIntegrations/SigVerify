@@ -19,8 +19,11 @@
 
 #top-section > img {
     margin-top: 5vh;
-    max-width: 500px;
-    max-height: 40vh;
+    /* max-width: 500px;
+    max-height: 40vh; */
+    width: 180px;
+    height: 180px;
+    margin-top: 14vh;
     margin-inline: auto;
 }
 
@@ -42,7 +45,8 @@
     letter-spacing: 3px;
     line-height: 40px;
     position: relative;
-    top: -40px;
+    /* top: -40px; */
+    top: 40px;
 }
 
 #call-to-action-smaller {
@@ -51,16 +55,21 @@
     margin-inline: auto;
     margin-top: 0px;
     position: relative;
-    top: -40px;
+    /* top: -40px; */
+    top: 40px;
     color: rgb(99, 99, 99);
 }
 
 #bottom-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
     height: 30vh;
     width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: start;
+    
 }
 
 #bottom-section > a > button {
@@ -68,5 +77,6 @@
     border-radius: 40px;
     border-color: transparent;
     color: white;
-    background-color: black;
+    background-color: rgba(33, 28, 28, 0.962);
+    min-width: 200px;
 }
