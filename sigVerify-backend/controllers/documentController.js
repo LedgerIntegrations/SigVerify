@@ -1,4 +1,6 @@
 const crypto = require('crypto');
+const Document = require('../models/Document');
+const mongooseConnect = require('../config/mongooseConnect');
 
 const { createTransactionPayload, hasAccountSignedThisDocument } = require('../controllers/userController')
 
@@ -48,6 +50,33 @@ exports.verifySignature = async (req, res) => {
 
     } catch (error) {
         console.error("Error while signing:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.uploadFileToDb = async (req, res) => {
+    
+    try {
+        const targetRAddress = req.body.targetRAddress;
+        console.log("targetRAddress: ",targetRAddress);
+        console.log("req.file: ",req.file);  // The uploaded file data is available in req.file
+        const document = req.file.buffer; // Buffer of the uploaded file
+        console.log("document: ", document)
+        if (!document) {
+            return res.status(400).json({ error: "No document provided" });
+        };
+
+        await mongooseConnect();
+    // filename: String,
+    // filedata: Buffer,
+    // contentType: String,
+    // fromWallet: String
+        const documentCreate = Document.create({filename: req.file.originalname, filedata: req.file.buffer, contentType: req.file.mimetype, fromWallet: targetRAddress});
+        res.json(documentCreate);
+
+
+    } catch (error) {
+        console.error("Error while uploading file", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
