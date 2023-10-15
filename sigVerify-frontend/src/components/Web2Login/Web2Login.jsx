@@ -8,4 +8,4 @@ function Web2Login() {
   );
 };
 
-export default Web2Login;
+export default
