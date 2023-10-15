@@ -3,8 +3,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const cors = require('cors');
 
+// const xrplRoutes = require('./routes/xrplRoutes');
 const documentRoutes = require('./routes/documentRoutes');
-const userRoutes = require('./routes/userRoutes')
+const userRoutes = require('./routes/userRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +16,7 @@ app.get('/', (req, res) => {
 });
 
 // imported routes
+// app.use(xrplRoutes);
 app.use(userRoutes);
 app.use(documentRoutes);
 

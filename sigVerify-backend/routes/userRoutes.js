@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 
-router.get('/api/createXummSigninPayload', userController.createXummSigninPayload);
-router.post('/api/findAllAccountPaymentTransactionsToSigVerifyWallet', userController.findAllAccountPaymentTransactionsToSigVerifyWallet);
-router.post('/api/subscribeToPayload', userController.subscribeToPayload);
+router.get('/api/user/createXummSigninPayload', userController.createXummSigninPayload);
+router.post('/api/user/findAllAccountPaymentTransactionsToSigVerifyWallet', userController.findAllAccountPaymentTransactionsToSigVerifyWallet);
+router.post('/api/user/subscribeToPayload', userController.createXummPayloadSubscription);
 
 module.exports = router;
