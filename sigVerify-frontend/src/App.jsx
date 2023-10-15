@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 
 import Navigation from './components/Navigation/Navigation';
 import HomePage from './components/HomePage/HomePage';
-import Login from './components/Login/Login';
+import Login from './components/xummLogin/xummLogin';
 import Dashboard from './components/Dashboard/Dashboard';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import VerifySignature from './components/VerifySignature/VerifySignature';

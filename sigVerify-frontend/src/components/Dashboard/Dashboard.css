@@ -1,12 +1,50 @@
 .dashboard {
     padding: 50px 20px;
-    padding-top: 14vh;
+    background-color: rgb(236, 235, 235);
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: start;
 }
 
-.dashboard > h1 {
+#dashboard-inner-div {
+    padding: 2.5rem 0rem;
+    width: 100vw;
+    max-width: 360px;
+    margin-top: 2vh;
+}
+
+#dashboard-inner-div > h1 {
     font-size: 22px;
+    margin-bottom: 3vh;
+    margin-top: 0px;
 }
 
-.dashboard > h1 > em {
-    font-size: 16px;    
+#dashboard-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    color: rgb(109, 67, 20);
+}
+
+#dashboard-stats > div > p {
+    font-size: .9em;
+    margin-top: 8px;
+    color: rgb(116, 116, 116);
+}
+
+#dashboard-stats > div > span {
+    font-size: .8em;
+}
+
+#dashboard-inner-div > h1 > em {
+    font-size: 14px;
+}
+
+.tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
 }

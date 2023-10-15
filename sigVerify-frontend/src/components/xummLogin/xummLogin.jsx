@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
-import "./Login.css"
+import "./xummLogin.css"
 import { useContext, useState } from 'react';
 import { AccountContext } from '../../App';
 // import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
+export default function xummLogin() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [payloadCreate, setPayloadCreate] = useState({});
     const [payloadMessage, setPayloadMessage] = useState("Scan & sign with XUMM!");

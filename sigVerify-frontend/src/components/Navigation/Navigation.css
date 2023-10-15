@@ -46,12 +46,19 @@
 }
 
 #nav-links {
-    display: flex;
+   
+}
+
+.linksBox {
+    /* display: flex;
     align-items: center;
+    justify-content: center; */
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 8px;
 }
 
-#nav-links > a {
+.linksBox > a {
     text-decoration: none;
     color: black;
     background-color: white;
@@ -60,7 +67,9 @@
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    align-items: center;  
+    align-items: center; 
+    justify-content: center;
+    flex-grow: 1; 
 }
 
 #loginLink {

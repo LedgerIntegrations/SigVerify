@@ -16,13 +16,13 @@ function Navigation() {
         </Link>
         <div id="nav-links">
           {accountObject.loggedIn ? (
-            <>
+            <div className='linksBox'>
               <Link to="/dashboard" className='buttonPop'>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
                 </svg>
 
-                Dashboard
+                Dash
               </Link>
               <Link to="/sign" className='buttonPop'>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -45,16 +45,16 @@ function Navigation() {
 
                 Verify Sig
               </Link>
-              <Link to="/fileUpload" className='buttonPop'>
+              {/* <Link to="/fileUpload" className='buttonPop'>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25" />
                 </svg>
 
                 File Upload
-              </Link>
-            </>
+              </Link> */}
+            </div>
           ) : (
-            <>
+            <div className='linksBox'>
               <Link to="/" className='buttonPop'>
                 Home
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -62,14 +62,7 @@ function Navigation() {
                 </svg>
 
               </Link>
-              {/* <Link to="/login" className='buttonPop' id="loginLink">
-                Login
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
-                </svg>
-
-              </Link> */}
-            </>
+            </div>
           )}
         </div>
       </div>
