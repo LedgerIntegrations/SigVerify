@@ -7,9 +7,12 @@ import { Navigate } from 'react-router-dom';
 import Navigation from './components/Navigation/Navigation';
 import HomePage from './components/HomePage/HomePage';
 import Login from './components/Login/Login';
+import Dashboard from './components/Dashboard/Dashboard';
 import UploadDocument from './components/UploadDocument/UploadDocument';
 import VerifySignature from './components/VerifySignature/VerifySignature';
 import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
+import FileUpload from './components/FileUpload/FileUpload';
+
 import './App.css'
 
 export const AccountContext = createContext();
@@ -24,7 +27,6 @@ const withNavigation = (Component) => {
     );
   }
 };
-
 
 function useSessionStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
@@ -69,6 +71,8 @@ function App() {
             <Route path="/mysigs" element={accountObject.loggedIn ? React.createElement(withNavigation(AccountSigsPage)) : <Navigate to="/" replace />} />
             <Route path="/verify" element={accountObject.loggedIn ? React.createElement(withNavigation(VerifySignature)) : <Navigate to="/" replace />} />
             <Route path="/sign" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocument)) : <Navigate to="/" replace />} />
+            <Route path="/fileUpload" element={accountObject.loggedIn ? React.createElement(withNavigation(FileUpload)) : <Navigate to="/" replace />} />
+            <Route path="/dashboard" element={accountObject.loggedIn ? React.createElement(withNavigation(Dashboard)) : <Navigate to="/" replace />} />
           </Routes>
         </div>
       </AccountContext.Provider>

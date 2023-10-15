@@ -1,0 +1,12 @@
+.dashboard {
+    padding: 50px 20px;
+    padding-top: 14vh;
+}
+
+.dashboard > h1 {
+    font-size: 22px;
+}
+
+.dashboard > h1 > em {
+    font-size: 16px;    
+}

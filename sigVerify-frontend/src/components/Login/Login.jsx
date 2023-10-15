@@ -23,7 +23,7 @@ export default function Login() {
         // const subscribeToSignInEndpoint = '/api/subscribeToSignIn';
 
         // First request to get signIn payload
-        await fetch("http://localhost:3001/api/createXummSigninPayload", {
+        await fetch("http://localhost:3001/api/user/createXummSigninPayload", {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export default function Login() {
                 setPayloadCreate(signInPayload);
 
                 // After receiving the first response, make a second request to subscribeToSignIn
-                return fetch('http://localhost:3001/api/subscribeToPayload', {
+                return fetch('http://localhost:3001/api/user/subscribeToPayload', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

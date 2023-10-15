@@ -29,7 +29,7 @@ function UploadDocument() {
         console.log(formData);
 
         try {
-            const response = await fetch('http://localhost:3001/api/sign', { method: 'POST', body: formData });
+            const response = await fetch('http://localhost:3001/api/document/sign', { method: 'POST', body: formData });
             if (!response.ok) {
                 console.error(`Error ${response.status}: ${response.statusText}`);
                 return;
@@ -38,7 +38,7 @@ function UploadDocument() {
             console.log(result)
             settxPayloadForPaymentToSelfWithDocHashInMemo(result)
 
-            const subscriptionToPaymentTx = await fetch('http://localhost:3001/api/subscribeToPayload', {
+            const subscriptionToPaymentTx = await fetch('http://localhost:3001/api/user/subscribeToPayload', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -21,7 +21,7 @@ function VerifySignature() {
     formData.append('targetRAddress', targetRAddress);
 
     try {
-      const response = await fetch('http://localhost:3001/api/verify', { method: 'POST', body: formData });
+      const response = await fetch('http://localhost:3001/api/document/verify', { method: 'POST', body: formData });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);

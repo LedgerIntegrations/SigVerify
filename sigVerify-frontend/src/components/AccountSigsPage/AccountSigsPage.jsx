@@ -14,7 +14,7 @@ function AccountSigsPage() {
     useEffect(() => {
         const fetchSigObjects = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/findAllAccountPaymentTransactionsToSigVerifyWallet', {
+                const response = await fetch('http://localhost:3001/api/user/findAllAccountPaymentTransactionsToSigVerifyWallet', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

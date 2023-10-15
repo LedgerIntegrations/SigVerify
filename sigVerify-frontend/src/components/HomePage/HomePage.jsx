@@ -1,7 +1,6 @@
 import './HomePage.css'
 import React from 'react';
 import { Link } from 'react-router-dom';
-import computerAsset from './assets/fingerprintlike_computer_midj.png';
 import logoImage from '../Navigation/assets/svLogo.png';
 import LandingLoader from '../LandingLoader/LandingLoader';
 function HomePage() {
