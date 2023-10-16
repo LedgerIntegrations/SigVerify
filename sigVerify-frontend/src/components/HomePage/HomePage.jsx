@@ -6,7 +6,7 @@ import LandingLoader from '../LandingLoader/LandingLoader';
 function HomePage() {
     return (
         <div id="home-page-container">
-            <LandingLoader />
+            {/* <LandingLoader /> */}
             <div id="top-section">
                 <h2>Sig Verify</h2>
                 <img id="home-image" src={logoImage} />
@@ -14,10 +14,10 @@ function HomePage() {
                 <p id="call-to-action-smaller">Premier document signing experience.</p>
             </div>
             <div id="bottom-section">
-                <Link to="/login" >
+                <Link to="/login-user" >
                     <button className='buttonPop'>Sign In</button>
                 </Link>
-                <Link to="/login" >
+                <Link to="/create-user" >
                     <button className='buttonPop'>Create Account</button>
                 </Link>
             </div>
