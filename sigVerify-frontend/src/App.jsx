@@ -6,11 +6,17 @@ import { Navigate } from 'react-router-dom';
 
 import Navigation from './components/Navigation/Navigation';
 import HomePage from './components/HomePage/HomePage';
-import Login from './components/xummLogin/xummLogin';
+
+// import Login from './components/xummLogin/xummLogin';
+
+import Web2UserCreate from './components/Web2UserCreate/Web2UserCreate';
+import Web2UserLogin from './components/Web2UserLogin/Web2UserLogin';
 import Dashboard from './components/Dashboard/Dashboard';
-import UploadDocument from './components/UploadDocument/UploadDocument';
-import VerifySignature from './components/VerifySignature/VerifySignature';
-import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
+
+// import UploadDocument from './components/UploadDocument/UploadDocument';
+// import VerifySignature from './components/VerifySignature/VerifySignature';
+// import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
+
 import FileUpload from './components/FileUpload/FileUpload';
 
 import './App.css'
@@ -66,11 +72,13 @@ function App() {
       <AccountContext.Provider value={[accountObject, setAccountObject]}>
         <div id='appContainer'>
           <Routes>
-            <Route path="/" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : <HomePage />} />
-            <Route path="/login" element={accountObject.loggedIn ? <Navigate to="/sign" replace /> : React.createElement(withNavigation(Login))} />
-            <Route path="/mysigs" element={accountObject.loggedIn ? React.createElement(withNavigation(AccountSigsPage)) : <Navigate to="/" replace />} />
-            <Route path="/verify" element={accountObject.loggedIn ? React.createElement(withNavigation(VerifySignature)) : <Navigate to="/" replace />} />
-            <Route path="/sign" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocument)) : <Navigate to="/" replace />} />
+            <Route path="/" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <HomePage />} />
+            {/* <Route path="/login" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(withNavigation(Login))} /> */}
+            <Route path="/login-user" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(Web2UserLogin)} />
+            <Route path="/create-user" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(Web2UserCreate)} />
+            {/* <Route path="/mysigs" element={accountObject.loggedIn ? React.createElement(withNavigation(AccountSigsPage)) : <Navigate to="/" replace />} /> */}
+            {/* <Route path="/verify" element={accountObject.loggedIn ? React.createElement(withNavigation(VerifySignature)) : <Navigate to="/" replace />} /> */}
+            {/* <Route path="/sign" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocument)) : <Navigate to="/" replace />} /> */}
             <Route path="/fileUpload" element={accountObject.loggedIn ? React.createElement(withNavigation(FileUpload)) : <Navigate to="/" replace />} />
             <Route path="/dashboard" element={accountObject.loggedIn ? React.createElement(withNavigation(Dashboard)) : <Navigate to="/" replace />} />
           </Routes>

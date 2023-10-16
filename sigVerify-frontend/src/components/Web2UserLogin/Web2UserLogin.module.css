@@ -1,0 +1,164 @@
+/* Web2UserLogin.module.css */
+
+.user-login-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    background-color: #141414;
+}
+
+#back-link {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    color: white;
+    text-decoration: none;
+}
+
+#user-login-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #fff;
+    text-align: start;
+    width: 86vw;
+    margin-top: 8vh;
+    z-index: 5;
+}
+
+#logo-image {
+    height: 200px;
+    width: 200px;
+    position: absolute;
+    top: 30%;
+    opacity: .5;
+}
+
+.login-form-section {
+    margin-bottom: 1vh;
+    background-color: white;
+    padding: 10px;
+    padding-block: 40px;
+    border-radius: 20px;
+    z-index: 2;
+}
+
+.user-login-form-container {
+    max-width: 450px;
+    width: 100%;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group > input:focus, .input-group > .input-with-icon > input:focus {
+    border-color: black;
+    outline: none;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: start;
+    color: black;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-bottom: 1px solid rgb(156, 156, 156);
+    background-color: #ffffff;
+    color: #000000;
+    transition: background-color 0.3s, border 0.3s;
+}
+
+button {
+    display: block;
+    width: 80%;
+    padding: 12px;
+    margin-inline: auto;
+    background-color: #424141;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #000000;
+}
+
+.error {
+    color: #E50914;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #4CAF50;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.login-form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#redirect-to-create-account {
+    margin-top: 15px;
+}
+
+#redirect-to-create-account em {
+    margin-right: 5px;
+    color: gray;
+}
+
+#redirect-to-create-account a {
+    color: #000000;
+    text-decoration: none;
+}
+
+#redirect-to-create-account a:hover {
+    text-decoration: underline;
+}
+
+.input-with-icon {
+    position: relative;
+    width: 100%;
+}
+
+.valid-icon, .toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.valid-icon {
+    color: green;
+    right: 30px;
+}
+
+.toggle-icon {
+    color: #aaa;
+}
+
+@media (max-width: 768px) {
+    .user-login-page {
+        /* You can adjust any mobile-specific styles here if needed */
+    }
+}
+
