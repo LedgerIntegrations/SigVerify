@@ -27,7 +27,7 @@ exports.createXummPayloadSubscription = async (req, res) => {
     };
 };
 
-exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
+exports.findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
     try {
         const rAddress = req.body.rAddress;
         const arrayOfPaymentTransactionsWithMemoToSigVerifyAccount = await findAllAccountPaymentTransactionsToSigVerifyWallet(rAddress);
@@ -38,3 +38,5 @@ exports.findAllAccountPaymentTransactionsToSigVerifyWallet = async (req, res) =>
         res.status(500).json({ error: "Internal Server Error inside findAllAccountPaymentTransactionsToSigVerifyWallet." });
     };
 };
+
+

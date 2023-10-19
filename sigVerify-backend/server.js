@@ -2,9 +2,11 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const cors = require('cors');
+const pool = require('./config/db');
 
 // const xrplRoutes = require('./routes/xrplRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const xrplRoutes = require('./routes/xrplRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 app.use(cors());
@@ -16,9 +18,9 @@ app.get('/', (req, res) => {
 });
 
 // imported routes
-// app.use(xrplRoutes);
 app.use(userRoutes);
 app.use(documentRoutes);
+app.use(xrplRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
