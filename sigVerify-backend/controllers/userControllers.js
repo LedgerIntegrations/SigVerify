@@ -89,9 +89,12 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
         }
 
         await client.query('COMMIT');
+        console.log('Commit');
         await sendTokenAuthLinkEmail(email, newAuthToken);
+        console.log('SendToken');
         return res.status(HTTP_OK).json({ userAuthenticated: false, emailSent: true, message: `Email registered! Authentication e-mail sent to: ${email} .` });
     } catch (err) {
+        console.log('Error internal');
         await client.query('ROLLBACK');
         console.error('Error processing request', err);
         if (err.message === 'The provided email is already registered.') {
@@ -99,6 +102,7 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
         }
         return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
     } finally {
+        console.log('Finally');
         client.release();
     }
 };
