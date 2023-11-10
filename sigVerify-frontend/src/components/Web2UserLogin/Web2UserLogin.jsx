@@ -1,11 +1,15 @@
 // Web2UserLogin.js
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import styles from './Web2UserLogin.module.css';
 import { Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import logoImage from '../Navigation/assets/svLogo.png';
+import { AccountContext } from '../../App';
+
 
 const Web2UserLogin = () => {
+    const [accountObject, setAccountObject] = useContext(AccountContext);
+
     const [formData, setFormData] = useState({
         Email: '',
         Password: '',
@@ -36,20 +40,42 @@ const Web2UserLogin = () => {
         setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
-            // Actual login logic will go here
-            // For now, we'll just simulate a successful login
-            console.log("login form data: ", formData);
-            setIsLogged(true);
+            try {
+                const response = await fetch('http://localhost:3001/api/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log("Successfully logged in!", data);
+                    const userData = data.user;
+                    setAccountObject({ ...userData, loggedIn: true });
+                    setIsLogged(true); // Set logged in state only on success
+                    // Handle successful login here (e.g., redirect, set user state, etc.)
+                } else {
+                    // Handle non-200 responses
+                    setFormErrors({ server: data.error || 'Failed to login.' });
+                }
+            } catch (err) {
+                console.error('Network or server error:', err);
+                setFormErrors({ server: err.message || 'Failed to login due to a network or server error.' });
+            }
         }
     };
 
     return (
         <div className={styles['user-login-page']}>
             <Link to="/" id={styles['back-link']}>← back</Link>
-            <h1 id={styles['user-login-title']}>Login to Your Account</h1>
+            <h1 id={styles['user-login-title']}>Login to Your<br /> Account</h1>
             <img id={styles["logo-image"]} src={logoImage} />
 
             <div className={styles['login-form-section']}>
+                <h2>Login</h2>
                 <div className={styles['user-login-form-container']}>
                     {isLogged ? (
                         <div className={styles['success-message']}>Logged in successfully!</div>
@@ -80,13 +106,16 @@ const Web2UserLogin = () => {
                                 </div>
                                 {formErrors.Password && <span className={styles.error}>{formErrors.Password}</span>}
                             </div>
+
                             <button type="submit">Login</button>
+                            {formErrors.server && <p style={{marginTop: "10px"}}className={styles.error}>{formErrors.server}</p>}
+
                         </form>
                     )}
                 </div>
                 <div id={styles['redirect-to-create-account']}>
                     <em>Don't have an account?</em>
-                    <Link to="/create-user"> Create one → </Link>
+                    <Link to="/register-user"> Register → </Link>
                 </div>
             </div>
         </div>

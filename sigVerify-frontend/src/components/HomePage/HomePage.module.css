@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap');
 
-#home-page-container {
+.homePageContainer {
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -10,13 +10,17 @@
     position: relative;
 }
 
-#top-section {
+a {
+    text-decoration: none;
+}
+
+.topSection {
     height: 60vh;
     width: 100%;
     z-index: 2;
 }
 
-#top-section > img {
+.topSection > img {
     margin-top: 5vh;
     /* max-width: 500px;
     max-height: 40vh; */
@@ -26,7 +30,7 @@
     margin-inline: auto;
 }
 
-#top-section > h2 {
+.topSection > h2 {
     margin-top: 5vh;
     color: black;
     font-size: 1em;
@@ -34,7 +38,7 @@
     text-transform: uppercase;
 }
 
-#call-to-action-text {
+.callToActionText {
     color: black;
     font-family: 'Roboto Condensed', sans-serif;
     margin-top: 0px;
@@ -48,7 +52,7 @@
     top: 40px;
 }
 
-#call-to-action-smaller {
+.callToActionSmaller {
     max-width: 300px;
     font-size: .8em;
     margin-inline: auto;
@@ -59,7 +63,7 @@
     color: rgb(99, 99, 99);
 }
 
-#bottom-section {
+.bottomSection {
     display: flex;
     flex-direction: column;
     justify-content: start;
@@ -68,10 +72,10 @@
     height: 30vh;
     width: 100%;
     display: flex;
-    margin-top: 6vh;
+    margin-top: 0vh;
 }
 
-#bottom-section > a > button {
+.bottomSection > a > button {
     padding: 12px 22px;
     border-radius: 40px;
     border-color: transparent;

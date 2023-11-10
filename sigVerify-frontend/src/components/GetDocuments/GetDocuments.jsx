@@ -18,7 +18,7 @@ function DocumentsComponent(userWallet) {
         {documents.map((document) => (
           <li key={document._id}>
             <a
-              href={`/path-to-download/${document.filename}`} // Update with your download route
+              href={`/path-to-download/${document.filename}`} // Update with download route
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -27,7 +27,7 @@ function DocumentsComponent(userWallet) {
             {document.contentType === 'application/pdf' && (
               <iframe
                 title={document.filename}
-                src={`/path-to-view-pdf/${document.filename}`} // Update with your PDF view route
+                src={`/path-to-view-pdf/${document.filename}`} // Update with PDF view route
               ></iframe>
             )}
           </li>

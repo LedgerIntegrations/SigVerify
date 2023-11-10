@@ -1,8 +1,15 @@
 // Web2UserCreate.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styles from './Web2UserCreate.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, Navigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa';  // Import icons from react-icons
+import logoImage from '../Navigation/assets/svLogo.png';
+import { AccountContext } from '../../App';
+
+
+const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+};
 
 // Utility function for email validation
 const isValidEmail = (email) => {
@@ -17,19 +24,31 @@ const isValidPassword = (password) => {
 };
 
 const Web2UserCreate = () => {
+    const [accountObject, setAccountObject] = useContext(AccountContext);
+
     const [formData, setFormData] = useState({
         FirstName: '',
         LastName: '',
-        Email: '',
         Password: '',
         PasswordConfirm: '',
+        Token: ''
     });
-    const [formErrors, setFormErrors] = useState({});
-    const [isSubmitted, setIsSubmitted] = useState(false);
 
+    const query = useQuery();
+    const token = query.get("token");
+    if (token) {
+        formData.Token = token;
+    }
+
+    useEffect(() => {
+        console.log("use effect firing in create-user");
+    }, []);
+
+    const [formErrors, setFormErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [validFields, setValidFields] = useState({});
 
+    //helper functions
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -70,139 +89,113 @@ const Web2UserCreate = () => {
 
         if (!formData.FirstName) errors.FirstName = "First name is required";
         if (!formData.LastName) errors.LastName = "Last name is required";
-        if (!isValidEmail(formData.Email)) errors.Email = "Email is not valid";
+        if (!formData.Token) errors.Token = "Auth token is required";
         if (!isValidPassword(formData.Password)) errors.Password = "Password must be at least 8 characters, include one number, one uppercase letter, and one lowercase letter";
         if (formData.Password !== formData.PasswordConfirm) errors.PasswordConfirm = "Passwords do not match";
 
         setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
-            // COMMENTED OUT UNTIL ROUTE IS CREATED
-
             try {
-                // const response = await fetch('/users', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //     },
-                //     body: JSON.stringify(formData),
-                // });
-
-                // if (response.ok) {
-                //     setIsSubmitted(true);
-                // } else {
-                //     const data = await response.json();
-                //     setFormErrors({
-                //         submit: data.message || "Error occurred while creating user.",
-                //     });
-                // }
-
-                console.log("user form data: ", formData);
-                setIsSubmitted(true);
-
-            } catch (error) {
-                setFormErrors({
-                    submit: "Network error. Please try again.",
+                const response = await fetch('http://localhost:3001/api/user/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
                 });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log("Successfully created a user!", data);
+                    const userData = data.user;
+                    setAccountObject({ ...userData, loggedIn: true });
+                } else {
+                    // Handle non-200 responses
+                    setFormErrors({ server: data.error || 'Failed to create user, try clicking authentication link from email again or re-registering..' });
+                }
+            } catch (err) {
+                console.error('Network or server error:', err);
+                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
             }
         }
+
     };
 
     return (
         <div className={styles['user-create-page']}>
-            <Link to="/" id={styles['back-link']}>← back</Link>
+            {/* <Link to="/" id={styles['back-link']}>← back</Link> */}
             <h1 id={styles['user-create-title']}>Create Your <br />Account</h1>
+            <img id={styles["logo-image"]} src={logoImage} />
             <div className={styles['bottom-form-section']}>
                 <div className={styles['user-create-form-container']}>
-                    {isSubmitted ? (
-                        <div className={styles['success-message']}>User created successfully!</div>
-                    ) : (
-                        <form onSubmit={handleSubmit}>
-                            <div className={styles['input-group']}>
-                                <label>First Name</label>
-                                <input
-                                    type="text"
-                                    name="FirstName"
-                                    value={formData.FirstName}
-                                    onChange={handleInputChange}
-                                />
-                                {formErrors.FirstName && <span className={styles.error}>{formErrors.FirstName}</span>}
-                            </div>
-                            <div className={styles['input-group']}>
-                                <label>Last Name</label>
-                                <input
-                                    type="text"
-                                    name="LastName"
-                                    value={formData.LastName}
-                                    onChange={handleInputChange}
-                                />
-                                {formErrors.LastName && <span className={styles.error}>{formErrors.LastName}</span>}
-                            </div>
-                            <div className={styles['input-group']}>
-                                <label>Email</label>
-                                <div className={styles['input-with-icon']}>
-                                    <input
-                                        type="email"
-                                        name="Email"
-                                        value={formData.Email}
-                                        onChange={(e) => {
-                                            handleInputChange(e);
-                                            validateInput(e.target.name, e.target.value);
-                                        }}
-                                    />
-                                    {validFields.Email && <FaCheck className={styles['valid-icon']} />}
-                                </div>
-                                {formErrors.Email && <span className={styles.error}>{formErrors.Email}</span>}
-                            </div>
 
-                            <div className={styles['input-group']}>
-                                <label>Password</label>
-                                <div className={styles['input-with-icon']}>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="Password"
-                                        value={formData.Password}
-                                        onChange={(e) => {
-                                            handleInputChange(e);
-                                            validateInput(e.target.name, e.target.value);
-                                        }}
-                                    />
-                                    {validFields.Password && <FaCheck className={styles['valid-icon']} />}
-                                    <span className={styles['toggle-icon']} onClick={togglePasswordVisibility}>
-                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                    </span>
-                                </div>
-                                {formErrors.Password && <span className={styles.error}>{formErrors.Password}</span>}
+                    <form onSubmit={handleSubmit}>
+                        <div className={styles['input-group']}>
+                            <label>First Name</label>
+                            <input
+                                type="text"
+                                name="FirstName"
+                                value={formData.FirstName}
+                                onChange={handleInputChange}
+                            />
+                            {formErrors.FirstName && <span className={styles.error}>{formErrors.FirstName}</span>}
+                        </div>
+                        <div className={styles['input-group']}>
+                            <label>Last Name</label>
+                            <input
+                                type="text"
+                                name="LastName"
+                                value={formData.LastName}
+                                onChange={handleInputChange}
+                            />
+                            {formErrors.LastName && <span className={styles.error}>{formErrors.LastName}</span>}
+                        </div>
+                        <div className={styles['input-group']}>
+                            <label>Password</label>
+                            <div className={styles['input-with-icon']}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="Password"
+                                    value={formData.Password}
+                                    onChange={(e) => {
+                                        handleInputChange(e);
+                                        validateInput(e.target.name, e.target.value);
+                                    }}
+                                />
+                                {validFields.Password && <FaCheck className={styles['valid-icon']} />}
+                                <span className={styles['toggle-icon']} onClick={togglePasswordVisibility}>
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </span>
                             </div>
-                            <div className={styles['input-group']}>
-                                <label>Confirm Password</label>
-                                <div className={styles['input-with-icon']}>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="PasswordConfirm"
-                                        value={formData.PasswordConfirm}
-                                        onChange={(e) => {
-                                            handleInputChange(e);
-                                            validateInput(e.target.name, e.target.value);
-                                        }}
-                                    />
-                                    {validFields.PasswordConfirm && <FaCheck className={styles['valid-icon']} />}
-                                    <span className={styles['toggle-icon']} onClick={togglePasswordVisibility}>
-                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                    </span>
-                                </div>
-                                {formErrors.PasswordConfirm && <span className={styles.error}>{formErrors.PasswordConfirm}</span>}
+                            {formErrors.Password && <span className={styles.error}>{formErrors.Password}</span>}
+                        </div>
+                        <div className={styles['input-group']}>
+                            <label>Confirm Password</label>
+                            <div className={styles['input-with-icon']}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="PasswordConfirm"
+                                    value={formData.PasswordConfirm}
+                                    onChange={(e) => {
+                                        handleInputChange(e);
+                                        validateInput(e.target.name, e.target.value);
+                                    }}
+                                />
+                                {validFields.PasswordConfirm && <FaCheck className={styles['valid-icon']} />}
+                                <span className={styles['toggle-icon']} onClick={togglePasswordVisibility}>
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </span>
                             </div>
+                            {formErrors.PasswordConfirm && <span className={styles.error}>{formErrors.PasswordConfirm}</span>}
+                        </div>
 
-                            <button type="submit">Create User</button>
-                            {formErrors.submit && <span className={styles.error}>{formErrors.submit}</span>}
-                        </form>
-                    )}
+                        <button type="submit">Create User</button>
+                        {formErrors.submit && <span className={styles.error}>{formErrors.submit}</span>}
+                    </form>
                 </div>
-                <div id={styles['redirect-to-sign-in']}>
-                    <em>Already have an acccount?</em>
-                    <Link to="/login-user"> Sign in → </Link>
-                </div>
+
             </div>
         </div>
     );

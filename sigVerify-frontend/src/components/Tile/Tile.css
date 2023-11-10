@@ -1,8 +1,8 @@
 .tile {
-    height: 140px;
+    height: 80px;
     /* width: 180px; */
-    color: black;
-    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    background-color: rgb(253, 253, 253);
     text-decoration: none;
     border-radius: 7px;
     display: flex;
@@ -12,15 +12,24 @@
 }
 
 .tile-content {
-    text-transform: uppercase;
-    
+    /* text-transform: uppercase; */
+    /* margin-top: 32px; */
 }
 
 .tile-icon {
+    display: flex;
+    justify-content: center;
 
 }
 
 .tile-title {
-    font-size: 10px;
-    margin-top: 6px;
+    font-size: 12px;
+    margin: 0px;
+}
+
+.tileFinePrint {
+    position: relative;
+    font-size: 6px;
+    color: rgb(240, 79, 79);
+    margin: 0px;
 }

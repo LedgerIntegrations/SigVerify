@@ -1,13 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Varela+Round&display=swap');
 :root {
   font-family: 'Varela Round', sans-serif;
-  max-width: 1280px;
-  margin: 0 auto;
+  margin: 0;
   /* text-align: center; */
 }
 
 body {
   min-height: 100vh;
+  width: 100vw;
+  padding: 0px;
   margin: 0px;
   /* background-image: url('./assets/windowToNature.png');
   background-position: contain;
@@ -25,4 +26,8 @@ img, picture, svg, video {
 
 input, textarea, button, select {
   font: inherit;
+}
+
+textarea:focus, input:focus{
+  outline: none;
 }
