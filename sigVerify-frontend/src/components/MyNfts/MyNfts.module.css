@@ -1,0 +1,52 @@
+.nfts {
+    padding: 50px 20px;
+    background-color: rgb(236, 235, 235);
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+}
+
+.nftsInnerDiv {
+    padding: 2.5rem 0rem;
+    width: 100vw;
+    max-width: 360px;
+    margin-top: 2vh;
+}
+
+.nftsInnerDiv > h1 {
+    font-size: 22px;
+    margin-bottom: 3vh;
+    margin-top: 0px;
+}
+
+.nftsStats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    color: rgb(109, 67, 20);
+}
+
+.nftsStats > div > p {
+    font-size: .9em;
+    margin-top: 8px;
+    color: rgb(116, 116, 116);
+}
+
+.nftsStats > div > span {
+    font-size: .8em;
+}
+
+.nftsInnerDiv > h1 > em {
+    font-size: 14px;
+}
+
+.tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+    position: relative;
+    
+}

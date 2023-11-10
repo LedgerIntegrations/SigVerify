@@ -1,6 +1,6 @@
 const crypto = require('crypto');
-const Document = require('../models/Document');
-const mongooseConnect = require('../config/mongooseConnect');
+// const Document = require('../models/Document');
+// const mongooseConnect = require('../config/mongooseConnect');
 
 const { createTransactionPayload, hasAccountSignedThisDocument } = require('../utils/xrplHelpers');
 
@@ -60,36 +60,36 @@ exports.verifySignature = async (req, res) => {
 
 // recieves formData file
 // create new sigVerify DB documents collection entry with file data and users rAddress attached to 'fromWallet' property
-exports.uploadFileToDb = async (req, res) => {  
-    try {
-        const targetRAddress = req.body.targetRAddress;
-        console.log("targetRAddress: ", targetRAddress);
-        console.log("req.file: ", req.file);  // The uploaded file data is available in req.file
-        const document = req.file.buffer; // Buffer of the uploaded file
-        console.log("document: ", document)
-        if (!document) {
-            return res.status(400).json({ error: "No document provided" });
-        };
+// exports.uploadFileToDb = async (req, res) => {  
+//     try {
+//         const targetRAddress = req.body.targetRAddress;
+//         console.log("targetRAddress: ", targetRAddress);
+//         console.log("req.file: ", req.file);  // The uploaded file data is available in req.file
+//         const document = req.file.buffer; // Buffer of the uploaded file
+//         console.log("document: ", document)
+//         if (!document) {
+//             return res.status(400).json({ error: "No document provided" });
+//         };
 
-        await mongooseConnect();
-        const documentCreate = await Document.create({filename: req.file.originalname, filedata: req.file.buffer, contentType: req.file.mimetype, fromWallet: targetRAddress});
-        res.json(documentCreate);
+//         await mongooseConnect();
+//         const documentCreate = await Document.create({filename: req.file.originalname, filedata: req.file.buffer, contentType: req.file.mimetype, fromWallet: targetRAddress});
+//         res.json(documentCreate);
 
-    } catch (error) {
-        console.error("Error while uploading file", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    };
-};
+//     } catch (error) {
+//         console.error("Error while uploading file", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     };
+// };
 
-// query sigVerify db documents collection for all users uploaded documents
-exports.getAllDocumentsUploadedByThisWallet = async (req, res) => {
-    const userWalletRAddress = req.body.wallet
-    try {
-        await mongooseConnect();
-        const documents = await Document.find({ fromWallet: userWalletRAddress }); // Query all documents in your collection with users address as fromWallet value
-        res.json(documents);
-    } catch (error) {
-        console.error("Error while uploading file", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    };
-};
+// // query sigVerify db documents collection for all users uploaded documents
+// exports.getAllDocumentsUploadedByThisWallet = async (req, res) => {
+//     const userWalletRAddress = req.body.wallet
+//     try {
+//         await mongooseConnect();
+//         const documents = await Document.find({ fromWallet: userWalletRAddress }); // Query all documents in your collection with users address as fromWallet value
+//         res.json(documents);
+//     } catch (error) {
+//         console.error("Error while uploading file", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     };
+// };

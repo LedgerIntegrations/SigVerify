@@ -8,43 +8,45 @@
     align-items: start;
 }
 
-#dashboard-inner-div {
+.dashboardInnerDiv {
     padding: 2.5rem 0rem;
     width: 100vw;
     max-width: 360px;
     margin-top: 2vh;
 }
 
-#dashboard-inner-div > h1 {
+.dashboardInnerDiv > h1 {
     font-size: 22px;
     margin-bottom: 3vh;
     margin-top: 0px;
 }
 
-#dashboard-stats {
+.dashboardStats {
     display: flex;
     gap: 20px;
     justify-content: center;
     color: rgb(109, 67, 20);
 }
 
-#dashboard-stats > div > p {
+.dashboardStats > div > p {
     font-size: .9em;
     margin-top: 8px;
     color: rgb(116, 116, 116);
 }
 
-#dashboard-stats > div > span {
+.dashboardStats > div > span {
     font-size: .8em;
 }
 
-#dashboard-inner-div > h1 > em {
+.dashboardInnerDiv > h1 > em {
     font-size: 14px;
 }
 
 .tiles {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 10px;
     padding: 20px;
+    max-width: 300px;
+    margin: auto;
 }

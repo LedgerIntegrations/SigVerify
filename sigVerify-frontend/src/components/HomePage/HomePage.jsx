@@ -1,23 +1,23 @@
-import './HomePage.css'
+import styles from './HomePage.module.css'
 import React from 'react';
 import { Link } from 'react-router-dom';
 import logoImage from '../Navigation/assets/svLogo.png';
 import LandingLoader from '../LandingLoader/LandingLoader';
 function HomePage() {
     return (
-        <div id="home-page-container">
+        <div className={styles.homePageContainer}>
             {/* <LandingLoader /> */}
-            <div id="top-section">
+            <div className={styles.topSection}>
                 <h2>Sig Verify</h2>
-                <img id="home-image" src={logoImage} />
-                <p id="call-to-action-text">Signed, Scanned, <br/> Delivered.</p>
-                <p id="call-to-action-smaller">Premier document signing experience.</p>
+                <img className={styles.homeImage} src={logoImage} />
+                <p className={styles.callToActionText}>Signed, Scanned, <br/> Delivered.</p>
+                <p className={styles.callToActionSmaller}>Premier document signing experience.</p>
             </div>
-            <div id="bottom-section">
+            <div className={styles.bottomSection}>
                 <Link to="/login-user" >
                     <button className='buttonPop'>Sign In</button>
                 </Link>
-                <Link to="/create-user" >
+                <Link to="/register-user" >
                     <button className='buttonPop'>Create Account</button>
                 </Link>
             </div>
