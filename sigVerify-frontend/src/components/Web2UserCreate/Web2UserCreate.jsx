@@ -19,7 +19,7 @@ const isValidEmail = (email) => {
 
 // Utility function for password validation (at least 8 characters, at least one number, one uppercase letter, one lowercase letter)
 const isValidPassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     return passwordRegex.test(password);
 };
 

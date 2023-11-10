@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+  sigverify-database:
+    image: postgres
+    container_name: sigverify-database
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sigverifydb
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+    - sigverify-network
+
+  sigverify-app:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: sigverify-app
+    working_dir: /usr/app
+    restart: always
+    ports: 
+      - 3001:3001
+    volumes: 
+      - ../:/usr/app/
+    networks:
+    - sigverify-network
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  sigverify-network:
+    name: sigverify-network
+    driver: bridge
