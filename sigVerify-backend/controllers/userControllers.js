@@ -1,7 +1,8 @@
 const pool = require('../config/db');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const emailer = require('../utils/sendGmail');
+// const emailer = require('../utils/sendGmail');
+const emailer = require('../utils/sendMail');
 require('dotenv').config();
 
 //hard coded routes
