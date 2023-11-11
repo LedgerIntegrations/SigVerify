@@ -85,14 +85,27 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 
 ## Steps To Run Project
 
-1. clone project from github.
-2. cd into sigVerify-frontend and in terminal run 'npm i' to install all front end dependencies.
-3. cd into sigVerify-backend and in terminal run 'npm i' to install all back end dependencies.
-4. create a .env file in the root of sigVerify-backend directory and add your API key and secret for XUMM API. <br />
-XUMM_API_KEY = "api key here" <br>
-XUMM_API_SECRET = "api secret here"
-5. execute 'npm run start' in sigVerify-backend terminal.
-6. open second terminal and cd to sigVerify-frontend and execute 'npm run dev' in terminal and navigate to the outputted localhost url.
-7. For current development and testing switch xumm advanced setting to use xrpl test node: wss://testnet.xrpl-labs.com. xrpl backend web socket is already pre-configured to the xrpl testnet: wss://s.altnet.rippletest.net:51233 for you.
+1. Clone the project from GitHub.
+2. Navigate to the `sigVerify-frontend` directory in the terminal and run 'npm i' to install all front-end dependencies.
+3. Navigate to the `sigVerify-backend` directory in the terminal and run 'npm i' to install all back-end dependencies.
+4. Copy the `.env.dist` file in the root of the `sigVerify-backend` directory to create a new file named `.env`. Add your API key and secret for XUMM API in the `.env` file. <br />
+   ```bash
+   XUMM_API_KEY="api key here"
+   XUMM_API_SECRET="api secret here"
+   POSTGRES_HOST="sigverify-database"
+   POSTGRES_USER="postgres"
+   POSTGRES_PASSWORD="postgres"
+   POSTGRES_DB="sigverifydb"
+
+   MAIL_HOST="sigverify-mailcatcher"
+   MAIL_PORT=1025
+   MAIL_USERNAME=""
+   MAIL_PASSWORD=""
+   MAIL_FROM_ADDRESS="noreply@ledgerintegrations.com"
+   MAIL_FROM_NAME="Ledger Integrations"
+   ```
+5. Execute 'docker-compose up -d' in the `sigVerify-backend` terminal.
+6. Open a second terminal, navigate to `sigVerify-frontend`, and execute 'npm run dev' in the terminal. Then, navigate to the outputted localhost URL.
+7. For current development and testing, switch XUMM's advanced setting to use XRPL test node: `wss://testnet.xrpl-labs.com`. The XRPL backend web socket is already pre-configured to the XRPL testnet: `wss://s.altnet.rippletest.net:51233` for you.
 
 

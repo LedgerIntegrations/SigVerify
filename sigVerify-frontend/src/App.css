@@ -98,3 +98,9 @@ svg {
 #header-bar {
   font-size: 12px;
 }
+
+button.loading 
+{
+  cursor: not-allowed;
+  background-color: #333;
+}
