@@ -20,13 +20,5 @@ exports.sendEmail = (to, subject, message, callback) =>
         'html': message
     };
     
-    transporter.sendMail(mailOptions, (error, info) => 
-    {
-        if (error) 
-        {
-            return console.error('Error sending mail:', error.message);
-        }
-        
-        console.log('Mail sent:', info.messageId);
-    });
+    transporter.sendMail(mailOptions, callback);
 };

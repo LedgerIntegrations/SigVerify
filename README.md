@@ -97,12 +97,12 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
    POSTGRES_PASSWORD="postgres"
    POSTGRES_DB="sigverifydb"
 
-   MAIL_HOST="your-mail-smtp-host-here"
-   MAIL_PORT=587
-   MAIL_USERNAME="YOUR-USER-NAME"
-   MAIL_PASSWORD="YOUR-PASSWORD"
-   MAIL_FROM_ADDRESS="noreply@your-domain.com"
-   MAIL_FROM_NAME="Your name"
+   MAIL_HOST="sigverify-mailcatcher"
+   MAIL_PORT=1025
+   MAIL_USERNAME=""
+   MAIL_PASSWORD=""
+   MAIL_FROM_ADDRESS="noreply@ledgerintegrations.com"
+   MAIL_FROM_NAME="Ledger Integrations"
    ```
 5. Execute 'docker-compose up -d' in the `sigVerify-backend` terminal.
 6. Open a second terminal, navigate to `sigVerify-frontend`, and execute 'npm run dev' in the terminal. Then, navigate to the outputted localhost URL.

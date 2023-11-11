@@ -2,8 +2,11 @@ import styles from './Web2RegisterEmail.module.css';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logoImage from '../Navigation/assets/svLogo.png';
+import LoadingIcon from '../LoadingIcon/LoadingIcon';
+import axios from 'axios';
 
 function RegisterEmail() {
+  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [currentMessage, setCurrentMessage] = useState('');
@@ -22,30 +25,27 @@ function RegisterEmail() {
     // Clear any previous errors
     setError('');
 
-    try {
-      const response = await fetch('http://localhost:3001/api/user/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+    setIsLoading(true);
 
-      const data = await response.json();
+    await axios.post('http://localhost:3001/api/user/register', { email })
+    .then(response => 
+    {
+      const { ok, message } = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to register.');
+      if (!ok) 
+      {
+        throw new Error(message || 'Failed to register.');
       }
 
-      setCurrentMessage(data.message);
+      setCurrentMessage(message);
 
-    } catch (err) {
+      console.log('Email submitted:', email);
+    })
+    .catch(err => {
       setError(err.message);
-    };
-
-    // Make your API call or other actions here
-    console.log('Email submitted:', email);
-
+    }).finally(() => {
+      setIsLoading(false);
+    });
   };
 
   return (
@@ -63,7 +63,14 @@ function RegisterEmail() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
         />
-        <button onClick={handleSubmit}>Register</button>
+        <button 
+          className={isLoading ? "loading" : ""}
+          disabled={isLoading} onClick={handleSubmit}>
+            {isLoading ? (
+            <LoadingIcon />
+            ) : '' }
+            Register
+        </button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {currentMessage && <p style={{ color: 'green', maxWidth: '310px', fontSize: '.9em', textAlign: 'start' }}>{currentMessage}</p>}
         <div id={styles['redirect-to-sign-in']}>
