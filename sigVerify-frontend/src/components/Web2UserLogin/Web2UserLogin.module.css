@@ -44,10 +44,10 @@
     padding-block: 40px;
     border-radius: 20px;
     z-index: 2;
-
     display: flex;
     flex-direction: column;
     align-items: center;
+    opacity: .9;
 }
 
 .user-login-form-container {
@@ -67,7 +67,7 @@
     outline: none;
 }
 
-label {
+.user-login-form-container label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
@@ -75,7 +75,7 @@ label {
     color: black;
 }
 
-input {
+.user-login-form-container input {
     width: 100%;
     padding: 8px;
     border: none;
@@ -85,7 +85,7 @@ input {
     transition: background-color 0.3s, border 0.3s;
 }
 
-button {
+.user-login-form-container button {
     display: block;
     width: 80%;
     padding: 12px;
@@ -99,7 +99,7 @@ button {
     transition: background-color 0.3s;
 }
 
-button:hover {
+.user-login-form-container button:hover {
     background-color: #000000;
 }
 

@@ -2,7 +2,7 @@
 //BASIC TEMPLATE
 //NO TESTING OR CHECKS DONE AT ALL
 //WILL GET TO THIS LATER
-
+const fs = require('fs');
 require('dotenv').config();
 const {
     S3Client,

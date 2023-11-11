@@ -2,6 +2,8 @@ import React, { useContext } from 'react';
 import styles from './LoginWelcome.module.css';
 import { AccountContext } from '../../App';
 
+// currently taken out of application temporarily
+
 function LoginWelcome() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
 

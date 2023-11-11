@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+// needs updating - currently taken out of application temporarily
+
 function DocumentsComponent(userWallet) {
   const [documents, setDocuments] = useState([]);
 

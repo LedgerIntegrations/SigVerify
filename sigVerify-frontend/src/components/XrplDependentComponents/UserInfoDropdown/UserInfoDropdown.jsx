@@ -3,6 +3,8 @@ import profileImg from '../Navigation/assets/profileImg.svg';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+//needs updating - currently taken out of application temporarily
+
 function UserInfoDropdown({ userInfo }) {
     const navigate = useNavigate();
 

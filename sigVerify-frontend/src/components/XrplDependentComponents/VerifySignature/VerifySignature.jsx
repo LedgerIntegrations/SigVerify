@@ -1,6 +1,8 @@
 import './VerifySignature.css';
 import React, { useState } from 'react';
-import DocumentPreview from '../DocumentPreview/DocumentPreview';
+import DocumentPreview from '../DocumentPreview/DocumentPreview'; //no longer exists, need to update w/ new document viewer
+
+// needs updating - currently taken out of application temporarily
 
 function VerifySignature() {
   const [file, setFile] = useState(null);

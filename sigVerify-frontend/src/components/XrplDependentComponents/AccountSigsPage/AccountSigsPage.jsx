@@ -1,7 +1,9 @@
 import './AccountSigsPage.css';
 import React, { useContext, useEffect, useState } from 'react';
-import { AccountContext } from '../../App';
+import { AccountContext } from '../../../App';
 import SigCard from '../SigCard/SigCard';
+
+// currently taken out of application temporarily
 
 function AccountSigsPage() {
     const [accountObject, setAccountObject] = useContext(AccountContext);

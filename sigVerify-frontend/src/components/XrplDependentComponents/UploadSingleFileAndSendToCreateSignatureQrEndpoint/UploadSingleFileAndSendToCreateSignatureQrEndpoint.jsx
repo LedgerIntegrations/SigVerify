@@ -1,9 +1,11 @@
-import './UploadDocument.css'
+import './UploadSingleFileAndSendToCreateSignatureQrEndpoint.css'
 import React, { useContext, useState, useRef } from 'react';
-import { AccountContext } from '../../App';
-import DocumentPreview from '../DocumentPreview/DocumentPreview';
+import { AccountContext } from '../../../App';
+import DocumentPreview from '../DocumentPreview/DocumentPreview'; //does not exist needs to be reworked
 
-function UploadDocument() {
+// needs updating - currently taken out of application temporarily
+
+function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const abortController = useRef(new AbortController()); // for aborting the fetch request
 
@@ -123,4 +125,4 @@ function UploadDocument() {
     );
 }
 
-export default UploadDocument;
+export default UploadSingleFileAndSendToCreateSignatureQrEndpoint;

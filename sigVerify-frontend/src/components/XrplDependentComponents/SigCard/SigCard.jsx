@@ -1,6 +1,8 @@
 import './SigCard.css'
 import React, { useState } from 'react';
 
+// currently taken out of application temporarily
+
 function SigCard({ sigObject }) {
     const [allDetailsFlag, setAllDetailsFlag] = useState(false);
 

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Abel&family=Exo:wght@700&family=Roboto+Condensed:wght@300&display=swap');
+/* global custom styles */
 .w-6 {
   width: 26px;
 }
@@ -63,4 +64,37 @@ svg {
   box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
     7px 7px 5px 0px rgba(0, 0, 0, .1),
     4px 4px 5px 0px rgba(0, 0, 0, .1);
+}
+
+
+/* UploadDocumentComponent Viewer Styles */
+#react-doc-viewer {
+  margin-bottom: 10vh;
+}
+
+#doc-nav-info {
+  margin: 0px;
+  margin-top: 2px;
+}
+
+#txt-renderer {
+  font-size: 12px;
+  text-align: start;
+}
+
+#pdf-download {
+  display: none;
+}
+
+#no-renderer {
+  width: 100%;
+  padding: 20px;
+}
+
+#no-renderer-download {
+  display: none;
+}
+
+#header-bar {
+  font-size: 12px;
 }
