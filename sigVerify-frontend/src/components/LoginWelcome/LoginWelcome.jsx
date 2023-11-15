@@ -6,7 +6,7 @@ import { AccountContext } from '../../App';
 
 function LoginWelcome() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
-
+    console.log(accountObject)
     return (
         <div className={styles.loginWelcomeContainer}>
             <section id={styles.introSection}>

@@ -1,8 +1,8 @@
 const pool = require('../config/db');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-// const emailer = require('../utils/sendGmail');
-const emailer = require('../utils/sendMail');
+const emailer = require('../utils/sendGmail');
+// const emailer = require('../utils/sendMail');
 require('dotenv').config();
 
 //hard coded routes
@@ -162,9 +162,11 @@ exports.createNewUser = async (req, res) => {
             throw new Error('User data not found by user_auth id.');
         }
 
+        const user = newUserData.rows[0];
+
         await client.query('COMMIT');
 
-        return res.status(HTTP_OK).json({ message: 'User updated successfully.', user: newUserData.rows[0] });
+        return res.status(HTTP_OK).json({ message: 'User updated successfully.', user: { email: user.email, firstName: user.first_name, lastName: user.last_name } });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error processing request', err);

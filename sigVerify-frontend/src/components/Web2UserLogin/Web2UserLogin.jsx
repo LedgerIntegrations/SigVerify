@@ -51,9 +51,10 @@ const Web2UserLogin = () => {
 
                 const data = await response.json();
 
+
                 if (response.ok) {
                     console.log("Successfully logged in!", data);
-                    const userData = data.user;
+                    const userData = data.user;    
                     setAccountObject({ ...userData, loggedIn: true });
                     setIsLogged(true); // Set logged in state only on success
                     // Handle successful login here (e.g., redirect, set user state, etc.)

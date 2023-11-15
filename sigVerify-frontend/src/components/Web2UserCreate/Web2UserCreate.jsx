@@ -110,6 +110,7 @@ const Web2UserCreate = () => {
                 if (response.ok) {
                     console.log("Successfully created a user!", data);
                     const userData = data.user;
+
                     setAccountObject({ ...userData, loggedIn: true });
                 } else {
                     // Handle non-200 responses

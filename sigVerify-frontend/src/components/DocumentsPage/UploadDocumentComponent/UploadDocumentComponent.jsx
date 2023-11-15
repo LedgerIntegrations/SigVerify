@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -14,6 +15,7 @@ const UploadDocumentContainer = styled.div`
     flex-direction: column;
     align-items: center;
 `;
+
 const UploadDragBox = styled.div`
   margin-bottom: 20px;
   margin-top: 75px;
@@ -136,7 +138,7 @@ const UploadDocumentComponent = () => {
         document.getElementById('hiddenFileInput').click();
     };
 
-    const handleUploadSubmit = () => {
+    const handleUploadSubmit = async () => {
         const formData = new FormData();
         uploadedFiles.forEach(file => {
             formData.append('files', file);
@@ -144,6 +146,24 @@ const UploadDocumentComponent = () => {
 
         for (let [key, value] of formData.entries()) {
             console.log(`${key}:`, value);
+        };
+
+        try {
+            const userEmail = JSON.parse(window.sessionStorage.getItem('accountObject'))?.email;
+            console.log("users email: ", userEmail)
+
+            formData.append('userEmail', userEmail)
+
+            const response = await fetch('http://localhost:3001/api/document/upload', { method: 'POST', body: formData });
+            if (!response.ok) {
+                console.error(`Error ${response.status}: ${response.statusText}`);
+                return;
+            }
+            const result = await response.json();
+            console.log("response from file upload axios post: ", result);
+
+        } catch (err) {
+                console.log(err);
         };
 
         onUploadComplete();
@@ -201,11 +221,8 @@ const UploadDocumentComponent = () => {
 
                     )
                 }
-
-
             </UploadDocumentContainer>
         </Container>
-
     );
 };
 

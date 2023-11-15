@@ -6,7 +6,7 @@ const pool = require('./config/db');
 require('dotenv').config();
 
 // const xrplRoutes = require('./routes/xrplRoutes');
-// const documentRoutes = require('./routes/documentRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 app.use(cors());
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 
 // imported routes
 app.use(userRoutes);
-// app.use(documentRoutes);
+app.use(documentRoutes);
 // app.use(xrplRoutes);
 
 app.listen(PORT, () => {
