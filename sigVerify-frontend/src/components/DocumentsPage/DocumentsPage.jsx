@@ -7,32 +7,23 @@ import { AccountContext } from '../../App';
 
 function DocumentsPage() {
   const [accountObject, setAccountObject] = useContext(AccountContext);
-  // const [files, setFiles] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [documentCategoryInfo, setDocumentCategoryInfo] = useState({ name: "All" });
 
 
+  async function convertUrlToFile(url, filename) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type === "application/octet-stream" ? "text/plain" : blob.type });
+  }
 
-  const base64ToBlob = (base64, contentType) => {
-    const byteString = atob(base64);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ab], { type: contentType });
-  };
-
-  const handleFiles = async (arrayOfDocuments) => {
-    const fileObjects = await arrayOfDocuments.map(doc => {
-      const blob = base64ToBlob(doc.base64Data, doc.contentType);
-      const file = new File([blob], doc.fileName);
-      const url = window.URL.createObjectURL(file);
-      return file;
+  async function fetchAndConvertFiles(urls) {
+    const filePromises = urls.map(url => {
+      return convertUrlToFile(url.signedUrl, url.documentName);
     });
-    console.log(fileObjects)
-    return fileObjects;
-  };
 
+    return Promise.all(filePromises);
+  };
 
 
   useEffect(() => {
@@ -51,10 +42,9 @@ function DocumentsPage() {
         }
 
         const data = await response.json();
-        console.log(data);
-        // const fileObjects = await handleFiles(data.documents);
-
-        setDocuments(data.documents); // Update state
+        const urlsToJsFileObjects = await fetchAndConvertFiles(data);
+        console.log("urls as file objects: ", urlsToJsFileObjects)
+        setDocuments(urlsToJsFileObjects);
       } catch (error) {
         console.error('Error fetching documents:', error);
       }
@@ -66,34 +56,44 @@ function DocumentsPage() {
 
   return (
     <div className={styles.dashboard}>
+      <h1 className={styles.mainTitle}>Documents</h1>
+      <p id={styles.pageDescription}>View all documents, filter by category.</p>
+
       <div className={styles.dashboardInnerDiv}>
-        <h1>My Documents</h1>
-        <p>This section contains all your documents.</p>
+
         <div className={styles.tiles}>
-          <Tile title="View All" icon="📂" link="/my-documents" finePrint='' />
-          <Tile title="Legal" icon="⚖️" link="/my-documents" finePrint='' />
-          <Tile title="Contractual" icon="📝" link="/my-documents" finePrint='' />
-          <Tile title="Conditional" icon="💡" link="/my-documents" finePrint='' />
+          <Tile title="All" icon="" link="/my-documents" finePrint='' />
+          <Tile title="Sent" icon="" link="/my-documents" finePrint='' />
+          <Tile title="Received" icon="" link="/my-documents" finePrint='' />
+          <Tile title="Signed" icon="" link="/my-documents" finePrint='' />
+          <Tile title="Unsigned" icon="" link="/my-documents" finePrint='' />
           {/* Add more tiles as needed */}
         </div>
 
         {/* Document List Section */}
         <div className={styles.documentsContainer}>
-          <h2>Documents</h2>
-          <ul className={styles.documentList}>
+          <h2>{documentCategoryInfo.name} Documents ...</h2>
+          {documents.length > 0 &&
+            (
+              <>
+                {/* need to fix warning when clicking #doc-nav-next */}
+                {/* styled-components: it looks like an unknown prop "last" is being sent through to the DOM */}
+                <DocViewer
+                  documents={documents.map((file) => ({
+                    uri: window.URL.createObjectURL(file),
+                    fileName: file.name,
+                  }))}
+                  pluginRenderers={DocViewerRenderers}
+                  last="true"
+                />
+              </>
+            )
+          }
+          {/* <ul className={styles.documentList}>
             {documents.map((document, index) => (
               <li key={index}><a href={document} target="_blank">{document}</a></li> // Adjust according to your document object structure
             ))}
-          </ul>
-          {/* <>
-         <DocViewer
-        documents={files.map((file) => ({
-          uri: window.URL.createObjectURL(file),
-          fileName: file.name,
-        }))}
-        pluginRenderers={DocViewerRenderers}
-      />
-         </>        */}
+          </ul> */}
         </div>
       </div>
     </div>

@@ -4,20 +4,36 @@
     width: 100vw;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: start;
+    flex-direction: column;
+    align-items: center;
 }
 
 .dashboardInnerDiv {
-    padding: 2.5rem 0rem;
-    width: 100vw;
-    margin-top: 2vh;
+    display: flex;
+    flex-direction: column;
+    align-items: start;    
+    padding: 0rem;
+    width: 100%;
+    margin-top: 14px;
+    max-width: 610px;
+    /* max-width: 440px; */
 }
 
-.dashboardInnerDiv > h1 {
+.mainTitle {
+    margin-bottom: 0px;
     font-size: 22px;
-    margin-bottom: 3vh;
     margin-top: 0px;
+    text-align: center;
+    width: 100%;
+    margin-top: 5vh;
+    text-decoration: underline;
+}
+
+#pageDescription {
+    width: 100%;
+    margin: 0px;
+    margin-block: 10px;
+    font-size: 12px;
 }
 
 .dashboardStats {
@@ -42,31 +58,90 @@
 }
 
 .tiles {
+    background-color: white;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     padding: 20px;
     max-width: 300px;
     margin: auto;
+    border-radius: 10px;
+    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+    inset 7px 7px 20px 0px rgba(0, 0, 0, .1),
+    inset 4px 4px 5px 0px rgba(0, 0, 0, .1);
+}
+
+.tiles > a {
+    height: 50px;
 }
 
 .documentsContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: start;
     text-align: start;
+    width: 100%;
+    max-width: 600px;
+    padding: 10px;
+}
+
+.documentsContainer > h2 {
+    font-size: 16px;
+    text-transform: uppercase;
+    margin-top: 20px;
+    padding: 10px;
 }
 
 .documentList {
-    width: 80vw;
-    max-width: 700px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
+.documentList > li {
+    width: 100%;
+}
+
 .documentList > li > a {
-    font-size: 10px;
-    line-height: 6px;
+    display: inline-block; /* Or block, depending on layout requirements */
+    max-width: 100%; /* Ensure it doesn't grow larger than its container */
+    white-space: nowrap; /* Keep the text on a single line */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis to overflow */
+    text-wrap: nowrap;
+    font-size: 12px;
+}
+
+
+@media screen and (min-width: 640px) {
+
+    .tiles {
+        max-width: 240px;
+        margin: 0px;
+    }
+    .dashboardInnerDiv {
+        /* display: grid;
+        grid-template-columns: 1fr 1fr;
+        justify-content: start; */
+        flex-direction: row;
+        justify-content: start;
+        align-items: start;
+        gap: 5px;
+    }
+
+    .documentsContainer {
+        box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+        inset 7px 7px 20px 0px rgba(0, 0, 0, .1),
+        inset 4px 4px 5px 0px rgba(0, 0, 0, .1);
+        padding: 20px;
+        border-radius: 10px;
+        background-color: white;
+    }
+
+    .documentsContainer > h2 {
+        margin: 0px;
+    }
 }

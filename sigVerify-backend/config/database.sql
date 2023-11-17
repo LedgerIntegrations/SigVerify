@@ -50,6 +50,23 @@ CREATE TABLE documents (
     updated_at timestamptz DEFAULT current_timestamp
 );
 
+CREATE TABLE signatures (
+    id serial8 PRIMARY KEY,
+    document_id bigint NOT NULL REFERENCES documents(id),
+    user_id bigint NOT NULL REFERENCES user_meta(id),
+    signed_at timestamptz DEFAULT current_timestamp,
+    expires_at timestamptz
+)
+
+CREATE TABLE document_sharing (
+    id serial8 PRIMARY KEY,
+    sender_id bigint NOT NULL REFERENCES user_meta(id),
+    receiver_id bigint NOT NULL REFERENCES user_meta(id),
+    document_id bigint NOT NULL REFERENCES document(id),
+    sent_at timestamptz DEFAULT current_timestamp,
+    status character varying(20) NOT NULL
+)
+
 -- Function to update modified_at
 CREATE OR REPLACE FUNCTION update_modified_at()
 RETURNS TRIGGER AS $$
@@ -76,7 +93,13 @@ CREATE TRIGGER change_updated_at_documents
 BEFORE UPDATE ON documents
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
+CREATE TRIGGER change_updated_at_documents
+BEFORE UPDATE ON documents
+FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
+CREATE TRIGGER change_updated_at_documents
+BEFORE UPDATE ON documents
+FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
 -- CREATE TABLE user_files (
 --     id serial8 PRIMARY KEY,

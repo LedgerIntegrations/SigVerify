@@ -1,65 +1,45 @@
-const fs = require('fs');
-const mime = require('mime-types'); //need this for the ContentType
-const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-
 require('dotenv').config();
 
-const bucketName = 'sigverify-1';
 const client = new S3Client({
-    region: 'us-east-2',
+    region: process.env.AWS_S3_REGION,
     credentials: {
-        accessKeyId: process.env.S3_SIGVERIFY_1_BUCKET_ACCESS_KEY,
-        secretAccessKey: process.env.S3_SIGVERIFY_1_BUCKET_SECRET_KEY,
+        accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
     }
 });
 
-const streamToBuffer = async (stream) => {
-    const chunks = [];
-    for await (let chunk of stream) {
-        chunks.push(chunk);
-    }
-    return Buffer.concat(chunks);
+// Access Controls:
+// acl: 'private' --> means the file is not publicly accessible. Need to generate pre-signed URL to view via URL.   
+// versionId: 'undefined' --> versioning is not currently enabled.
+// The contentType is set to 'application/octet-stream', which is a generic binary type. If you need to handle specific types of files differently, you might want to manage the contentType more precisely.
+const upload = multer({
+    storage: multerS3({
+        s3: client,
+        bucket: process.env.S3_BUCKET_NAME,
+        key: function (req, file, cb) {
+            console.log(file)
+            // adding filename to end of timestamp to improve key randomness
+            cb(null, Date.now().toString() + '-' + file.originalname);
+        },
+        contentType: multerS3.AUTO_CONTENT_TYPE
+    })
+});
+
+const retrieveS3BucketObjects = async (documentKeysAndDocumentNames) => {
+    const urlsWithDocumentNames = await Promise.all(
+        documentKeysAndDocumentNames.map(async (documentKeyAndDocumentName) => {
+            const command = new GetObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: documentKeyAndDocumentName.document_key,
+            });
+            return  { signedUrl: await getSignedUrl(client, command, { expiresIn: 7200 }), documentName: documentKeyAndDocumentName.document_name };
+        })
+    );
+    return urlsWithDocumentNames;
 };
 
-exports.createFileObject = async (file) => {
-    const newFilename = `${Date.now()}.${mime.extension(file.mimetype)}`;
-
-    const params = {
-        Bucket: bucketName,
-        Key: newFilename,
-        Body: file.buffer, // buffer from multer.memoryStorage()
-        ContentType: file.mimetype, 
-    };
-
-    try {
-        const results = await client.send(new PutObjectCommand(params));
-        console.log(results); // response from S3 file upload
-        
-        return {results: results, documentKey: params.Key, file: file};
-    } catch (error) {
-        console.error("Error:", error);
-        throw new Error('Error uploading to S3');
-    }
-};
-
-exports.generatePresignedUrl = async (objectKey) => {
-    const command = new GetObjectCommand({
-        Bucket: bucketName,
-        Key: objectKey,
-    });
-
-    try {
-        // URL expires in 1 hour (3600 seconds)
-        const presignedUrl = await getSignedUrl(client, command, { expiresIn: 3600 });
-        return presignedUrl
-        // const data = await client.send(command);
-        // const buffer = await streamToBuffer(data.Body);
-        // const base64Data = buffer.toString('base64');
-        // return { base64Data, contentType: data.ContentType, fileName: objectKey }
-
-    } catch (error) {
-        console.error("Error generating pre-signed URL", error);
-        throw error;
-    }
-}
+module.exports = { upload, retrieveS3BucketObjects };

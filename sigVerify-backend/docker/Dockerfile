@@ -7,5 +7,5 @@ COPY . .
 RUN npm install 
 
 USER node
-
+docker ps
 CMD ["npm","run","start"]

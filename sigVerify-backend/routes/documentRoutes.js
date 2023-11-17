@@ -1,13 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+
+// uploaded files to server memory and then handling from there
+// const multer = require('multer');
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
+
+//upload files directly to s3 using multer-s3
+const { upload } = require('../config/s3Bucket');
+
 const documentControllers = require('../controllers/documentControllers');
 // const xrplDocumentControllers = require('../controllers/xrplDocumentControllers')
 
 router.post('/api/document/upload', upload.array('files'), documentControllers.uploadFiles);
-router.post('/api/document/getAllDocuments', documentControllers.getDocumentKeysByEmailAndReturnDocuments)
+router.post('/api/document/getAllDocuments', documentControllers.getAllUsersDocumentsGivenTheirEmail)
 
 // old document routes
 // router.post('/api/document/sign', upload.single('document'), xrplDocumentControllers.signDocument);
