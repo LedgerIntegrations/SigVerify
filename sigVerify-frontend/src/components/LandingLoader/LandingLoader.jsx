@@ -1,6 +1,6 @@
 import React from 'react'
 import './LandingLoader.css'
-import logoImage from '../Navigation/assets/svLogo.png';
+import logoImage from '../../assets/svLogo.png';
 
 function LandingLoader() {
     return (

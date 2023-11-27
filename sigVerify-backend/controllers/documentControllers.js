@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { retrieveS3BucketObjects } = require('../config/s3Bucket')
+const { returnSignedUrlFromS3BucketKey } = require('../config/s3Bucket')
 
 // query database for users linked user_meta_id by email table
 const getUserMetaId = async (client, userEmail) => {
@@ -13,26 +13,50 @@ const getUserMetaId = async (client, userEmail) => {
 
 // insert single document into database, linked to given user_meta_id
 const insertDocumentDetails = async (client, userMetaId, file) => {
-    const documentInsertQuery = 'INSERT INTO documents (user_meta_id, document_name, document_type, document_size, document_key) VALUES ($1, $2, $3, $4, $5)';
+    const documentInsertQuery = 'INSERT INTO documents (user_meta_id, document_name, document_type, document_size, document_s3_key) VALUES ($1, $2, $3, $4, $5)';
     await client.query(documentInsertQuery, [userMetaId, file.originalname, file.mimetype, file.size, file.key]);
 };
 
 // query database for users linked document keys and names by email address
-const getDocumentKeysAndDocumentNames = async (client, userEmail) => {
+const getAllDocPropsByEmail = async (client, userEmail) => {
     const query = `
-        SELECT documents.document_key, documents.document_name
-        FROM documents
-        JOIN user_meta ON documents.user_meta_id = user_meta.id
-        JOIN user_email ON user_meta.id = user_email.user_meta_id
-        WHERE user_email.email = $1;
+    SELECT 
+    documents.*, 
+    (CASE WHEN signatures.id IS NOT NULL THEN TRUE ELSE FALSE END) AS signed,
+    signatures.xrpl_tx_hash,
+    documents.expires_at AS expires,
+    documents.created_at AS uploaded
+    FROM 
+        documents
+    JOIN 
+        user_meta ON documents.user_meta_id = user_meta.id
+    JOIN 
+        user_email ON user_meta.id = user_email.user_meta_id
+    LEFT JOIN 
+        signatures ON documents.id = signatures.document_id
+    WHERE 
+        user_email.email = $1
     `;
 
     const result = await client.query(query, [userEmail]);
+
+    // Instead of throwing an error, return an empty array if no documents are found
     if (result.rows.length === 0) {
-        throw new Error('No documents found for this email');
+        return [];
     }
 
-    return result.rows.map(row => ({ document_key: row.document_key, document_name: row.document_name }));
+    // return result.rows.map(row => ({ document_key: row.document_s3_key, document_name: row.document_name }));
+    return result.rows.map(row => ({ 
+        name: row.document_name,
+        type: row.document_type,
+        size: row.document_size,
+        key: row.document_s3_key,
+        signed: row.signed,
+        xrplTxHash: row.xrpl_tx_hash,
+        expires: row.expires === null ? false : row.expires,
+        uploaded: row.uploaded
+    }));
+
 };
 
 exports.uploadFiles = async (req, res) => {
@@ -76,12 +100,29 @@ exports.getAllUsersDocumentsGivenTheirEmail = async (req, res) => {
         client = await pool.connect();
 
         // Retrieve all document keys for the user
-        const documentKeysAndDocumentNames = await getDocumentKeysAndDocumentNames(client, userEmail);
+        const documentsArray = await getAllDocPropsByEmail(client, userEmail);
         
-        // retrieve array of all users document in for of signedURL
-        const arrayOfUsersSignedDocumentUrls =  await retrieveS3BucketObjects(documentKeysAndDocumentNames);
+        if (documentsArray.length === 0) {
+            return res.status(200).json({ message: 'No documents found for this user' });
+        };
 
-        res.status(200).json(arrayOfUsersSignedDocumentUrls);
+        console.log(documentsArray);
+
+        const documentsPromises = documentsArray.map(doc => {
+            return returnSignedUrlFromS3BucketKey(doc.key)
+                .then(signedUrl => {
+                    return {...doc, signedUrl};
+                });
+        });
+
+        // retrieve array of all users document in for of signedURL
+        // const arrayOfUsersSignedDocumentUrls =  await retrieveS3BucketObjects(documentKeysAndDocumentNames);
+        const documentsArrayWithSignedUrlField = await Promise.all(documentsPromises);
+
+
+        console.log("documentsArrayWithSignedUrlField: ", documentsArrayWithSignedUrlField );
+
+        res.status(200).json(documentsArrayWithSignedUrlField);
     } catch (error) {
         console.error('Error in getUserDocuments:', error);
         res.status(500).send('Error retrieving documents');

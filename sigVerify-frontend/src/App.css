@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Abel&family=Exo:wght@700&family=Roboto+Condensed:wght@300&display=swap');
-/* global custom styles */
+@import url('https://fonts.googleapis.com/css2?family=Abel&family=Exo:wght@700&family=Kdam+Thmor+Pro&family=Roboto+Condensed:wght@300&family=Sulphur+Point:wght@700&display=swap');
+
 .w-6 {
-  width: 26px;
+  width: 22px;
 }
 
 .h-6 {
-  height: 26px;
+  height: 22px;
 }
 
 svg {
@@ -20,13 +20,6 @@ svg {
   text-align: center;
 }
 
-#appContainer {
-  width: 100vw;
-  min-height: 100vh;
-  max-height: fit-content;
-  background-color: rgb(236, 235, 235);
-}
-
 .buttonPop {
   box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
     7px 7px 20px 0px rgba(0, 0, 0, .1),
@@ -39,38 +32,21 @@ svg {
     0px 0px 0px 0px rgba(0, 0, 0, .1);
 }
 
-.pageContainer {
-  padding: 80px 0px;
-  background-color: rgb(236, 235, 235);
-  width: 100vw;
-  min-height: 100vh;
-  display: flex;
-  flex-flow: column;
-  justify-content: start;
-  align-items: center;
+.backgroundLogoContainer {
+  width: 100%;
+  position: absolute;
+  left: 0px;
+  top: 25%;
 }
 
-.cardContainer {
-  color: white;
-  padding: 40px;
-  padding-left: 60px;
-  width: 95%;
-  max-width: 360px;
-  background-color: rgb(55, 54, 54);
-  display: flex;
-  flex-flow: column;
-  justify-content: start;
-  border-radius: 15px;
-  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-    7px 7px 5px 0px rgba(0, 0, 0, .1),
-    4px 4px 5px 0px rgba(0, 0, 0, .1);
+.backgroundLogo {
+  width: 70%;
+  max-width: 400px;
+  opacity: .035;
+  margin-inline: auto;
 }
-
 
 /* UploadDocumentComponent Viewer Styles */
-#react-doc-viewer {
-  margin-bottom: 10vh;
-}
 
 #doc-nav-info {
   margin: 0px;

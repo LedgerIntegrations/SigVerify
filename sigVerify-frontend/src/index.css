@@ -2,7 +2,6 @@
 :root {
   font-family: 'Varela Round', sans-serif;
   margin: 0;
-  /* text-align: center; */
 }
 
 body {
@@ -15,20 +14,3 @@ body {
 * {
   box-sizing: border-box;
 }
-
-/* *, *::before, *::after {
-  box-sizing: border-box;
-}
-
-img, picture, svg, video {
-  display: block;
-  max-width: 100%;
-}
-
-input, textarea, button, select {
-  font: inherit;
-}
-
-textarea:focus, input:focus{
-  outline: none;
-} */

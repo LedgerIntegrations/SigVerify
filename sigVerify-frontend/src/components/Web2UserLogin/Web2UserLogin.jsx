@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import styles from './Web2UserLogin.module.css';
 import { Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import logoImage from '../Navigation/assets/svLogo.png';
+import logoImage from '../../assets/svLogo.png';
 import { AccountContext } from '../../App';
 
 

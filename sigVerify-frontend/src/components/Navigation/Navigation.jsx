@@ -1,7 +1,7 @@
 import styles from './Navigation.module.css';
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import logoImg from './assets/svLogo.png';
+import logoImg from '../../assets/svLogo.png';
 // import UserInfoDropdown from '../UserInfoDropdown/UserInfoDropdown';
 // import { AccountContext } from '../../App';
 

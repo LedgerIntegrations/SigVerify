@@ -17,16 +17,18 @@
     margin-top: 14px;
     max-width: 610px;
     /* max-width: 440px; */
+    color: rgb(184, 132, 67);
+    color: rgba(171, 170, 170, 0.931);
 }
 
 .mainTitle {
-    margin-bottom: 0px;
+    /* margin-bottom: 0px;
     font-size: 22px;
     margin-top: 0px;
     text-align: center;
     width: 100%;
     margin-top: 5vh;
-    text-decoration: underline;
+    text-decoration: underline; */
 }
 
 #pageDescription {

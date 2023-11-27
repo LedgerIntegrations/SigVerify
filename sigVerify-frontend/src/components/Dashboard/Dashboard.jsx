@@ -1,8 +1,85 @@
 import React, { useContext } from 'react';
-import styles from './Dashboard.module.css';
 import Tile from '../Tile/Tile';
 import { AccountContext } from '../../App';
-import LoginWelcome from '../LoginWelcome/LoginWelcome';
+import styled from 'styled-components';
+import logoImg from '../../assets/svLogo.png';
+import sigVerifyBanner from './sigVerifyBanner.svg'
+
+const OutterDashboardContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  gap: 20px;
+  padding: 0px 0px;
+  margin-top: 0px;
+  z-index: 10;
+`;
+
+const DashboardSubSection = styled.section`
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  margin-inline: auto;
+  flex-wrap: wrap;
+`;
+
+const MainTitle = styled.h1`
+  width: 100%;
+  margin-top: 0px;
+  margin-bottom: 5vh; 
+`
+
+const DashboardHero = styled.div`
+  width: 100%:
+  display: flex;
+  max-width: 350px;
+  padding: 0px 20px;
+
+  h1 {
+    margin-top: 0px;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid black;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #222;
+
+    img {
+      width: 100%;
+    }
+
+    p {
+      font-size: 1.2em;
+      padding-inline: 20px;
+      max-width: 305px;
+      margin-inline: auto;
+    }
+  } 
+`;
+
+const DashboardNavTiles = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 0px 20px;
+  width: 100%;
+  max-width: 320px;
+  font-family: 'Kdam Thmor Pro', sans-serif;
+  align-self: start;
+  
+  a {
+    min-height: 120px;
+    border-radius: 25px;
+    background-color: white;
+  }
+`;
 
 const documentIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
@@ -37,94 +114,31 @@ const walletIcon = (
 
 
 function Dashboard() {
-  const [accountObject, setAccountObject] = useContext(AccountContext);
+  // const [accountObject, setAccountObject] = useContext(AccountContext);
 
   return (
-    <div className="pageContainer" >
-      <div className={styles.outterDashboardContainer}>
-        <section>
-          <div className="cardContainer">
-            <LoginWelcome />
-            <div className={styles.dashboardInnerDiv}>
-
-              {/* <h1>Welcome, <br /><em>{accountObject.email}...</em></h1> */}
-              <div className={styles.welcomeStats}>
-                <div>
-                  <span>5</span>
-                  <p>Actions</p>
-                </div>
-                <div>
-                  <span>5</span>
-                  <p>Waiting</p>
-                </div>
-                <div>
-                  <span>0</span>
-                  <p>Expiring</p>
-                </div>
-              </div>
+    < >
+      <div className='backgroundLogoContainer'>
+        <img className='backgroundLogo' src={logoImg} />
+      </div>
+      <OutterDashboardContainer>
+        <DashboardSubSection>
+          <MainTitle>Sig Verify</MainTitle>
+          <DashboardHero>
+            <div>
+              <img src={sigVerifyBanner} />
+              <p>SECURE DOCUMENT SIGNING, MADE EASY.</p>
             </div>
-
-          </div>
-          <div className={styles.tiles}>
+          </DashboardHero>
+          <DashboardNavTiles>
             <Tile title="Profile" icon={profileIcon} link="/profile" finePrint="" />
             <Tile title="Settings" icon={settingsIcon} link="/settings" finePrint="" />
             <Tile title="Docs" icon={documentIcon} link="/documents" finePrint="" />
             <Tile title="Xrpl" icon={signatureIcon} link="/xrpl-ui" finePrint="" />
-            {/* Add more tiles as needed */}
-          </div>
-
-        </section>
-        <section>
-          <div id={styles.dashboardDocumentSection}>
-            <h3>Documents</h3>
-            <div className={styles.longTiles}>
-              <div className={styles.totalStat}>
-                <h4>Total Documents:</h4>
-                <em>6</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Recieved:</h4>
-                <em>4</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Sent:</h4>
-                <em>4</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Expired:</h4>
-                <em>0</em>
-              </div>
-            </div>
-          </div>
-          <div id={styles.dashboardDocumentSection}>
-            <h3>NFTs</h3>
-            <div className={styles.longTiles}>
-              <div className={styles.totalStat}>
-                <h4>Total Signatures:</h4>
-                <em>2</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Recieved:</h4>
-                <em>1</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Sent:</h4>
-                <em>1</em>
-              </div>
-              <div className={styles.stat}>
-                <h4>Deleted:</h4>
-                <em>0</em>
-              </div>
-            </div>
-          </div>
-          <div id={styles.bottomBumper}></div>
-        </section>
-
-
-
-
-      </div>
-    </div>
+          </DashboardNavTiles>
+        </DashboardSubSection>
+      </OutterDashboardContainer>
+    </>
   )
 };
 

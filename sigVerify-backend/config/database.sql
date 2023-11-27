@@ -11,7 +11,12 @@ DROP TABLE IF EXISTS user_meta CASCADE;
 DROP TABLE IF EXISTS user_email CASCADE;
 DROP TABLE IF EXISTS user_auth CASCADE;
 
--- A single user_auth record can only have one corresponding user_meta record.
+-- GENERAL IMPROVEMENT THOUGHTS:
+-- setting ON DELETE CASCADE or ON DELETE SET NULL Constraints depending on intended 
+-- default is ON DELETE NO ACTION which throws an error as a safeguard against inadvertently deleting data that other parts of your database depend on
+
+-- user_auth table has a one-to-one relationship with the user_meta table, enforced by the UNIQUE constraint on user_auth_id in user_meta.
+-- hashed_email and hashed_password lengths are sufficient?
 CREATE TABLE user_auth (
     id serial8 PRIMARY KEY,
     hashed_email character varying(64) NOT NULL UNIQUE,
@@ -21,7 +26,7 @@ CREATE TABLE user_auth (
     updated_at timestamptz default current_timestamp
 );
 
--- A single user_meta record can have multiple user_email records associated with it.
+-- UNIQUE constraint on user_auth_id ensures that each user_auth record can only be associated with one user_meta record, maintaining a one-to-one relationship.
 CREATE TABLE user_meta (
     id serial8 PRIMARY KEY,
     user_auth_id bigint UNIQUE NOT NULL REFERENCES user_auth(id),
@@ -31,6 +36,8 @@ CREATE TABLE user_meta (
     updated_at timestamptz default current_timestamp
 );
 
+-- user_email table allows for a one-to-many relationship between user_meta and user_email, enabling multiple email addresses per user.
+-- length of email (84 characters) is sufficient for all possible email addresses?
 CREATE TABLE user_email (
     id serial8 PRIMARY KEY,
     user_meta_id bigint REFERENCES user_meta(id),
@@ -39,33 +46,49 @@ CREATE TABLE user_email (
     updated_at timestamptz default current_timestamp
 );
 
+-- This table has a many-to-one relationship with user_meta, allowing each user to have multiple documents.
+-- need any additional metadata about documents, like a description or tags
 CREATE TABLE documents (
     id serial8 PRIMARY KEY,
     user_meta_id bigint NOT NULL REFERENCES user_meta(id),
     document_name character varying(255) NOT NULL,
     document_type character varying(55) NOT NULL,
     document_size bigint NOT NULL,
-    document_key character varying(255),
+    document_s3_key character varying(255),
+    expires_at timestamptz,
+    -- status character varying(20) NOT NULL,
     created_at timestamptz DEFAULT current_timestamp,
     updated_at timestamptz DEFAULT current_timestamp
 );
 
+-- signatures table links to the documents and user_meta tables, allowing the tracking of who signed which document.
+-- Ensure that expires_at can be null if a signature does not expire.
 CREATE TABLE signatures (
     id serial8 PRIMARY KEY,
     document_id bigint NOT NULL REFERENCES documents(id),
     user_id bigint NOT NULL REFERENCES user_meta(id),
-    signed_at timestamptz DEFAULT current_timestamp,
-    expires_at timestamptz
-)
+    xrpl_tx_hash character(64),
+    signed_at timestamptz DEFAULT current_timestamp
+);
 
+-- establishes a many-to-many relationship between users and documents through sender_id, receiver_id, and document_id. It tracks the sharing activity of documents between users.
+-- consider enumerating the possible values the 'status' field can take for clarity and data integrity
 CREATE TABLE document_sharing (
     id serial8 PRIMARY KEY,
     sender_id bigint NOT NULL REFERENCES user_meta(id),
     receiver_id bigint NOT NULL REFERENCES user_meta(id),
-    document_id bigint NOT NULL REFERENCES document(id),
-    sent_at timestamptz DEFAULT current_timestamp,
-    status character varying(20) NOT NULL
-)
+    document_id bigint NOT NULL REFERENCES documents(id),
+    sent_at timestamptz DEFAULT current_timestamp
+);
+
+-- Junction table for documents and required signers
+CREATE TABLE document_required_signers (
+    document_id bigint NOT NULL REFERENCES documents(id),
+    user_email_id bigint NOT NULL REFERENCES user_email(id),
+    PRIMARY KEY (document_id, user_email_id),
+    created_at timestamptz DEFAULT current_timestamp,
+    updated_at timestamptz DEFAULT current_timestamp
+);
 
 -- Function to update modified_at
 CREATE OR REPLACE FUNCTION update_modified_at()
@@ -93,12 +116,8 @@ CREATE TRIGGER change_updated_at_documents
 BEFORE UPDATE ON documents
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
-CREATE TRIGGER change_updated_at_documents
-BEFORE UPDATE ON documents
-FOR EACH ROW EXECUTE FUNCTION update_modified_at();
-
-CREATE TRIGGER change_updated_at_documents
-BEFORE UPDATE ON documents
+CREATE TRIGGER change_updated_at_document_required_signers
+BEFORE UPDATE ON document_required_signers
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
 -- CREATE TABLE user_files (

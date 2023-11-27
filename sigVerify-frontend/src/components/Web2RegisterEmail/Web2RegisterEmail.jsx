@@ -1,7 +1,7 @@
 import styles from './Web2RegisterEmail.module.css';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logoImage from '../Navigation/assets/svLogo.png';
+import logoImage from '../../assets/svLogo.png';
 import LoadingIcon from '../LoadingIcon/LoadingIcon';
 import axios from 'axios';
 

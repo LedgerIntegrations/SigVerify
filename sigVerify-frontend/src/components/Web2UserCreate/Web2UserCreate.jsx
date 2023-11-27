@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import styles from './Web2UserCreate.module.css';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa';  // Import icons from react-icons
-import logoImage from '../Navigation/assets/svLogo.png';
+import logoImage from '../../assets/svLogo.png';
 import { AccountContext } from '../../App';
 
 

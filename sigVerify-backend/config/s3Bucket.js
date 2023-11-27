@@ -29,17 +29,13 @@ const upload = multer({
     })
 });
 
-const retrieveS3BucketObjects = async (documentKeysAndDocumentNames) => {
-    const urlsWithDocumentNames = await Promise.all(
-        documentKeysAndDocumentNames.map(async (documentKeyAndDocumentName) => {
-            const command = new GetObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME,
-                Key: documentKeyAndDocumentName.document_key,
-            });
-            return  { signedUrl: await getSignedUrl(client, command, { expiresIn: 7200 }), documentName: documentKeyAndDocumentName.document_name };
-        })
-    );
-    return urlsWithDocumentNames;
+const returnSignedUrlFromS3BucketKey = async (documentKey) => {
+    const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: documentKey,
+    });
+    const signedUrl = await getSignedUrl(client, command, { expiresIn: 7200 });
+    return signedUrl;
 };
 
-module.exports = { upload, retrieveS3BucketObjects };
+module.exports = { upload, returnSignedUrlFromS3BucketKey };

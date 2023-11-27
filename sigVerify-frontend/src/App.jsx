@@ -1,9 +1,29 @@
 import React from 'react';
 import './App.css'
+import styled, { keyframes } from 'styled-components';
 
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+
+// styled components
+const AppWrapper = styled.div`
+  width: 100vw;
+  min-height: 100vh;
+  max-height: fit-content;
+  background-color: rgb(236, 235, 235);
+`;
+
+const PageWrapper = styled.div`
+  background-color: rgb(236, 235, 235);
+  padding: 20px;
+  width: 100vw;
+  min-height: 75vh;
+  max-height: fit-content;
+  display: flex;
+  flex-flow: column;
+  justify-content: start;
+`
 
 //web2 user profile handler pages (shown to logged out users)
 import HomePage from './components/HomePage/HomePage';
@@ -13,6 +33,9 @@ import Web2UserLogin from './components/Web2UserLogin/Web2UserLogin';
 
 // navigation added to all logged in pages 
 import Navigation from './components/Navigation/Navigation';
+import NavigationComponent from './components/Navigation/NavigationComponent';
+import SecondNavigationComponent from './components/Navigation/SecondNavigationComponent';
+import Footer from './components/Footer/Footer';
 
 // pages (shown to logged in users, wrapped with Navigation component)
 import Dashboard from './components/Dashboard/Dashboard';
@@ -31,14 +54,19 @@ import UploadDocumentComponent from './components/DocumentsPage/UploadDocumentCo
 // GLOBAL ACCOUNT INFORMATION
 export const AccountContext = createContext();
 
+
+
 // helper function to wrap a page component with navigation component
 const withNavigation = (Component) => {
   return function WrappedComponent(props) {
     return (
       <>
-        <Navigation />
-        <Component {...props} />
-        
+        {/* <SecondNavigationComponent /> */}
+        <NavigationComponent />
+        <PageWrapper>
+          <Component {...props} />  
+        </PageWrapper>
+        <Footer />  
       </>
     );
   }
@@ -82,7 +110,7 @@ function App() {
   return (
     <Router>
       <AccountContext.Provider value={[accountObject, setAccountObject]}>
-        <div id='appContainer'>
+        <AppWrapper>
           <Routes>  
             {/* LOGGED OUT ROUTES */}
             <Route path="/" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <HomePage />} />
@@ -104,7 +132,7 @@ function App() {
             <Route path="/upload" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocumentComponent)) : <Navigate to="/" replace />} />
             <Route path="/xrpl-ui" element={accountObject.loggedIn ? React.createElement(withNavigation(XrplUiPage)) : <Navigate to="/" replace />} />
           </Routes>
-        </div>
+        </AppWrapper>
       </AccountContext.Provider>
     </Router>
   );
