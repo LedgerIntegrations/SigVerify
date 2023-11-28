@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import logoImg from '../../assets/svLogo.png';
-
+import TogglerButton from '../styledComponents/TogglerButton'
 const slideIn = keyframes`
 from {
      transform: translateX(-100%);
@@ -43,13 +43,20 @@ const NavIconsDiv = styled.div`
 `;
 
 // temporary remove until we decide prefered nav design
-// const CompanyName = styled.h4`
-//     margin-top: 5vh;
-//     color: black;
-//     font-size: .8em;
-//     letter-spacing: 5px;
-//     text-transform: uppercase;
-// `;
+const CompanyName = styled.h4`
+    position: absolute;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    left: 0px;
+    top: 2vh;
+    margin: auto;
+    margin-top: 5vh;
+    color: black;
+    font-size: .8em;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+`;
 
 const NavigationMobileHamburger = styled.div`
     display: flex;
@@ -93,7 +100,7 @@ const NavigationList = styled.ul`
     `;
 
 const NavigationListAnimated = styled(NavigationList)`
-  animation: ${props => props.$hamburgerIsOpen ? slideIn : (props.$hamburgerHasBeenOpened ? slideOut : 'none')} 0.5s forwards;
+    animation: ${props => props.$hamburgerIsOpen ? slideIn : (props.$hamburgerHasBeenOpened ? slideOut : 'none')} 0.5s forwards;
 `;
 
 const HamburgerButtonActivated = styled(NavigationMobileHamburger)`
@@ -131,7 +138,11 @@ const SettingsButtonActivated = styled(NavigationMobileHamburger)`
     &:hover {
         color: #333;
     }
-`
+`;
+
+const SettingsListAnimated = styled(NavigationList)`
+    animation: ${props => props.$settingsIsOpen ? slideIn : (props.$settingsHasBeenOpened ? slideOut : 'none')} 0.5s forwards;
+`;
 
 const NavigationItem = styled.li`
     display: flex;
@@ -258,14 +269,45 @@ const NavigationComponent = () => {
 
 
     return (
+        // <NavigationContainer>
+        //     {/* ... existing code ... */}
+        //     <NavigationHeader $isDashboard={isDashboard}>
+        //         {/* ... existing code ... */}
+        //         <LogoNavigation onClick={goBack}>
+        //                 {backArrowSvg}
+        //         </LogoNavigation>
+        //     </NavigationHeader>
+        //     {hamburgerIsOpen && (
+        //         <NavigationListAnimatedHamburger $hamburgerIsOpen={hamburgerIsOpen} $hamburgerHasBeenOpened={hamburgerHasBeenOpened}>
+        //             {/* Hamburger menu items */}
+        //             <HamburgerButtonActivated onClick={toggleNavigation} $hamburgerIsOpen={hamburgerIsOpen} >
+        //                 <HamburgerLine />
+        //                 <HamburgerLine />
+        //                 <HamburgerLine />
+        //             </HamburgerButtonActivated>
+        //         </NavigationListAnimatedHamburger>
+        //     )}
+        //     {settingsIsOpen && (
+        //         <NavigationListAnimatedSettings $settingsIsOpen={settingsIsOpen} $settingsHasBeenOpened={settingsHasBeenOpened}>
+        //             {/* Settings menu items */}
+        //             <SettingsButtonActivated onClick={toggleSettings} $settingsIsOpen={settingsIsOpen} >
+        //                 {settingsIcon}
+        //             </SettingsButtonActivated>
+        //         </NavigationListAnimatedSettings>
+        //     )}
+        // </NavigationContainer>
         <NavigationContainer>
             <NavigationHeader $isDashboard={isDashboard}>
                 {!isDashboard && (
-                    <LogoNavigation onClick={goBack}>
-                        {backArrowSvg}
-                    </LogoNavigation>
+                    <>
+                        <LogoNavigation onClick={goBack}>
+                            {backArrowSvg}
+                        </LogoNavigation>
+                        <CompanyName>Sig Verify</CompanyName>
+                    </>
+                    
+
                 )}
-                {/* <CompanyName>Sig Verify</CompanyName> */}
                 <NavIconsDiv>
                     <SettingsButtonActivated onClick={toggleSettings} $settingsIsOpen={settingsIsOpen} >
                         {settingsIcon}
@@ -316,6 +358,51 @@ const NavigationComponent = () => {
                     </SocialMediaLink>
                 </SocialMediaBox>
             </NavigationListAnimated>
+            <SettingsListAnimated  $settingsIsOpen={settingsIsOpen} $settingsHasBeenOpened={settingsHasBeenOpened}>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+                <NavigationItem>
+                    <section>
+                        <strong>Allow current location.</strong>
+                        <TogglerButton />
+                    </section>
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
+                </NavigationItem>
+
+            </SettingsListAnimated >
 
         </NavigationContainer>
     )
