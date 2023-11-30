@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css'
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -31,10 +31,10 @@ import RegisterEmail from './components/Web2RegisterEmail/Web2RegisterEmail';
 import Web2UserCreate from './components/Web2UserCreate/Web2UserCreate';
 import Web2UserLogin from './components/Web2UserLogin/Web2UserLogin';
 
-// navigation added to all logged in pages 
-import Navigation from './components/Navigation/Navigation';
+// navigation added to all logged in pages
+// import Navigation from './components/Navigation/Navigation';
 import NavigationComponent from './components/Navigation/NavigationComponent';
-import SecondNavigationComponent from './components/Navigation/SecondNavigationComponent';
+// import SecondNavigationComponent from './components/Navigation/SecondNavigationComponent';
 import Footer from './components/Footer/Footer';
 
 // pages (shown to logged in users, wrapped with Navigation component)
@@ -64,9 +64,9 @@ const withNavigation = (Component) => {
         {/* <SecondNavigationComponent /> */}
         <NavigationComponent />
         <PageWrapper>
-          <Component {...props} />  
+          <Component {...props} />
         </PageWrapper>
-        <Footer />  
+        <Footer />
       </>
     );
   }
@@ -95,7 +95,7 @@ function useSessionStorage(key, initialValue) {
   };
 
   return [storedValue, setValue];
-};
+}
 
 function App() {
   // used to store the user's account information, initialized and managed using the useSessionStorage custom hook.
@@ -111,7 +111,7 @@ function App() {
     <Router>
       <AccountContext.Provider value={[accountObject, setAccountObject]}>
         <AppWrapper>
-          <Routes>  
+          <Routes>
             {/* LOGGED OUT ROUTES */}
             <Route path="/" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <HomePage />} />
             <Route path="/login-user" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(Web2UserLogin)} />

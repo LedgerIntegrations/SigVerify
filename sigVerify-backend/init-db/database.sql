@@ -1,5 +1,5 @@
 -- Check if database exists and create if not
-DO $$ 
+DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'sigverifydb') THEN
         CREATE DATABASE sigverifydb;
@@ -12,7 +12,7 @@ DROP TABLE IF EXISTS user_email CASCADE;
 DROP TABLE IF EXISTS user_auth CASCADE;
 
 -- GENERAL IMPROVEMENT THOUGHTS:
--- setting ON DELETE CASCADE or ON DELETE SET NULL Constraints depending on intended 
+-- setting ON DELETE CASCADE or ON DELETE SET NULL Constraints depending on intended
 -- default is ON DELETE NO ACTION which throws an error as a safeguard against inadvertently deleting data that other parts of your database depend on
 
 -- user_auth table has a one-to-one relationship with the user_meta table, enforced by the UNIQUE constraint on user_auth_id in user_meta.
@@ -95,7 +95,7 @@ CREATE OR REPLACE FUNCTION update_modified_at()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = now();
-    RETURN NEW;	
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -138,7 +138,7 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 --     id serial8 PRIMARY KEY,
 --     name character varying(255) NOT NULL,
 --     description character varying(500),
---     totalPages 
+--     totalPages
 --     created_at timestamptz default current_timestamptz,
 --     updated_at timestamptz default current_timestamptz
 -- );
