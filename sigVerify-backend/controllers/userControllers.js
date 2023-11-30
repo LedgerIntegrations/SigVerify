@@ -1,8 +1,8 @@
 const pool = require('../config/db');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const emailer = require('../utils/sendGmail');
-// const emailer = require('../utils/sendMail');
+// const emailer = require('../utils/sendGmail');
+const emailer = require('../utils/sendMail');
 require('dotenv').config();
 
 //hard coded routes
@@ -50,10 +50,10 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
             JOIN user_auth ua ON um.user_auth_id = ua.id
             WHERE ue.email = $1 AND ua.auth_token IS NOT NULL;
         `;
-        
+
         const returnedAuthTokenFromQueriedEmail = await client.query(queryIsEmailInDb, [email]);
         console.log("db user query by email response: ", returnedAuthTokenFromQueriedEmail)
-        
+
         //if email is in db that is not verified
         if (returnedAuthTokenFromQueriedEmail.rows.length > 0) {
             const userAuthToken = returnedAuthTokenFromQueriedEmail.rows[0].auth_token;
@@ -69,7 +69,7 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
             };
         };
 
-        // email not found in db 
+        // email not found in db
         const newAuthToken = crypto.randomBytes(SIGNUP_TOKEN_LENGTH).toString('hex');
         const hashedEmail = await hashEmail(email);
 
@@ -145,11 +145,11 @@ exports.createNewUser = async (req, res) => {
 
         // Update user_auth table with the hashed password
         await client.query('UPDATE user_auth SET hashed_password = $1 WHERE id = $2', [hashedPassword, user_auth_id]);
-        //verify user 
+        //verify user
         await client.query('UPDATE user_auth SET auth_token = NULL WHERE id = $1', [user_auth_id]);
 
         const newUserDataQuery = `
-            SELECT um.first_name, um.last_name, ue.email, ua.auth_token 
+            SELECT um.first_name, um.last_name, ue.email, ua.auth_token
             FROM user_meta um
             INNER JOIN user_email ue ON um.id = ue.user_meta_id
             INNER JOIN user_auth ua ON um.user_auth_id = ua.id

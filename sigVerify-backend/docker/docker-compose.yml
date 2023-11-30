@@ -13,6 +13,8 @@ services:
       - POSTGRES_DB=sigverifydb
     volumes:
       - data:/var/lib/postgresql/data
+      # initalizes database with tables from database.sql
+      - ../init-db:/docker-entrypoint-initdb.d
     networks:
     - sigverify-network
 
@@ -23,10 +25,11 @@ services:
     container_name: sigverify-app
     working_dir: /usr/app
     restart: always
-    ports: 
+    ports:
       - 3001:3001
-    volumes: 
-      - ../:/usr/app/
+    # ! below volumes was causing Error: Cannot find module 'express' in my environment
+    # volumes:
+    #   - ../:/usr/app/
     networks:
     - sigverify-network
 
