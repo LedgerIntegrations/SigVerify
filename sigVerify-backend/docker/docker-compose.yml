@@ -33,7 +33,7 @@ services:
   sigverify-mailcatcher:
     container_name: sigverify-mailcatcher
     restart: on-failure
-    image: dockage/mailcatcher:0.9.0
+    image: stpaquet/alpinemailcatcher:latest
     ports:
     - "1080:1080"
     - "1025:1025"
