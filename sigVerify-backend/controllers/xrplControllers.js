@@ -1,7 +1,8 @@
 const {
-    createXummSigninPayload,
-    createXummPayloadSubscription,
-    findAllAccountPaymentTransactionsToSigVerifyWallet,
+  createXummSigninPayload,
+  createXummPayloadSubscription,
+  findAllAccountPaymentTransactionsToSigVerifyWallet,
+  createPaymentTxWithDocHashInMemo
 } = require('../utils/xrplHelpers');
 
 exports.createXummSigninPayload = async (req, res) => {
@@ -12,6 +13,10 @@ exports.createXummSigninPayload = async (req, res) => {
         console.error("Error while create sign-in payload: ", error);
         res.status(500).json({ error: "Internal Server Error in createXummSigninPayload controller." });
     };
+};
+
+exports.signDocumentXrplTxCreation = async (req, res) => {
+  //need wallet and document hash params for createPaymentTxWithDocHashInMemo function
 };
 
 //responds back to client with specificPropertiesFromPayloadSubscriptionResolution

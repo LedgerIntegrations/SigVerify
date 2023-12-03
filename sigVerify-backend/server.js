@@ -5,7 +5,7 @@ const cors = require('cors');
 const pool = require('./config/db');
 require('dotenv').config();
 
-// const xrplRoutes = require('./routes/xrplRoutes');
+const xrplRoutes = require('./routes/xrplRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const userRoutes = require('./routes/userRoutes');
 
@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 // imported routes
 app.use(userRoutes);
 app.use(documentRoutes);
-// app.use(xrplRoutes);
+app.use(xrplRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

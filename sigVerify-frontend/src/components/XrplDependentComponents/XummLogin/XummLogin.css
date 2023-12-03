@@ -1,29 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap');
 
-.loginMain {
-    min-height: 80vh;
-    max-height: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-}
-
-#login-header {
-    margin-top: 10vh;
-    padding-left: 3vw;
-    text-align: start;
-    max-width: 70vw;
-    margin-left: 3vw;
-}
-
 .loginComponent {
     min-height: fit-content;
     width: 70vw;
     max-width: 320px;
     min-width: 250px;
     display: flex;
-    position: relative;
+    position: absolute;
+    background-color: white;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -32,6 +16,9 @@
     margin-block: 5vh;
     box-shadow: 0px 10px 18px 0px #242a49cb;
     font-size: .8em;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .loginComponent h1 {
@@ -82,7 +69,7 @@
     }
 
     #login-header {
-        max-width: 500px; 
+        max-width: 500px;
     }
 }
 

@@ -20,21 +20,21 @@ const insertDocumentDetails = async (client, userMetaId, file) => {
 // query database for users linked document keys and names by email address
 const getAllDocPropsByEmail = async (client, userEmail) => {
     const query = `
-    SELECT 
-    documents.*, 
+    SELECT
+    documents.*,
     (CASE WHEN signatures.id IS NOT NULL THEN TRUE ELSE FALSE END) AS signed,
     signatures.xrpl_tx_hash,
     documents.expires_at AS expires,
     documents.created_at AS uploaded
-    FROM 
+    FROM
         documents
-    JOIN 
+    JOIN
         user_meta ON documents.user_meta_id = user_meta.id
-    JOIN 
+    JOIN
         user_email ON user_meta.id = user_email.user_meta_id
-    LEFT JOIN 
+    LEFT JOIN
         signatures ON documents.id = signatures.document_id
-    WHERE 
+    WHERE
         user_email.email = $1
     `;
 
@@ -46,7 +46,7 @@ const getAllDocPropsByEmail = async (client, userEmail) => {
     }
 
     // return result.rows.map(row => ({ document_key: row.document_s3_key, document_name: row.document_name }));
-    return result.rows.map(row => ({ 
+    return result.rows.map(row => ({
         name: row.document_name,
         type: row.document_type,
         size: row.document_size,
@@ -91,7 +91,7 @@ exports.uploadFiles = async (req, res) => {
         }
     }
 };
-
+// given email, return all users documents
 exports.getAllUsersDocumentsGivenTheirEmail = async (req, res) => {
     const userEmail = req.body.email;
     let client;
@@ -101,7 +101,7 @@ exports.getAllUsersDocumentsGivenTheirEmail = async (req, res) => {
 
         // Retrieve all document keys for the user
         const documentsArray = await getAllDocPropsByEmail(client, userEmail);
-        
+
         if (documentsArray.length === 0) {
             return res.status(200).json({ message: 'No documents found for this user' });
         };

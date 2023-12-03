@@ -11,6 +11,9 @@ DROP TABLE IF EXISTS user_meta CASCADE;
 DROP TABLE IF EXISTS user_email CASCADE;
 DROP TABLE IF EXISTS user_auth CASCADE;
 
+CREATE TYPE membership_type AS ENUM ('free', 'standard', 'premium');
+
+
 -- GENERAL IMPROVEMENT THOUGHTS:
 -- setting ON DELETE CASCADE or ON DELETE SET NULL Constraints depending on intended
 -- default is ON DELETE NO ACTION which throws an error as a safeguard against inadvertently deleting data that other parts of your database depend on
@@ -27,11 +30,15 @@ CREATE TABLE user_auth (
 );
 
 -- UNIQUE constraint on user_auth_id ensures that each user_auth record can only be associated with one user_meta record, maintaining a one-to-one relationship.
+-- TODO: future implementations: country, state, address, zip, membership_level,
 CREATE TABLE user_meta (
     id serial8 PRIMARY KEY,
     user_auth_id bigint UNIQUE NOT NULL REFERENCES user_auth(id),
     first_name character varying(42),
     last_name character varying(42),
+    verified_xrpl_wallet_address character varying(35) default null,
+    membership membership_type DEFAULT 'free',
+    document_limit int,
     created_at timestamptz default current_timestamp,
     updated_at timestamptz default current_timestamp
 );
@@ -99,6 +106,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION set_document_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.membership = 'free' THEN
+        NEW.document_limit := 5;
+    ELSIF NEW.membership = 'standard' THEN
+        NEW.document_limit := 50;
+    ELSIF NEW.membership = 'premium' THEN
+        NEW.document_limit := -1; -- Indicates unlimited
+    ELSE
+        NEW.document_limit := 5; -- Default case
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Triggers to use the above function
 CREATE TRIGGER change_updated_at_user_meta
 BEFORE UPDATE ON user_meta
@@ -119,6 +142,10 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 CREATE TRIGGER change_updated_at_document_required_signers
 BEFORE UPDATE ON document_required_signers
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
+
+CREATE TRIGGER user_meta_before_insert_or_update
+BEFORE INSERT OR UPDATE ON user_meta
+FOR EACH ROW EXECUTE FUNCTION set_document_limit();
 
 -- CREATE TABLE user_files (
 --     id serial8 PRIMARY KEY,

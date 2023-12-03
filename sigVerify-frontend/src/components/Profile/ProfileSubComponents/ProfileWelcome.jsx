@@ -16,30 +16,31 @@ const WelcomeContainerIntro = styled.section`
 
 const WelcomeIntroTierRank = styled.p`
     background-color: white;
-    border: 1px solid teal;
+    border: 1px solid #908f8f;
     width: fit-content;
     padding: 5px 6px;
-    padding-top: 6px;
+    padding-top: 8px;
     border-radius: 10px;
     font-size: 12px;
     margin: 0px;
     margin-bottom: 20px;
-    color: teal;
+    color: #000000;
     box-shadow: inset 1px 1px 1px 1px rgba(59, 59, 59, 0.5),
             2px 2px 10px 0px rgba(0, 0, 0, .1),
             0px 0px 0px 0px rgba(0, 0, 0, .1);
 `;
 
 const WelcomeIntroHeader = styled.h3`
-    font-size: 30px;
+    font-size: 42px;
     font-weight: 200;
     font-family: 'Kdam Thmor Pro', sans-serif;
     margin: 0px;
-    color: #222;
+    margin-left: 10px;
+    color: #666;
 
     strong {
         font-weight: 800;
-        color: #666;
+        color: #222;
     }
 `;
 
@@ -48,10 +49,10 @@ const WelcomeIntroMessage = styled.p`
     font-size: 16px;
     margin-top: 7px;
     margin-bottom: 5px;
-    color: #444;
+    color: #666;
 
     strong {
-        color: teal;
+        color: #222
     }
 `;
 
@@ -77,7 +78,7 @@ const WelcomeIntroStats = styled.div`
         box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
             7px 7px 20px 0px rgba(0, 0, 0, .1),
             0px 0px 0px 0px rgba(0, 0, 0, .1);
-        
+
         p {
             font-size: 9px;
             margin: 0px;
@@ -90,13 +91,13 @@ const WelcomeIntroStats = styled.div`
     }
 `;
 
-function ProfileWelcome() {
+function ProfileWelcome({ membership }) {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     console.log(accountObject)
     return (
         <ProfileWelcomeContainer>
             <WelcomeContainerIntro>
-                <WelcomeIntroTierRank>Bronze Member</WelcomeIntroTierRank>
+          <WelcomeIntroTierRank>{ membership } Member</WelcomeIntroTierRank>
 
                 <WelcomeIntroHeader>Hello <strong>{accountObject?.firstName}</strong>,</WelcomeIntroHeader>
                 <WelcomeIntroMessage>welcome back to <strong>SigVerify</strong>.</WelcomeIntroMessage>

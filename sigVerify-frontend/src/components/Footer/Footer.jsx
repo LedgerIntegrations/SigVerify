@@ -14,7 +14,7 @@ const ToggleButton = styled.div`
     position: absolute;
     top: 15px;
     width: 120px;
-    height: 12px; 
+    height: 12px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -47,7 +47,7 @@ const FooterContainer = styled.div`
 
 const Uploadbutton = styled(Link)`
     position: absolute;
-    top: 50px;
+    top: 5vh;
     font-size: .85em;
     background-color: #333;
     color: white;
@@ -80,6 +80,7 @@ const DashboardNavTiles = styled.div`
 
     a {
         min-height: 50px;
+        color: white;
     }
 `;
 
@@ -158,7 +159,7 @@ const Footer = () => {
                 </DashboardNavTiles>
             </FooterContainer>
         </FooterBalancer>
-        
+
     )
 }
 
