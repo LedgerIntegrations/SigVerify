@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa';  // Import icons fr
 import logoImage from '../../assets/svLogo.png';
 import { AccountContext } from '../../App';
 
+//TODO: When registering a email that already exists the error message shown to use is "Request failed with status code 400", need to make message more detailed for user.
 
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);

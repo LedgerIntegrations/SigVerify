@@ -49,11 +49,12 @@ exports.createXummPayloadSubscription = async (uuid) => {
                 Signed User Token: ${payload.response.user}
             `);
 
-            const specificPropertiesFromPayloadSubscriptionResolution = {
+            const specificPropertiesFromPayloadSubscriptionResolution =
+              {
                 loggedIn: payload.meta.signed,
-                wallet: payload.response.account,
-                userToken: payload.response.user
-            };
+                verifiedXrplWalletAddress: payload.response.account,
+                userToken: payload.response.user,
+              };
 
             return specificPropertiesFromPayloadSubscriptionResolution;
         };
@@ -62,7 +63,7 @@ exports.createXummPayloadSubscription = async (uuid) => {
     };
 };
 
-exports.createTransactionPayload = async (rAddress, documentHash) => {
+exports.createPaymentTxWithDocHashInMemo = async (rAddress, documentHash) => {
     try {
         console.log("rAddress: ", rAddress);
         console.log("document hash: ", documentHash);

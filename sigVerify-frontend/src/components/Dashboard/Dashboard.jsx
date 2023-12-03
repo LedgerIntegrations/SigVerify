@@ -23,20 +23,21 @@ const DashboardSubSection = styled.section`
   align-items: start;
   justify-content: center;
   margin-inline: auto;
+  margin-top: 6vh;
   flex-wrap: wrap;
 `;
 
 const MainTitle = styled.h1`
   width: 100%;
   margin-top: 0px;
-  margin-bottom: 5vh; 
+  margin-bottom: 5vh;
 `
 
 const DashboardHero = styled.div`
   width: 100%:
   display: flex;
   max-width: 350px;
-  padding: 0px 20px;
+  padding: 10px 20px 20px 20px;
 
   h1 {
     margin-top: 0px;
@@ -45,14 +46,18 @@ const DashboardHero = styled.div`
   div {
     display: flex;
     flex-direction: column;
-    border: 2px solid black;
+    border: 1.5px solid black;
     border-radius: 20px;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     background-color: rgba(255, 255, 255, 0.5);
     color: #222;
+    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
+    7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+    0px 0px 0px 0px rgba(0, 0, 0, 0.1);
 
     img {
       width: 100%;
+      padding: 10px;
     }
 
     p {
@@ -61,19 +66,19 @@ const DashboardHero = styled.div`
       max-width: 305px;
       margin-inline: auto;
     }
-  } 
+  }
 `;
 
 const DashboardNavTiles = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 0px 20px;
+  gap: 10px;
+  padding: 10px;
   width: 100%;
   max-width: 320px;
   font-family: 'Kdam Thmor Pro', sans-serif;
   align-self: start;
-  
+
   a {
     min-height: 120px;
     border-radius: 25px;
@@ -123,7 +128,7 @@ function Dashboard() {
       </div>
       <OutterDashboardContainer>
         <DashboardSubSection>
-          <MainTitle>Sig Verify</MainTitle>
+          {/* <MainTitle>Sig Verify</MainTitle> */}
           <DashboardHero>
             <div>
               <img src={sigVerifyBanner} />

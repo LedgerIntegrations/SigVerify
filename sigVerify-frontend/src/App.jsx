@@ -17,6 +17,7 @@ const AppWrapper = styled.div`
 const PageWrapper = styled.div`
   background-color: rgb(236, 235, 235);
   padding: 20px;
+  padding-top: 12vh;
   width: 100vw;
   min-height: 75vh;
   max-height: fit-content;
@@ -66,7 +67,7 @@ const withNavigation = (Component) => {
         <PageWrapper>
           <Component {...props} />
         </PageWrapper>
-        <Footer />
+        {/* <Footer /> */}
       </>
     );
   }

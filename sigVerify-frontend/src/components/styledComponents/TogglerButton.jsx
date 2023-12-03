@@ -32,7 +32,7 @@ const ToggleContainer = styled.div`
   width: 3em;
   height: 1.5em;
   background-color: #e1dacd;
-  box-shadow: 
+  box-shadow:
     inset 0 0 .0625em .125em rgb(255 255 255 / .2),
     inset 0 .0625em .125em rgb(0 0 0 / .4);
   transition: background-color .4s linear;
@@ -76,7 +76,7 @@ const ToggleButtonCircle = styled.div`
   border-radius: 50%;
   width: .125em;
   height: .125em;
-  background-image: radial-gradient(circle at 50% 0, #f6f0e9, #bebcb0); 
+  background-image: radial-gradient(circle at 50% 0, #f6f0e9, #bebcb0);
 `;
 
 const TogglerButton = (title, description, value) => {
@@ -99,12 +99,3 @@ const TogglerButton = (title, description, value) => {
 }
 
 export default TogglerButton;
-
-// export const StyledToggler = {
-//     ToggleWrapper,
-//     ToggleCheckbox,
-//     ToggleContainer,
-//     ToggleButton,
-//     ToggleButtonCirclesContainer,
-//     ToggleButtonCircle
-//   };
