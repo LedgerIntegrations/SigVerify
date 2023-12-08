@@ -24,16 +24,14 @@ const Dropdown = styled.select`
 `;
 
 const DocumentList = styled.ul`
-  /* Add styles for your document list */
+  /* Add styles for document list */
   width: 100%;
   max-width: 700px;
   display: flex;
   flex-wrap: wrap;
-  /* flex-direction: column; */
   gap: 5px;
   min-height: fit-content;
-  /* max-height: 160px; */
-  /* overflow-y: auto; */
+
   padding: 0px;
 `;
 

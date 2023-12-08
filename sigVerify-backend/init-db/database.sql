@@ -31,6 +31,8 @@ CREATE TABLE user_auth (
 
 -- UNIQUE constraint on user_auth_id ensures that each user_auth record can only be associated with one user_meta record, maintaining a one-to-one relationship.
 -- TODO: future implementations: country, state, address, zip, membership_level,
+-- TODO: should verified_xrpl_wallet_address be unique? ( each wallet address can only be associated with one user_meta record )
+--TODO: do we need document limit? client is displaying limits based on membership string
 CREATE TABLE user_meta (
     id serial8 PRIMARY KEY,
     user_auth_id bigint UNIQUE NOT NULL REFERENCES user_auth(id),
@@ -147,19 +149,8 @@ CREATE TRIGGER user_meta_before_insert_or_update
 BEFORE INSERT OR UPDATE ON user_meta
 FOR EACH ROW EXECUTE FUNCTION set_document_limit();
 
--- CREATE TABLE user_files (
---     id serial8 PRIMARY KEY,
---     user_auth_id bigint NOT NULL REFERENCES user_auth(id),
---     file_name character varying(255) NOT NULL,
---     file_type character varying(50),
---     file_size bigint,
---     file_path character varying(255),
---     created_at timestamptz DEFAULT current_timestamp,
---     updated_at timestamptz DEFAULT current_timestamp
--- );
 
-
--- TEMPORARY IMPLEMENTATION OF FUTURE DOCUMENT TABLES AND SIGNATURE TAG
+-- POSSIBLE TABLE ADDITIONS / MODIFICATIONS
 
 -- CREATE TABLE document_bundle (
 --     id serial8 PRIMARY KEY,

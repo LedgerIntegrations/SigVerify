@@ -46,6 +46,7 @@ const Web2UserLogin = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'include', // Important for cookies
                     body: JSON.stringify(formData),
                 });
 
@@ -54,7 +55,7 @@ const Web2UserLogin = () => {
 
                 if (response.ok) {
                     console.log("Successfully logged in!", data);
-                    const userData = data.user;    
+                    const userData = data.user;
                     setAccountObject({ ...userData, loggedIn: true });
                     setIsLogged(true); // Set logged in state only on success
                     // Handle successful login here (e.g., redirect, set user state, etc.)
