@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-inline: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-inline: 30px;
 `;
 
 const UploadDocumentContainer = styled.div`
@@ -17,23 +18,23 @@ const UploadDocumentContainer = styled.div`
 `;
 
 const UploadDragBox = styled.div`
-  margin-bottom: 20px;
-  margin-top: 75px;
-  border: 2px dashed ${props => props.$isDragActive ? 'blue' : '#ccc'};
-  height: 200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  text-align: center;
-  width: 95%;
-  max-width: 375px;
-  border-radius: 20px;
-  padding-inline: 40px;
+    margin-bottom: 20px;
+    margin-top: 75px;
+    border: 2px dashed ${(props) => (props.$isDragActive ? 'blue' : '#ccc')};
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    text-align: center;
+    width: 95%;
+    max-width: 375px;
+    border-radius: 20px;
+    padding-inline: 40px;
 `;
 
 const HiddenUploadInput = styled.input`
-  display: none;
+    display: none;
 `;
 
 const ButtonsContainer = styled.div`
@@ -72,10 +73,10 @@ const DeleteButton = styled.button`
     border: none;
     border-radius: 3px;
     position: absolute;
-    top: 469px;
+    top: 485px;
     margin-left: 8px;
     z-index: 20;
-    opacity: .8;
+    opacity: 0.8;
     font-size: 12px;
     padding-block: 3px;
     padding-inline: 10px;
@@ -89,22 +90,23 @@ const DeleteButton = styled.button`
 `;
 
 const MyDocViewer = styled(DocViewer)`
-  border-radius: 10px;
-  max-width: 500px;
+    border-radius: 10px;
+    max-width: 500px;
 `;
 
 const UploadDocumentComponent = () => {
-
     const [isDragActive, setIsDragActive] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]); // array of temp uploaded files
     const [documents, setDocuments] = useState([]); // This will hold all documents
+
+    const navigate = useNavigate();
 
     const onUpload = (newDocument) => {
         setDocuments([...documents, newDocument]);
     };
 
     const onDelete = (docName) => {
-        setDocuments(prevDocs => prevDocs.filter(doc => doc.name !== docName));
+        setDocuments((prevDocs) => prevDocs.filter((doc) => doc.name !== docName));
     };
 
     const onUploadComplete = () => {
@@ -129,7 +131,7 @@ const UploadDocumentComponent = () => {
 
     const processFile = (file) => {
         if (file) {
-            setUploadedFiles(prevFiles => [...prevFiles, file]); // Add new file to the array
+            setUploadedFiles((prevFiles) => [...prevFiles, file]); // Add new file to the array
             onUpload({ name: file.name, isSigned: false });
         }
     };
@@ -140,50 +142,52 @@ const UploadDocumentComponent = () => {
 
     const handleUploadSubmit = async () => {
         const formData = new FormData();
-        uploadedFiles.forEach(file => {
+        uploadedFiles.forEach((file) => {
             formData.append('files', file);
         });
 
         for (let [key, value] of formData.entries()) {
             console.log(`${key}:`, value);
-        };
+        }
 
         try {
             const userEmail = JSON.parse(window.sessionStorage.getItem('accountObject'))?.email;
-            console.log("users email: ", userEmail)
+            console.log('users email: ', userEmail);
 
-            formData.append('userEmail', userEmail)
+            formData.append('userEmail', userEmail);
 
-            const response = await fetch('http://localhost:3001/api/document/upload', { method: 'POST', body: formData });
+            const response = await fetch('http://localhost:3001/api/document/upload', {
+                method: 'POST',
+                body: formData,
+            });
             if (!response.ok) {
                 console.error(`Error ${response.status}: ${response.statusText}`);
                 return;
             }
             const result = await response.json();
-            console.log("response from file upload axios post: ", result);
-
+            console.log('response from file upload axios post: ', result);
         } catch (err) {
-                console.log(err);
-        };
+            console.log(err);
+        }
 
         onUploadComplete();
         setUploadedFiles([]);
+        navigate('/documents');
     };
 
     const handleDocumentDelete = () => {
-        const currentDocElement = document.getElementById("file-name");
+        const currentDocElement = document.getElementById('file-name');
         if (!currentDocElement) return;
 
         const currentDocName = currentDocElement.textContent;
         if (!currentDocName) return;
 
         onDelete(currentDocName); // Call the passed delete function
-        setUploadedFiles(prevFiles => prevFiles.filter(file => file.name !== currentDocName));
+        setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.name !== currentDocName));
     };
 
-
     return (
-        <Container className='pageContainer'>
+        <Container className="pageContainer">
             <UploadDocumentContainer>
                 <UploadDragBox
                     $isDragActive={isDragActive}
@@ -194,39 +198,29 @@ const UploadDocumentComponent = () => {
                     onDragLeave={(e) => setIsDragActive(false)}
                 >
                     Drag and drop a file here, or click to select a file
-                    <HiddenUploadInput
-                        id="hiddenFileInput"
-                        type="file"
-                        onChange={handleFileChange}
-                    />
+                    <HiddenUploadInput id="hiddenFileInput" type="file" onChange={handleFileChange} />
                 </UploadDragBox>
-                {uploadedFiles.length > 0 &&
-                    (
-                        <>
-                            <ButtonsContainer>
-                                <DeleteButton onClick={handleDocumentDelete}>Delete</DeleteButton>
-                                <UploadButton onClick={handleUploadSubmit}>Upload</UploadButton>
-                            </ButtonsContainer>
-                            {/* need to fix warning when clicking #doc-nav-next */}
-                            {/* styled-components: it looks like an unknown prop "last" is being sent through to the DOM */}
-                            <MyDocViewer
-                                documents={uploadedFiles.map((file) => ({
-                                    uri: window.URL.createObjectURL(file),
-                                    fileName: file.name,
-                                }))}
-                                pluginRenderers={DocViewerRenderers}
-                                last="true"
-                            />
-                        </>
-
-                    )
-                }
+                {uploadedFiles.length > 0 && (
+                    <>
+                        <ButtonsContainer>
+                            <DeleteButton onClick={handleDocumentDelete}>Delete</DeleteButton>
+                            <UploadButton onClick={handleUploadSubmit}>Upload</UploadButton>
+                        </ButtonsContainer>
+                        {/* need to fix warning when clicking #doc-nav-next */}
+                        {/* styled-components: it looks like an unknown prop "last" is being sent through to the DOM */}
+                        <MyDocViewer
+                            documents={uploadedFiles.map((file) => ({
+                                uri: window.URL.createObjectURL(file),
+                                fileName: file.name,
+                            }))}
+                            pluginRenderers={DocViewerRenderers}
+                            last="true"
+                        />
+                    </>
+                )}
             </UploadDocumentContainer>
         </Container>
     );
 };
 
 export default UploadDocumentComponent;
-
-
-

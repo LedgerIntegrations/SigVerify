@@ -16,7 +16,7 @@ const SlideContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 60px;
+  margin-top: 30px;
   overflow-y: hidden;
 
   p {
@@ -99,6 +99,11 @@ const NavigationSlider = ({ navigateTo, pageName }) => {
   const handleSliderChange = (event) => {
     const value = event.target.value;
     setSliderValue(value);
+    setTimeout(() => {
+       if (value < 100) {
+           setSliderValue(0);
+       }
+    }, 1000)
 
     if (value === '100') {
       navigate(navigateTo);
@@ -118,7 +123,7 @@ const NavigationSlider = ({ navigateTo, pageName }) => {
 
   return (
     <SlideContainer>
-      <SliderText>Slide to view documents →</SliderText>
+      <SliderText>Slide to view { pageName } →</SliderText>
       <ColoredOverlay style={{ width: overlayWidth }} />
       <Slider
         value={sliderValue}

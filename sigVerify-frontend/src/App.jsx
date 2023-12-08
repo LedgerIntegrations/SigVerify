@@ -100,6 +100,7 @@ function useSessionStorage(key, initialValue) {
 
 function App() {
   // used to store the user's account information, initialized and managed using the useSessionStorage custom hook.
+  // const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
   const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
 
   useEffect(() => {

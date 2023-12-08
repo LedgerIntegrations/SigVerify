@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import styles from './DocumentsPage.module.css';
 import styled from 'styled-components';
 import DocumentListFilter from './DocumentListFilter';
-import DocumentViewer from './DocumentViewer';
 import { AccountContext } from '../../App';
 import { Link } from 'react-router-dom';
 
@@ -156,16 +155,14 @@ function DocumentsPage() {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:3001/api/document/getAllDocuments',
-          {
+        const response = await fetch('http://localhost:3001/api/document/getAllDocuments', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email: accountObject.email }),
-          }
-        );
+            body: JSON.stringify({ userAuthId: accountObject.id }),
+            credentials: 'include', // This is necessary to include cookies
+        });
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -248,7 +245,6 @@ function DocumentsPage() {
             />
           )}
         </DocumentDisplay>
-        {/* <DocumentViewer currentDocument={currentDocument} /> */}
       </DocumentSection>
     </OutterDocumentsContainer>
   );
