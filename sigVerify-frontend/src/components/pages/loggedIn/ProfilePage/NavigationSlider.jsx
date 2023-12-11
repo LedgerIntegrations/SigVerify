@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -92,6 +92,7 @@ const ColoredOverlay = styled.div`
 `;
 
 
+// eslint-disable-next-line react/prop-types
 const NavigationSlider = ({ navigateTo, pageName }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const navigate = useNavigate();

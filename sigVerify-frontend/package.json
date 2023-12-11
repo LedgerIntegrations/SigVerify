@@ -16,8 +16,10 @@
     "normalize.css": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.6",
     "react-icons": "^4.11.0",
     "react-pdf": "^7.4.0",
+    "react-resizable": "^3.0.5",
     "react-router-dom": "^6.16.0",
     "styled-components": "^6.1.1",
     "three": "^0.157.0"

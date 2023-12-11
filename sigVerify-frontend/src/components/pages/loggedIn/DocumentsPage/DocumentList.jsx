@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 // currently taken out of application temporarily
@@ -20,9 +19,11 @@ const ListItem = styled.li`
   border-radius: 5px;
 `;
 
+// eslint-disable-next-line react/prop-types
 const DocumentList = ({ documents }) => {
   return (
     <List>
+      {/* eslint-disable-next-line react/prop-types */}
       {documents.map((doc, index) => (
         <ListItem key={index}>
           {doc.name} - {doc.isSigned ? 'Signed' : 'Unsigned'}

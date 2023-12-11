@@ -1,5 +1,4 @@
 // Modal.jsx
-import React from 'react';
 import styled from 'styled-components';
 
 const Backdrop = styled.div`
@@ -25,6 +24,7 @@ const ModalContent = styled.div`
   overflow-y: auto;
 `;
 
+// eslint-disable-next-line react/prop-types
 const Modal = ({ children, show, onClose }) => {
   if (!show) return null;
 

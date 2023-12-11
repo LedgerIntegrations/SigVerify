@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer';
-import axios from 'axios';
+// import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
@@ -194,8 +194,8 @@ const UploadDocumentComponent = () => {
                     onClick={openFileDialog}
                     onDrop={onDrop}
                     onDragOver={handleDragOver}
-                    onDragEnter={(e) => setIsDragActive(true)}
-                    onDragLeave={(e) => setIsDragActive(false)}
+                    onDragEnter={() => setIsDragActive(true)}
+                    onDragLeave={() => setIsDragActive(false)}
                 >
                     Drag and drop a file here, or click to select a file
                     <HiddenUploadInput id="hiddenFileInput" type="file" onChange={handleFileChange} />

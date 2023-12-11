@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AccountContext } from '../../App';
-import ProfileWelcome from './ProfileSubComponents/ProfileWelcome';
-import NavigationSlider from './ProfileSubComponents/NavigationSlider';
+import { useContext, useEffect, useState } from 'react';
+import { AccountContext } from '../../../../App';
+import ProfileWelcome from './ProfileWelcome';
+import NavigationSlider from './NavigationSlider';
 import styled from 'styled-components';
-import logoImg from '../../assets/svLogo.png';
+import logoImg from '../../../../assets/svLogo.png';
 
-import XummLogin from '../XrplDependentComponents/XummLogin/XummLogin';
+import XummLogin from '../../../XrplDependentComponents/XummLogin/XummLogin';
 
 const ProfilePage = styled.div`
     display: flex;
@@ -186,6 +186,7 @@ const XrplWalletDisplay = styled.div`
 `;
 
 function Profile() {
+    // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [walletAuthOpened, setWalletAuthOpened] = useState(false);
     const [maxDocuments, setMaxDocuments] = useState(0);
@@ -212,7 +213,7 @@ function Profile() {
         }
     }, [accountObject.membership]);
 
-    console.log('account object in profile page: ', accountObject);
+    console.log('Profile page rendering...');
     return (
         <>
             {/* faded background logo */}
