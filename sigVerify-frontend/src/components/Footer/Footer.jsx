@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import Tile from '../Tile/Tile';
+import Tile from '../helperComponents/Tile/Tile';
 
 const FooterBalancer = styled.div`
     width: 100%;
@@ -91,11 +91,11 @@ const documentIcon = (
     </svg>
 );
 
-const filledDocIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50" stroke="white" fill="currentColor">
-        <path d="M 30.398438 2 L 7 2 L 7 48 L 43 48 L 43 14.601563 Z M 15 28 L 31 28 L 31 30 L 15 30 Z M 35 36 L 15 36 L 15 34 L 35 34 Z M 35 24 L 15 24 L 15 22 L 35 22 Z M 30 15 L 30 4.398438 L 40.601563 15 Z"></path>
-    </svg>
-)
+// const filledDocIcon = (
+//     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50" stroke="white" fill="currentColor">
+//         <path d="M 30.398438 2 L 7 2 L 7 48 L 43 48 L 43 14.601563 Z M 15 28 L 31 28 L 31 30 L 15 30 Z M 35 36 L 15 36 L 15 34 L 35 34 Z M 35 24 L 15 24 L 15 22 L 35 22 Z M 30 15 L 30 4.398438 L 40.601563 15 Z"></path>
+//     </svg>
+// )
 
 const signatureIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -103,11 +103,11 @@ const signatureIcon = (
     </svg>
 );
 
-const keySvg = (
-    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50" stroke="white" fill="currentColor">
-        <path d="M 34 0 C 25.179688 0 18 7.179688 18 16 C 18 17.957031 18.355469 19.828125 19 21.5625 L 0 40.59375 L 0 46.59375 L 18.5625 28 L 20 29.4375 L 1 48.40625 L 2.59375 50 L 9.40625 50 L 13 46.40625 L 13 44 L 15.40625 44 L 19 40.40625 L 19 39 L 20.40625 39 L 23 36.40625 L 23 35 L 24.40625 35 L 28.4375 30.96875 C 30.175781 31.617188 32.039063 32 34 32 C 42.820313 32 50 24.820313 50 16 C 50 7.179688 42.820313 0 34 0 Z M 34 5 C 36.9375 5 39.703125 6.140625 41.78125 8.21875 C 43.859375 10.296875 45 13.0625 45 16 C 45 18.9375 43.859375 21.703125 41.78125 23.78125 L 41.0625 24.5 L 25.5 8.9375 L 26.21875 8.21875 C 28.296875 6.140625 31.0625 5 34 5 Z"></path>
-    </svg>
-);
+// const keySvg = (
+//     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50" stroke="white" fill="currentColor">
+//         <path d="M 34 0 C 25.179688 0 18 7.179688 18 16 C 18 17.957031 18.355469 19.828125 19 21.5625 L 0 40.59375 L 0 46.59375 L 18.5625 28 L 20 29.4375 L 1 48.40625 L 2.59375 50 L 9.40625 50 L 13 46.40625 L 13 44 L 15.40625 44 L 19 40.40625 L 19 39 L 20.40625 39 L 23 36.40625 L 23 35 L 24.40625 35 L 28.4375 30.96875 C 30.175781 31.617188 32.039063 32 34 32 C 42.820313 32 50 24.820313 50 16 C 50 7.179688 42.820313 0 34 0 Z M 34 5 C 36.9375 5 39.703125 6.140625 41.78125 8.21875 C 43.859375 10.296875 45 13.0625 45 16 C 45 18.9375 43.859375 21.703125 41.78125 23.78125 L 41.0625 24.5 L 25.5 8.9375 L 26.21875 8.21875 C 28.296875 6.140625 31.0625 5 34 5 Z"></path>
+//     </svg>
+// );
 
 const profileIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -122,11 +122,11 @@ const settingsIcon = (
     </svg>
 );
 
-const walletIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
-    </svg>
-);
+// const walletIcon = (
+//     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+//         <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+//     </svg>
+// );
 
 const homeIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">

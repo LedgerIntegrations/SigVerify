@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import styles from './XrplUiPage.module.css';
-import Tile from '../Tile/Tile';
-import { AccountContext } from '../../App';
+import Tile from '../../../helperComponents/Tile/Tile';
+import { AccountContext } from '../../../../App';
 
 function XrplUiPage() {
+    // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
 
     return (

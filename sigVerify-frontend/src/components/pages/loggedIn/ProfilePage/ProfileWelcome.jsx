@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
-import { AccountContext } from '../../../App';
-import styled, { keyframes } from 'styled-components';
+import { useContext } from 'react';
+import { AccountContext } from '../../../../App';
+import styled from 'styled-components';
 
 const ProfileWelcomeContainer = styled.div`
     height: fit-content;
@@ -91,9 +91,10 @@ const WelcomeIntroStats = styled.div`
     }
 `;
 
+// eslint-disable-next-line react/prop-types
 function ProfileWelcome({ membership }) {
+    // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
-    console.log(accountObject)
     return (
         <ProfileWelcomeContainer>
             <WelcomeContainerIntro>

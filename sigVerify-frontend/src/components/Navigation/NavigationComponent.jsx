@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import logoImg from '../../assets/svLogo.png';
-import TogglerButton from '../styledComponents/TogglerButton';
+import TogglerButton from '../helperComponents/TogglerButton/TogglerButton';
 import { AccountContext } from '../../App';
 
 const slideIn = keyframes`
@@ -365,8 +365,9 @@ const settingsIcon = (
 );
 
 const NavigationComponent = () => {
+    // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
-    console.log(accountObject);
+    console.log('Navigation component rendering...');
 
     const navigate = useNavigate();
 

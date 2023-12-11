@@ -1,10 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import logoImage from '../../assets/svLogo.png';
+import logoImage from '../../../assets/svLogo.png';
 // import LandingLoader from '../LandingLoader/LandingLoader';
 import styled from 'styled-components';
 
-const HomepageContainer = styled.div`
+const LandingPageContainer = styled.div`
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -86,9 +85,9 @@ const BottomSection = styled.div`
     }
   }
 `;
-function HomePage() {
+function LandingPage() {
     return (
-        <HomepageContainer>
+        <LandingPageContainer>
             {/* <LandingLoader /> */}
             <TopSection>
                 <h2>Sig Verify</h2>
@@ -104,8 +103,8 @@ function HomePage() {
                     <button className='buttonPop'>Create Account</button>
                 </Link>
             </BottomSection>
-        </HomepageContainer>
+        </LandingPageContainer>
     );
 }
 
-export default HomePage;
+export default LandingPage;
