@@ -10,6 +10,7 @@ router.post('/api/user/create', userController.createNewUser);
 router.post('/api/user/login', userController.authenticateLogin);
 
 // protected routes
+router.get('/api/user/profileData', authenticateToken, userController.getProfilePageData);
 router.put('/api/user/updateWalletAddress', authenticateToken, userController.updateDatabaseWithNewVerifiedXrplWalletAddress);
 
 module.exports = router;

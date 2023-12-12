@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import './XummLogin.css';
 import { useContext, useState } from 'react';
 import { AccountContext } from '../../../App';
@@ -6,6 +6,7 @@ import { AccountContext } from '../../../App';
 
 // needs updating - currently taken out of application temporarily
 
+// eslint-disable-next-line react/prop-types
 export default function XummLogin({ setWalletAuthOpened }) {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [payloadCreate, setPayloadCreate] = useState({});
@@ -55,8 +56,8 @@ export default function XummLogin({ setWalletAuthOpened }) {
                         headers: {
                             'Content-Type': 'application/json',
                         },
+                        credentials: 'include', // This is necessary to include cookies
                         body: JSON.stringify({
-                            userId: accountObject.id,
                             newWalletAddress: finalSignInPayloadReturnObject.verifiedXrplWalletAddress,
                         }),
                     })
@@ -72,7 +73,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
 
                     setAccountObject({
                         ...accountObject,
-                        verifiedXrplWalletAddress: finalSignInPayloadReturnObject.verifiedXrplWalletAddress,
+                        xrplWalletAddress: finalSignInPayloadReturnObject.verifiedXrplWalletAddress,
                         ...finalSignInPayloadReturnObject,
                     });
 
@@ -104,7 +105,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
             <h1>Connect</h1>
             {Object.keys(payloadCreate).length === 0 ? null : (
                 <div className="payloadDiv">
-                    <a href={payloadCreate?.qrLink} target="_blank">
+                    <a href={payloadCreate?.qrLink} target="_blank" rel="noreferrer">
                         <img src={payloadCreate?.qrImage} />
                     </a>
                 </div>

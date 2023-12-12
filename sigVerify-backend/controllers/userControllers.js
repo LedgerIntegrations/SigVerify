@@ -188,13 +188,17 @@ exports.createNewUser = async (req, res) => {
                 ua.auth_token,
                 ua.hashed_password,
                 um.first_name,
-                um.membership
+                um.membership,
+                um.verified_xrpl_wallet_address,
+                ue.email
             FROM
                 user_auth AS ua
             JOIN
                 user_meta AS um ON um.user_auth_id = ua.id
+            LEFT JOIN
+                user_email AS ue ON um.id = ue.user_meta_id
             WHERE
-                ua.hashed_email = $1;
+                ua.id = $1;
         `;
 
         const newUserData = await client.query(newUserDataQuery, [user_auth_id]);
@@ -207,7 +211,7 @@ exports.createNewUser = async (req, res) => {
 
         await client.query('COMMIT');
 
-        const token = jwt.sign(
+        const authToken = jwt.sign(
             {
                 userId: user.id,
                 email: user.email,
@@ -218,7 +222,7 @@ exports.createNewUser = async (req, res) => {
             }
         );
 
-        res.cookie('token', token, {
+        res.cookie('authToken', authToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== 'development', // send only on HTTPS (except in development)
             maxAge: 24 * 60 * 60 * 1000, // cookie expiry, set to match JWT expiry
@@ -228,9 +232,9 @@ exports.createNewUser = async (req, res) => {
         res.status(200).json({
             message: 'user creation successful',
             user: {
-                id: user.id,
                 firstName: user.first_name,
                 membership: user.membership,
+                xrplWalletAddress: user.verified_xrpl_wallet_address,
                 // other non-sensitive fields
             },
         });
@@ -263,7 +267,8 @@ exports.authenticateLogin = async (req, res) => {
                 ua.auth_token,
                 ua.hashed_password,
                 um.first_name,
-                um.membership
+                um.membership,
+                um.verified_xrpl_wallet_address
             FROM
                 user_auth AS ua
             JOIN
@@ -271,7 +276,7 @@ exports.authenticateLogin = async (req, res) => {
             WHERE
                 ua.hashed_email = $1;
         `;
-
+        //!! Do we need to hash email? does this add any security? im thinking it is not useful, allows us to search ua table instead of email table,is this beneficial?
         const hashedEmail = await hashEmail(Email);
         const userLoginResult = await client.query(loginQuery, [hashedEmail]);
 
@@ -307,7 +312,7 @@ exports.authenticateLogin = async (req, res) => {
         const authToken = jwt.sign(
             {
                 userId: user.id,
-                email: user.email,
+                email: Email,
             },
             process.env.JWT_SECRET,
             {
@@ -328,9 +333,9 @@ exports.authenticateLogin = async (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             user: {
-                id: user.id,
                 firstName: user.first_name,
                 membership: user.membership,
+                xrplWalletAddress: user.verified_xrpl_wallet_address,
                 // other non-sensitive fields
             },
         });
@@ -343,7 +348,8 @@ exports.authenticateLogin = async (req, res) => {
 };
 
 exports.updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
-    const { userId, newWalletAddress } = req.body;
+    const userId = req.user.userId;
+    const { newWalletAddress } = req.body;
 
     if (!userId || !newWalletAddress) {
         return res.status(400).json({
@@ -370,6 +376,52 @@ exports.updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
     } catch (err) {
         console.error('Error processing request', err);
         return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+    } finally {
+        client.release();
+    }
+};
+
+exports.getProfilePageData = async (req, res) => {
+    const userId = req.user.userId;
+    console.log('user id inside getProfilePageData endpoint: ', userId);
+
+    const client = await pool.connect();
+
+    try {
+        const profileQuery = `
+            SELECT
+                COUNT(DISTINCT docs.id) AS total_documents,
+                COUNT(DISTINCT sigs.id) AS total_signatures
+            FROM
+                user_meta AS um
+            LEFT JOIN
+                documents AS docs ON um.id = docs.user_meta_id
+            LEFT JOIN
+                signatures AS sigs ON um.id = sigs.user_id
+            WHERE
+                um.user_auth_id = $1;
+        `;
+
+        const profileQueryResults = await client.query(profileQuery, [userId]);
+
+        if (profileQueryResults.rows.length === 0) {
+            return res.status(204).json({ error: 'No data found for your userId.' });
+        }
+
+        const { total_documents, total_signatures } = profileQueryResults.rows[0];
+
+        res.status(200).json({
+            message: 'profile data retrieved.',
+            data: {
+                totalDocuments: total_documents,
+                totalSignatures: total_signatures,
+            },
+        });
+    } catch (err) {
+        console.error('Error processing request in getting profile page data', err);
+        return res
+            .status(HTTP_INTERNAL_SERVER_ERROR)
+            .json({ error: 'Internal server error querying profile page data' });
     } finally {
         client.release();
     }
