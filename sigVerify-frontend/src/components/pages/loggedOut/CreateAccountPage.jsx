@@ -223,6 +223,7 @@ const CreateAccountPage = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'include',
                     body: JSON.stringify(formData),
                 });
 
@@ -286,7 +287,18 @@ const CreateAccountPage = () => {
                                         validateInput(e.target.name, e.target.value);
                                     }}
                                 />
-                                {validFields.Password && <FaCheck />}
+                                {validFields.Password && (
+                                    <FaCheck
+                                        style={{
+                                            color: 'green',
+                                            right: '30px',
+                                            cursor: 'pointer',
+                                            top: '50%',
+                                            position: 'absolute',
+                                            transform: 'translateY(-50%)',
+                                        }}
+                                    />
+                                )}
                                 <ToggleIcon onClick={togglePasswordVisibility}>
                                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                                 </ToggleIcon>
@@ -305,7 +317,18 @@ const CreateAccountPage = () => {
                                         validateInput(e.target.name, e.target.value);
                                     }}
                                 />
-                  {validFields.PasswordConfirm && <FaCheck style={{ color: 'green', right: '30px', cursor: 'pointer', top: '50%', position: 'absolute', transform: 'translateY(-50%)' }} />}
+                                {validFields.PasswordConfirm && (
+                                    <FaCheck
+                                        style={{
+                                            color: 'green',
+                                            right: '30px',
+                                            cursor: 'pointer',
+                                            top: '50%',
+                                            position: 'absolute',
+                                            transform: 'translateY(-50%)',
+                                        }}
+                                    />
+                                )}
                                 <ToggleIcon onClick={togglePasswordVisibility}>
                                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                                 </ToggleIcon>

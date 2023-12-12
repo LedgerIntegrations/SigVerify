@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import logoImg from '../../../../assets/svLogo.png';
 
 import XummLogin from '../../../XrplDependentComponents/XummLogin/XummLogin';
+import { setMainConfig } from '@cyntler/react-doc-viewer/dist/esm/store/actions';
 
 const ProfilePage = styled.div`
     display: flex;
@@ -179,9 +180,9 @@ const XrplWalletDisplay = styled.div`
     }
 
     em {
-      font-size: 9px;
-      margin: 0px 30px;
-      text-align: start;
+        font-size: 9px;
+        margin: 0px 30px;
+        text-align: start;
     }
 `;
 
@@ -191,9 +192,38 @@ function Profile() {
     const [walletAuthOpened, setWalletAuthOpened] = useState(false);
     const [maxDocuments, setMaxDocuments] = useState(0);
     const [maxSignatures, setMaxSignatures] = useState(0);
+    const [accountDocumentTotal, setAccountDocumentTotal] = useState(0);
+    const [accountSignatureTotal, setAccountSignatureTotal] = useState(0);
 
     // Switch statement to set limits based on membership
     useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/user/profileData', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // This is necessary to include cookies
+                });
+
+                if (!response.ok) {
+                    throw new Error('/api/user/profileData response was not ok');
+                }
+
+                const data = await response.json();
+
+                setAccountDocumentTotal(data.data.totalDocuments);
+                setAccountSignatureTotal(data.data.totalSignatures);
+
+                console.log('response from /api/user/profileData endpoint in useEffect: ', data);
+            } catch (error) {
+                console.error('Error fetching profile data:', error);
+            }
+        };
+
+        fetchProfileData();
+
         switch (accountObject.membership) {
             case 'free':
                 setMaxDocuments(5);
@@ -229,7 +259,7 @@ function Profile() {
                                 accountObject.membership?.charAt(0).toUpperCase() + accountObject.membership?.slice(1)
                             }
                         />
-                        {!accountObject.verifiedXrplWalletAddress && (
+                        {!accountObject.xrplWalletAddress && (
                             <Warning>
                                 <p>WARNING! - XRPL Wallet not connected for blockchain signatures.</p>
                                 <button
@@ -259,14 +289,14 @@ function Profile() {
                                 <ContentStatSection>
                                     <h5>Maximum documents:</h5>
                                     <em>
-                                        {accountObject.totalDocuments} / {maxDocuments}
+                                        {accountDocumentTotal} / {maxDocuments}
                                     </em>
                                 </ContentStatSection>
                                 <ContentStatSection>
                                     <h5>Blockchain Signatures:</h5>
                                     {/* TODO: add max membership level signatures dynamically*/}
                                     <em>
-                                        {accountObject.totalSignatures} / {maxSignatures}
+                                        {accountSignatureTotal} / {maxSignatures}
                                     </em>
                                 </ContentStatSection>
                             </AccountTotalsSectionMainContent>
@@ -275,10 +305,10 @@ function Profile() {
                     </ProfileTierLimits>
                 </Block>
                 <Block>
-                    {accountObject.verifiedXrplWalletAddress && (
+                    {accountObject.xrplWalletAddress && (
                         <XrplWalletDisplay>
                             <h2>Wallet</h2>
-                            <em>{accountObject.verifiedXrplWalletAddress}</em>
+                            <em>{accountObject.xrplWalletAddress}</em>
                         </XrplWalletDisplay>
                     )}
                 </Block>
