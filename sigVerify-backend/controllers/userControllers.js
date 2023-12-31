@@ -1,12 +1,13 @@
 // /sigVerify-backend/controllers/userControllers
+import jwt from 'jsonwebtoken';
+import pool from '../config/db.js';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import { sendEmail as emailer } from './utils/index.js';
+import { sendAuthTokenEmail } from './helpers/index.js';
+import dotenv from 'dotenv';
 
-const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
-const crypto = require('crypto');
-const bcrypt = require('bcrypt');
-// const emailer = require('../utils/sendGmail');
-const emailer = require('../utils/sendMail');
-require('dotenv').config();
+dotenv.config();
 
 //hard coded routes
 const loginApiRoute = 'http://localhost:3001/api/user/login';
@@ -25,26 +26,7 @@ async function hashPassword(password) {
     return bcrypt.hash(password, 10);
 }
 
-const sendTokenAuthLinkEmail = async (email, token) => {
-    return new Promise((resolve, reject) => {
-        emailer.sendEmail(
-            email,
-            'SigVerify E-mail Verification',
-            `Please Click Link to Verify email! \n http://localhost:5173/create-user/?token=${token}`,
-            (err, res) => {
-                if (err) {
-                    console.log('The API returned an error:', err.message);
-                    reject(err);
-                } else {
-                    console.log('Email sent:', res.data);
-                    resolve(res);
-                }
-            }
-        );
-    });
-};
-
-exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
+const createInitalUserTablesAndEmailAuthToken = async (req, res) => {
     const { email } = req.body;
     const client = await pool.connect();
 
@@ -68,7 +50,7 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
 
             //if token exists in auth, email not verified --> send auth email
             if (userAuthToken !== null) {
-                await sendTokenAuthLinkEmail(email, userAuthToken);
+                await sendAuthTokenEmail(email, userAuthToken);
                 return res.status(HTTP_OK).json({
                     userAuthenticated: false,
                     emailSent: true,
@@ -116,7 +98,7 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
 
         await client.query('COMMIT');
         console.log('Commit');
-        await sendTokenAuthLinkEmail(email, newAuthToken);
+        await sendAuthTokenEmail(email, newAuthToken);
         console.log('SendToken');
         return res.status(HTTP_OK).json({
             userAuthenticated: false,
@@ -137,7 +119,7 @@ exports.createInitalUserTablesAndEmailAuthToken = async (req, res) => {
     }
 };
 
-exports.createNewUser = async (req, res) => {
+const createNewUser = async (req, res) => {
     const { FirstName, LastName, Password, PasswordConfirm, Token } = req.body;
     console.log('createNewUser server function recieved body: ', req.body);
 
@@ -247,7 +229,7 @@ exports.createNewUser = async (req, res) => {
     }
 };
 
-exports.authenticateLogin = async (req, res) => {
+const authenticateLogin = async (req, res) => {
     const { Email, Password } = req.body;
     console.log('user login credential on server:', Email, Password);
 
@@ -347,7 +329,7 @@ exports.authenticateLogin = async (req, res) => {
     }
 };
 
-exports.updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
+const updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
     const userId = req.user.userId;
     const { newWalletAddress } = req.body;
 
@@ -381,7 +363,7 @@ exports.updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
     }
 };
 
-exports.getProfilePageData = async (req, res) => {
+const getProfilePageData = async (req, res) => {
     const userId = req.user.userId;
     console.log('user id inside getProfilePageData endpoint: ', userId);
 
@@ -425,4 +407,12 @@ exports.getProfilePageData = async (req, res) => {
     } finally {
         client.release();
     }
+};
+
+export {
+    createInitalUserTablesAndEmailAuthToken,
+    createNewUser,
+    authenticateLogin,
+    updateDatabaseWithNewVerifiedXrplWalletAddress,
+    getProfilePageData,
 };

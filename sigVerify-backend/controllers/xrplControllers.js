@@ -1,13 +1,13 @@
-const {
-    createXummSigninPayload,
-    createXummPayloadSubscription,
-    findAllAccountPaymentTransactionsToSigVerifyWallet,
-    createPaymentTxWithDocHashInMemo,
-} = require('../utils/xrplHelpers');
+import {
+    createXummSigninPayload as createXummSigninPayloadHelper,
+    createXummPayloadSubscription as createXummPayloadSubscriptionHelper,
+    findAllAccountPaymentTransactionsToSigVerifyWallet as findAllAccountPaymentTransactionsToSigVerifyWalletHelper,
+    createPaymentTxWithDocHashInMemo as createPaymentTxWithDocHashInMemoHelper,
+} from './utils/index.js';
 
-exports.createXummSigninPayload = async (req, res) => {
+const createXummSigninPayload = async (req, res) => {
     try {
-        const response = await createXummSigninPayload();
+        const response = await createXummSigninPayloadHelper();
         res.json(response);
     } catch (error) {
         console.error('Error while create sign-in payload: ', error);
@@ -18,11 +18,11 @@ exports.createXummSigninPayload = async (req, res) => {
 };
 
 //responds back to client with specificPropertiesFromPayloadSubscriptionResolution
-exports.createXummPayloadSubscription = async (req, res) => {
+const createXummPayloadSubscription = async (req, res) => {
     const uuid = req.body.payloadUuid;
     console.log('checking uuid send in req: ', uuid);
     try {
-        const specificPropertiesFromPayloadSubscriptionResolution = await createXummPayloadSubscription(uuid);
+        const specificPropertiesFromPayloadSubscriptionResolution = await createXummPayloadSubscriptionHelper(uuid);
         res.json(specificPropertiesFromPayloadSubscriptionResolution);
     } catch (error) {
         console.error('Error while verifying:', error);
@@ -30,17 +30,17 @@ exports.createXummPayloadSubscription = async (req, res) => {
     }
 };
 
-exports.addAuthenticatedWalletToUserProfile = async (userId, walletAddress) => {};
+const addAuthenticatedWalletToUserProfile = async (userId, walletAddress) => {};
 
-exports.signDocumentXrplTxCreation = async (req, res) => {
+const signDocumentXrplTxCreation = async (req, res) => {
     //need wallet and document hash params for createPaymentTxWithDocHashInMemo function
 };
 
-exports.findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
+const findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
     try {
         const rAddress = req.body.rAddress;
         const arrayOfPaymentTransactionsWithMemoToSigVerifyAccount =
-            await findAllAccountPaymentTransactionsToSigVerifyWallet(rAddress);
+            await findAllAccountPaymentTransactionsToSigVerifyWalletHelper(rAddress);
         //return array of all payment transactions from logged in account to sigVerify temp wallet
         res.json(arrayOfPaymentTransactionsWithMemoToSigVerifyAccount);
     } catch (err) {
@@ -49,4 +49,12 @@ exports.findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res
             error: 'Internal Server Error inside findAllAccountPaymentTransactionsToSigVerifyWallet.',
         });
     }
+};
+
+export {
+    createXummSigninPayload,
+    createXummPayloadSubscription,
+    addAuthenticatedWalletToUserProfile,
+    signDocumentXrplTxCreation,
+    findAllXrplAccountPaymentTransactionsToSigVerifyWallet,
 };

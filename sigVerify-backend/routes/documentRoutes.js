@@ -1,9 +1,11 @@
 // /sigVerify-backend/routes/documentRoutes
 
-const express = require('express');
+import express from 'express';
+import authenticateToken from '../middleware/authenticateToken.js';
+import * as documentController from '../controllers/documentControllers.js';
+// ... other imports ...
+
 const router = express.Router();
-const authenticateToken = require('../middleware/authenticateToken');
-const documentControllers = require('../controllers/documentControllers');
 
 // uploaded files to server memory and then handling from there
 // const multer = require('multer');
@@ -11,15 +13,12 @@ const documentControllers = require('../controllers/documentControllers');
 // const upload = multer({ storage: storage });
 
 //upload files directly to s3 using multer-s3
-const { upload } = require('../config/s3Bucket');
+import { upload } from '../config/s3Bucket.js';
 
 // protected routes
-router.post('/api/document/upload', upload.array('files'), authenticateToken, documentControllers.uploadFiles);
-router.post(
-    '/api/document/getAllDocuments',
-    authenticateToken,
-    documentControllers.getAllUsersDocumentsGivenTheirUserAuthId
-);
+router.get('/api/documents', authenticateToken, documentController.getAllUserDocuments);
+router.post('/api/documents', authenticateToken, upload.array('files'), documentController.uploadFiles);
+
 
 // old document routes
 // router.post('/api/document/sign', upload.single('document'), xrplDocumentControllers.signDocument);
@@ -27,4 +26,4 @@ router.post(
 // router.post('/api/document/fileUpload', upload.single('document'), xrplDocumentControllers.uploadFileToDb);
 // router.post('/api/document/getAllUserDocuments', xrplDocumentControllers.getAllDocumentsUploadedByThisWallet);
 
-module.exports = router;
+export default router;

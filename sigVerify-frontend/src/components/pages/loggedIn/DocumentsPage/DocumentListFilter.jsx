@@ -32,7 +32,6 @@ const DocumentList = styled.ul`
     flex-wrap: wrap;
     gap: 5px;
     min-height: fit-content;
-
     padding: 0px;
 `;
 

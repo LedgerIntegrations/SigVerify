@@ -1,18 +1,17 @@
-const crypto = require('crypto');
-
-const { createTransactionPayload, hasAccountSignedThisDocument } = require('../utils/xrplHelpers');
+import crypto from 'crypto';
+import { createTransactionPayload, hasAccountSignedThisDocument } from '../utils/xrplHelpers.js';
 
 // hashes document and creates payment payload with doc hash to sign.
 // returns object with tx identifiers(qr, link, uuid)
-exports.signDocument = async (req, res) => {
+export const signDocument = async (req, res) => {
     const rAddress = req.body.rAddress;
     try {
-        console.log(req.file);  // The uploaded file data is available in req.file
+        console.log(req.file); // The uploaded file data is available in req.file
         const document = req.file.buffer; // Buffer of the uploaded file
 
         if (!document) {
-            return res.status(400).json({ error: "No document provided" });
-        };
+            return res.status(400).json({ error: 'No document provided' });
+        }
 
         // Create a hash of the document
         const hash = crypto.createHash('sha256').update(document).digest();
@@ -21,22 +20,21 @@ exports.signDocument = async (req, res) => {
         const newPaymentTxPayloadObject = await createTransactionPayload(rAddress, base64DocHash);
 
         res.json(newPaymentTxPayloadObject);
-
     } catch (error) {
-        console.error("Error while signing:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    };
+        console.error('Error while signing:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 };
 
-exports.verifySignature = async (req, res) => {
+export const verifySignature = async (req, res) => {
     try {
-        const targetRAddress = req.body.targetRAddress
-        console.log(req.file);  // The uploaded file data is available in req.file
+        const targetRAddress = req.body.targetRAddress;
+        console.log(req.file); // The uploaded file data is available in req.file
         const document = req.file.buffer; // Buffer of the uploaded file
 
         if (!document) {
-            return res.status(400).json({ error: "No document provided" });
-        };
+            return res.status(400).json({ error: 'No document provided' });
+        }
 
         // Create a hash of the document
         const hash = crypto.createHash('sha256').update(document).digest();
@@ -45,9 +43,8 @@ exports.verifySignature = async (req, res) => {
         const returnedArrayOfTxThatMatch = await hasAccountSignedThisDocument(targetRAddress, base64DocHash);
 
         res.json(returnedArrayOfTxThatMatch);
-
     } catch (error) {
-        console.error("Error while signing:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    };
+        console.error('Error while signing:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 };

@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as xrplController from '../controllers/xrplControllers.js'; // Ensure the path is correct and add '.js' extension
+
 const router = express.Router();
-const xrplController = require('../controllers/xrplControllers');
 
 //xumm and/or xrpl user functionality routes
 router.get('/api/xrpl/createXummSigninPayload', xrplController.createXummSigninPayload);
@@ -13,4 +14,4 @@ router.post(
 );
 
 router.post('/api/xrpl/signDocument');
-module.exports = router;
+export default router;

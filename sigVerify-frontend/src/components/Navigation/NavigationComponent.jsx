@@ -30,7 +30,7 @@ const NavigationContainer = styled.div`
     position: fixed;
     top: 0px;
     left: 0px;
-    background-color: #b7b7b7a3;
+    /* background-color: #b7b7b7a3; */
     flex-direction: column;
     padding: 10px;
     height: 11vh;
@@ -43,6 +43,14 @@ const NavigationHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     /* padding-inline: 10px; */
+
+`;
+
+const MiddleNav = styled.div`
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, -50%);
 `;
 
 const NavIconsDiv = styled.div`
@@ -51,14 +59,8 @@ const NavIconsDiv = styled.div`
 
 // temporary remove until we decide prefered nav design
 const CompanyName = styled.h4`
-    position: absolute;
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-    left: 0px;
-    top: 2vh;
-    margin: auto;
-    margin-top: 5vh;
+    margin-top: 3vh;
+    margin-bottom: 0px;
     color: black;
     font-size: 0.8em;
     letter-spacing: 5px;
@@ -248,8 +250,9 @@ const NavigationLink = styled(Link)`
 
 const SocialMediaBox = styled.div`
     display: flex;
-    margin: 50px;
-    padding: 20px 40px;
+    margin: 5px;
+    padding: 10px 20px;
+    // border: solid 2px black;
     border-radius: 20px;
     gap: 20px;
     box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
@@ -258,8 +261,8 @@ const SocialMediaBox = styled.div`
 
 const SocialMediaLink = styled.a`
     svg {
-        width: 30px;
-        height: 30px;
+        width: 18px;
+        height: 18px;
         color: #222;
 
         &:hover {
@@ -407,7 +410,14 @@ const NavigationComponent = () => {
                         </LogoNavigation>
                     </>
                 )}
-                <CompanyName>Sig Verify</CompanyName>
+                <MiddleNav>
+                    <CompanyName>Sig Verify</CompanyName>
+                    <SocialMediaBox>
+                        <SocialMediaLink>{twitterSvg}</SocialMediaLink>
+                        <SocialMediaLink>{linkedInSvg}</SocialMediaLink>
+                        <SocialMediaLink>{discordSvg}</SocialMediaLink>
+                    </SocialMediaBox>
+                </MiddleNav>
                 <NavIconsDiv>
                     <SettingsButtonActivated onClick={toggleSettings} $settingsIsOpen={settingsIsOpen}>
                         {settingsIcon}
@@ -440,11 +450,6 @@ const NavigationComponent = () => {
                         XRPL
                     </NavigationLink>
                 </NavigationItem>
-                <SocialMediaBox>
-                    <SocialMediaLink>{twitterSvg}</SocialMediaLink>
-                    <SocialMediaLink>{linkedInSvg}</SocialMediaLink>
-                    <SocialMediaLink>{discordSvg}</SocialMediaLink>
-                </SocialMediaBox>
             </NavigationListAnimated>
             <SettingsListAnimated $settingsIsOpen={settingsIsOpen} $settingsHasBeenOpened={settingsHasBeenOpened}>
                 <h3>{accountObject.firstName}</h3>

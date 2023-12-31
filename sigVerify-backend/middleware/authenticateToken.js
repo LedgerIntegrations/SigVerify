@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const authenticateToken = (req, res, next) => {
     console.log('token authentication middleware fired.');
@@ -14,13 +14,17 @@ const authenticateToken = (req, res, next) => {
     // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
+            // handle specific JWT errors for expiration
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ error: 'Token has expired.' });
+            }
             return res.status(403).json({ error: 'Failed to authenticate token.' });
         }
-        console.log("jwt decoded: ", decoded)
+        console.log('jwt decoded: ', decoded);
         // Token is valid, store user info in request object
         req.user = decoded;
         next();
     });
 };
 
-module.exports = authenticateToken;
+export default authenticateToken;

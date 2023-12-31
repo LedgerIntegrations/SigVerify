@@ -72,6 +72,7 @@ const DocumentDisplay = styled.div`
     }
 `;
 
+
 const NoDocumentsMessage = styled.p`
     font-size: 14px;
 `;
@@ -81,7 +82,6 @@ function DocumentsPage() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [documents, setDocuments] = useState([]);
 
-
     async function convertSignedUrlToJsFileObject(url, filename) {
         const response = await fetch(url);
         const blob = await response.blob();
@@ -90,15 +90,49 @@ function DocumentsPage() {
         });
     }
 
+    // Function to handle document deletion
+    const handleDelete = async (documentId) => {
+        // try {
+        //     const response = await fetch('http://localhost:3001/api/document/delete', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({ document_id: documentId }),
+        //         credentials: 'include',
+        //     });
+
+        //     if (!response.ok) {
+        //         throw new Error('Error deleting document');
+        //     }
+
+        //     // Remove the deleted document from the state
+        //     setDocuments(documents.filter((doc) => doc.document_id !== documentId));
+        // } catch (error) {
+        //     console.error('Error deleting document:', error);
+      // }
+
+      console.log("handle delete function documentId: ",documentId)
+    };
+
+    // Function to handle document viewing
+    const handleView = (document) => {
+        // Logic to view the document
+        // Similar to handleDocumentClick in DocumentListFilter
+    };
+
+  const prepareDocument = (document) => {
+      console.log("document item inside prepare document function: ", document)
+    };
+
     useEffect(() => {
         const fetchDocuments = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/document/getAllDocuments', {
-                    method: 'POST',
+                const response = await fetch('http://localhost:3001/api/documents', {
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ userAuthId: accountObject.id }),
                     credentials: 'include', // This is necessary to include cookies
                 });
 
@@ -107,7 +141,7 @@ function DocumentsPage() {
                 }
 
                 const data = await response.json();
-                console.log("response from /getAllDocuments endpoint in useEffect: ", data);
+                console.log('response from /getAllDocuments endpoint in useEffect: ', data);
                 if (!Array.isArray(data)) {
                     setDocuments([]);
                     return;
@@ -122,7 +156,10 @@ function DocumentsPage() {
 
                 const resolvedFormattedUserDocuments = await Promise.all(formattedUserDocuments);
 
-                console.log('formattedUserDocuments to add JS File object into each file...', resolvedFormattedUserDocuments);
+                console.log(
+                    'formattedUserDocuments to add JS File object into each file...',
+                    resolvedFormattedUserDocuments
+                );
                 setDocuments(resolvedFormattedUserDocuments);
             } catch (error) {
                 console.error('Error fetching documents:', error);
@@ -164,6 +201,18 @@ function DocumentsPage() {
                     )}
                 </DocumentDisplay>
             </DocumentSection>
+            {/* <DocumentsList>
+                {documents.map((item, index) => (
+                    <li key={index}>
+                        <strong>{item.title}</strong>
+                        <div>
+                            <button onClick={() => handleDelete(item.document_id)}>Delete</button>
+                            <button onClick={() => handleView(item)}>View</button>
+                            <button onClick={() => prepareDocument(item)}>Prep</button>
+                        </div>
+                    </li>
+                ))}
+            </DocumentsList> */}
         </OutterDocumentsContainer>
     );
 }
