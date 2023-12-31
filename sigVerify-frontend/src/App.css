@@ -47,6 +47,21 @@ svg {
 }
 
 /* UploadDocumentComponent Viewer Styles */
+/* #react-dov-viewer {
+  height: 60%;
+} */
+/* #file-name {
+  color: white;
+}
+
+#search-plus-icon {
+  fill: white;
+}
+
+#pdf-zoom-reset svg path{
+  fill: white;
+  color: white;
+} */
 
 #doc-nav-info {
   margin: 0px;

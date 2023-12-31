@@ -6,7 +6,6 @@ import styled from 'styled-components';
 import logoImg from '../../../../assets/svLogo.png';
 
 import XummLogin from '../../../XrplDependentComponents/XummLogin/XummLogin';
-import { setMainConfig } from '@cyntler/react-doc-viewer/dist/esm/store/actions';
 
 const ProfilePage = styled.div`
     display: flex;
@@ -186,14 +185,91 @@ const XrplWalletDisplay = styled.div`
     }
 `;
 
+const WalletForm = styled.form`
+    min-height: fit-content;
+    width: 70vw;
+    max-width: 320px;
+    min-width: 250px;
+    display: flex;
+    position: absolute;
+    background-color: white;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    border-radius: 24px;
+    margin-block: 5vh;
+    box-shadow: 0px 10px 18px 0px #242a49cb;
+    font-size: 0.8em;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
+
+    button {
+      position: relative;
+      top: -10px;
+      right: -47%;
+      padding-block: 2px;
+    }
+
+    label {
+    }
+
+    select {
+        width: 150px;
+    }
+
+    input {
+        font-size: 10px;
+        width: fit-content;
+        padding: 6px 12px;
+        padding-top: 8.5px;
+        color: white;
+        background-color: #333;
+        border: none;
+        border-radius: 6px;
+    }
+`;
+
 function Profile() {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [walletAuthOpened, setWalletAuthOpened] = useState(false);
+    const [showWalletProviders, setShowWalletProviders] = useState(false);
+    const [selectedWalletProvider, setSelectedWalletProvider] = useState('');
+
     const [maxDocuments, setMaxDocuments] = useState(0);
     const [maxSignatures, setMaxSignatures] = useState(0);
     const [accountDocumentTotal, setAccountDocumentTotal] = useState(0);
     const [accountSignatureTotal, setAccountSignatureTotal] = useState(0);
+
+    // const handleWalletProviderSelect = (provider) => {
+    //     setSelectedWalletProvider(provider);
+    //     setShowWalletProviders(false);
+
+    //     // If XUMM is selected, open the XUMM login component
+    //     if (provider === 'xumm-xrpl') {
+    //         setWalletAuthOpened(true);
+    //     }
+    //     // Add similar conditions for other providers if needed
+    // };
+
+    const handleWalletProviderSubmit = (event) => {
+        event.preventDefault();
+        const provider = event.target.walletProvider.value;
+
+        setSelectedWalletProvider(provider);
+        setShowWalletProviders(false);
+
+        // Open the login component based on the selected provider
+        if (provider === 'xumm-xrpl') {
+            setWalletAuthOpened(true);
+        } else if (provider === 'xdc') {
+            // Implement the login logic for 'xdc'
+            console.log('XDC wallet provider selected');
+            // setWalletAuthOpened(true); // Uncomment and modify this line as per the logic for 'xdc'
+        }
+    };
 
     // Switch statement to set limits based on membership
     useEffect(() => {
@@ -260,20 +336,43 @@ function Profile() {
                             }
                         />
                         {!accountObject.xrplWalletAddress && (
-                            <Warning>
-                                <p>WARNING! - XRPL Wallet not connected for blockchain signatures.</p>
-                                <button
-                                    className="buttonPop"
-                                    onClick={() => {
-                                        setWalletAuthOpened(!walletAuthOpened);
-                                    }}
-                                >
-                                    {walletAuthOpened ? 'Close Auth' : 'Connect Wallet'}
-                                </button>
-                            </Warning>
+                            <>
+                                <Warning>
+                                    <p>WARNING! - Wallet not connected for blockchain signatures.</p>
+                                    <button
+                                        className="buttonPop"
+                                        onClick={() => setShowWalletProviders(!showWalletProviders)}
+                                    >
+                                        {showWalletProviders ? 'Close Providers' : 'Connect Wallet'}
+                                    </button>
+                                </Warning>
+
+                                {showWalletProviders && (
+                                    <WalletForm onSubmit={handleWalletProviderSubmit}>
+                                        <button
+                                            className="buttonPop"
+                                            onClick={() => setShowWalletProviders(!showWalletProviders)}
+                                        >
+                                            X
+                                        </button>
+                                        <label htmlFor="walletProvider">Choose a wallet provider:</label>
+                                        <select name="walletProvider" id="walletProvider">
+                                            <option value="xumm-xrpl">XUMM</option>
+                                            <option value="xdc">XDC</option>
+                                            {/* Add more options for other wallet providers here */}
+                                        </select>
+                                        <br />
+                                        <br />
+                                        <input type="submit" value="Connect" className="buttonPop" />
+                                    </WalletForm>
+                                )}
+                            </>
                         )}
 
-                        {walletAuthOpened && <XummLogin setWalletAuthOpened={setWalletAuthOpened} />}
+                        {walletAuthOpened && selectedWalletProvider === 'xumm-xrpl' && (
+                            <XummLogin setWalletAuthOpened={setWalletAuthOpened} />
+                        )}
+                        {/* Add logic to render the component for 'xdc' provider if selected */}
                     </ProfileIntroWithWalletConnect>
 
                     <ProfileTierLimits>

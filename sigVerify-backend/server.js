@@ -1,16 +1,21 @@
 // /sigVerify-backend/server.js
 
-const express = require('express');
-const app = express();
-const cookieParser = require('cookie-parser');
-const PORT = process.env.PORT || 3001;
-const cors = require('cors');
-const pool = require('./config/db');
-require('dotenv').config();
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import pool from './config/db.js'; // Ensure to add '.js' extension
 
-const xrplRoutes = require('./routes/xrplRoutes');
-const documentRoutes = require('./routes/documentRoutes');
-const userRoutes = require('./routes/userRoutes');
+import xrplRoutes from './routes/xrplRoutes.js'; // Ensure to add '.js' extension
+import documentRoutes from './routes/documentRoutes.js'; // Ensure to add '.js' extension
+import userRoutes from './routes/userRoutes.js'; // Ensure to add '.js' extension
+
+dotenv.config();
+
+const PORT = process.env.PORT || 3001;
+
+// Create an instance of express
+const app = express();
 
 const corsOptions = {
     origin: 'http://localhost:5173',

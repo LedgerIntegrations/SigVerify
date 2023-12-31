@@ -1,32 +1,29 @@
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-require('dotenv').config();
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const client = new S3Client({
     region: process.env.AWS_S3_REGION,
     credentials: {
         accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
-    }
+    },
 });
 
-// Access Controls:
-// acl: 'private' --> means the file is not publicly accessible. Need to generate pre-signed URL to view via URL.   
-// versionId: 'undefined' --> versioning is not currently enabled.
-// The contentType is set to 'application/octet-stream', which is a generic binary type. If you need to handle specific types of files differently, you might want to manage the contentType more precisely.
 const upload = multer({
     storage: multerS3({
         s3: client,
         bucket: process.env.S3_BUCKET_NAME,
         key: function (req, file, cb) {
-            console.log(file)
-            // adding filename to end of timestamp to improve key randomness
+            console.log(file);
             cb(null, Date.now().toString() + '-' + file.originalname);
         },
-        contentType: multerS3.AUTO_CONTENT_TYPE
-    })
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+    }),
 });
 
 const returnSignedUrlFromS3BucketKey = async (documentKey) => {
@@ -38,4 +35,4 @@ const returnSignedUrlFromS3BucketKey = async (documentKey) => {
     return signedUrl;
 };
 
-module.exports = { upload, returnSignedUrlFromS3BucketKey };
+export { upload, returnSignedUrlFromS3BucketKey };

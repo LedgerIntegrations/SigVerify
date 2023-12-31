@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import styles from './Settings.module.css';
-import Tile from '../helperComponents/Tile/Tile';
-import { AccountContext } from '../../App';
+import Tile from '../../../helperComponents/Tile/Tile';
+import { AccountContext } from '../../../../App';
 
 function Settings() {
     const [accountObject, setAccountObject] = useContext(AccountContext);

@@ -1,16 +1,20 @@
 // /sigVerify-backend/routes/userRoutes
+import express from 'express';
+import * as userController from '../controllers/userControllers.js';
+import authenticateToken from '../middleware/authenticateToken.js';
 
-const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userControllers');
-const authenticateToken = require('../middleware/authenticateToken');
 
 router.post('/api/user/register', userController.createInitalUserTablesAndEmailAuthToken);
 router.post('/api/user/create', userController.createNewUser);
 router.post('/api/user/login', userController.authenticateLogin);
 
-// protected routes
+// Protected routes
 router.get('/api/user/profileData', authenticateToken, userController.getProfilePageData);
-router.put('/api/user/updateWalletAddress', authenticateToken, userController.updateDatabaseWithNewVerifiedXrplWalletAddress);
+router.put(
+    '/api/user/updateWalletAddress',
+    authenticateToken,
+    userController.updateDatabaseWithNewVerifiedXrplWalletAddress
+);
 
-module.exports = router;
+export default router;

@@ -17,7 +17,7 @@ const AppWrapper = styled.div`
 const PageWrapper = styled.div`
     background-color: rgb(236, 235, 235);
     padding: 20px;
-    padding-top: 12vh;
+    padding-top: 14vh;
     width: 100vw;
     min-height: 75vh;
     max-height: fit-content;
@@ -27,30 +27,22 @@ const PageWrapper = styled.div`
 `;
 
 //web2 user profile handler pages (shown to logged out users)
-import LandingPage from './components/pages/loggedOut/LandingPage'
+import LandingPage from './components/pages/loggedOut/LandingPage';
 import EmailRegistrationPage from './components/pages/loggedOut/EmailRegistrationPage';
 import CreateAccountPage from './components/pages/loggedOut/CreateAccountPage';
 import LoginPage from './components/pages/loggedOut/LoginPage';
 
 // navigation added to all logged in pages
-// import Navigation from './components/Navigation/Navigation';
 import NavigationComponent from './components/Navigation/NavigationComponent';
-// import SecondNavigationComponent from './components/Navigation/SecondNavigationComponent';
-// import Footer from './components/Footer/Footer';
 
 // pages (shown to logged in users, wrapped with Navigation component)
 import Dashboard from './components/pages/loggedIn/DashboardPage';
 import DocumentsPage from './components/pages/loggedIn/DocumentsPage/DocumentsPage';
 import XrplUiPage from './components/pages/loggedIn/XrplUiPage/XrplUiPage';
 import Profile from './components/pages/loggedIn/ProfilePage/ProfilePage';
-import Settings from './components/Settings/Settings';
+import Settings from './components/pages/loggedIn/Settings/Settings';
 import UploadDocumentComponent from './components/pages/loggedIn/DocumentsPage/UploadDocumentComponent';
 import DocumentPreparation from './components/pages/loggedIn/DocumentsPage/DocumentPreperation';
-// ====SIDELINED XRPL/XUMM INTEGRATED COMPONENTS====
-// import Login from './components/xummLogin/xummLogin';
-// import UploadDocument from './components/UploadDocument/UploadDocument';
-// import VerifySignature from './components/VerifySignature/VerifySignature';
-// import AccountSigsPage from './components/AccountSigsPage/AccountSigsPage';
 
 // GLOBAL ACCOUNT INFORMATION
 export const AccountContext = createContext();
@@ -60,12 +52,10 @@ const withNavigation = (Component) => {
     return function WrappedComponent(props) {
         return (
             <>
-                {/* <SecondNavigationComponent /> */}
                 <NavigationComponent />
                 <PageWrapper>
                     <Component {...props} />
                 </PageWrapper>
-                {/* <Footer /> */}
             </>
         );
     };
@@ -147,12 +137,6 @@ function App() {
                                 )
                             }
                         />
-
-                        {/* ==== SIDELINED XRPL/XUMM INTEGRATED ROUTES ==== */}
-                        {/* <Route path="/mysigs" element={accountObject.loggedIn ? React.createElement(withNavigation(AccountSigsPage)) : <Navigate to="/" replace />} /> */}
-                        {/* <Route path="/verify" element={accountObject.loggedIn ? React.createElement(withNavigation(VerifySignature)) : <Navigate to="/" replace />} /> */}
-                        {/* <Route path="/sign" element={accountObject.loggedIn ? React.createElement(withNavigation(UploadDocument)) : <Navigate to="/" replace />} /> */}
-                        {/* <Route path="/fileUpload" element={accountObject.loggedIn ? React.createElement(withNavigation(FileUpload)) : <Navigate to="/" replace />} /> */}
 
                         {/* LOGGED IN ROUTES */}
                         <Route

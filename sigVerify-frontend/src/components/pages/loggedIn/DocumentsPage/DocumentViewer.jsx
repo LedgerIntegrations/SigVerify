@@ -3,11 +3,11 @@ import styled from 'styled-components';
 import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer';
 
 const DocumentViewerContainer = styled.div`
-    max-height: 100%;
+
 `;
 
 // eslint-disable-next-line react/prop-types
-const DocumentViewer = ({ currentDocument }) => {
+const DocumentViewer = ({ currentDocument, theme }) => {
     console.log(currentDocument);
 
     const memoizedUrl = useMemo(() => {
@@ -30,7 +30,7 @@ const DocumentViewer = ({ currentDocument }) => {
     console.log(memoizedUrl);
     return (
         <DocumentViewerContainer>
-            {docs.length > 0 && <DocViewer documents={docs} pluginRenderers={DocViewerRenderers} />}
+        {docs.length > 0 && <DocViewer documents={docs} theme={theme}  pluginRenderers={DocViewerRenderers} />}
         </DocumentViewerContainer>
     );
 };
