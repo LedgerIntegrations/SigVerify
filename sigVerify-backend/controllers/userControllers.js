@@ -229,6 +229,49 @@ const createNewUser = async (req, res) => {
     }
 };
 
+const authenticateExistingCookie = async (req, res) => {
+    const userId = req.user.userId;
+    const client = await pool.connect();
+
+    try {
+        const queryForUserDataFromAuthdCookie = `
+            SELECT
+                um.first_name,
+                um.membership,
+                um.verified_xrpl_wallet_address
+            FROM
+                user_auth AS ua
+            JOIN
+                user_meta AS um ON um.user_auth_id = ua.id
+            WHERE
+                um.user_auth_id = $1;
+        `;
+
+        const authdUserData = await client.query(queryForUserDataFromAuthdCookie, [userId]);
+
+        if (authdUserData.rows.length === 0) {
+            return res.status(401).json({ error: 'User from cookie not found.', loggedIn: false });
+        }
+
+        const user = authdUserData.rows[0];
+
+        res.status(200).json({
+            message: 'Login successful',
+            user: {
+                firstName: user.first_name,
+                membership: user.membership,
+                xrplWalletAddress: user.verified_xrpl_wallet_address,
+                // other non-sensitive fields
+            },
+        });
+    } catch (err) {
+        console.error('Error processing request', err);
+        return res.status(500).json({ error: 'Internal server error inside authenticateExistingCookie' });
+    } finally {
+        client.release();
+    }
+};
+
 const authenticateLogin = async (req, res) => {
     const { Email, Password } = req.body;
     console.log('user login credential on server:', Email, Password);
@@ -412,6 +455,7 @@ const getProfilePageData = async (req, res) => {
 export {
     createInitalUserTablesAndEmailAuthToken,
     createNewUser,
+    authenticateExistingCookie,
     authenticateLogin,
     updateDatabaseWithNewVerifiedXrplWalletAddress,
     getProfilePageData,
