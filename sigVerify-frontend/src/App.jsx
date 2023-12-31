@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import styled from 'styled-components';
-
+import axiosInstance from './utils/httpRequests/axiosInstance';
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
@@ -90,6 +90,29 @@ function App() {
     // used to store the user's account information, initialized and managed using the useSessionStorage custom hook.
     // const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
+
+    useEffect(() => {
+        // Function to check the authentication cookie
+        const checkAuthenticationCookie = async () => {
+            try {
+                // Make an Axios request to 'api/authenticateCookie' with the 'withCredentials' option set to true
+                const response = await axiosInstance.post('api/authenticateCookie', {});
+
+              console.log("cookie route check response: ", response);
+
+                // Assuming 'api/authenticateCookie' returns a success status code (e.g., 200), update the accountObject if authentication is successful.
+                if (response.status === 200) {
+                    setAccountObject({ loggedIn: true, ...response.data.user });
+                }
+            } catch (error) {
+                // Handle any errors here, such as network errors or authentication failure.
+                console.error('Authentication failed:', error);
+            }
+        };
+
+        // Call the checkAuthenticationCookie function when the component mounts
+        checkAuthenticationCookie();
+    }, []);
 
     useEffect(() => {
         if (accountObject.loggedIn) {
