@@ -1,6 +1,8 @@
+import { sendEmail } from '../utils/index.js';
+
 const sendAuthTokenEmail = async (email, token) => {
     return new Promise((resolve, reject) => {
-        emailer.sendEmail(
+        sendEmail(
             email,
             'SigVerify E-mail Verification',
             `Please Click Link to Verify email! \n http://localhost:5173/create-user/?token=${token}`,
@@ -17,4 +19,4 @@ const sendAuthTokenEmail = async (email, token) => {
     });
 };
 
-export { sendAuthTokenEmail }
+export { sendAuthTokenEmail };

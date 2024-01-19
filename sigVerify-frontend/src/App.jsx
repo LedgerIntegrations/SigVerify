@@ -44,6 +44,7 @@ import Settings from './components/pages/loggedIn/Settings/Settings';
 import UploadDocumentComponent from './components/pages/loggedIn/DocumentsPage/UploadDocumentComponent';
 import DocumentPreparation from './components/pages/loggedIn/DocumentsPage/DocumentPreperation';
 
+import FormsPage from './components/pages/loggedIn/FormsPage/FormsPage';
 // GLOBAL ACCOUNT INFORMATION
 export const AccountContext = createContext();
 
@@ -90,15 +91,13 @@ function App() {
     // used to store the user's account information, initialized and managed using the useSessionStorage custom hook.
     // const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
-
+    console.log('account object from app component: ', accountObject);
     useEffect(() => {
         // Function to check the authentication cookie
         const checkAuthenticationCookie = async () => {
             try {
                 // Make an Axios request to 'api/authenticateCookie' with the 'withCredentials' option set to true
                 const response = await axiosInstance.post('api/authenticateCookie', {});
-
-              console.log("cookie route check response: ", response);
 
                 // Assuming 'api/authenticateCookie' returns a success status code (e.g., 200), update the accountObject if authentication is successful.
                 if (response.status === 200) {
@@ -113,12 +112,6 @@ function App() {
         // Call the checkAuthenticationCookie function when the component mounts
         checkAuthenticationCookie();
     }, []);
-
-    useEffect(() => {
-        if (accountObject.loggedIn) {
-            console.log('App component useEffect logging because account is logged in.');
-        }
-    }, [accountObject]);
 
     return (
         <Router>
@@ -213,10 +206,10 @@ function App() {
                             }
                         />
                         <Route
-                            path="/xrpl-ui"
+                            path="/forms"
                             element={
                                 accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(XrplUiPage))
+                                    React.createElement(withNavigation(FormsPage))
                                 ) : (
                                     <Navigate to="/" replace />
                                 )

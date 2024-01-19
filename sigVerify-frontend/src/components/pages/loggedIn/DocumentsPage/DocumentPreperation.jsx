@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 // import { DraggableCore } from 'react-draggable';
 import { useLocation } from 'react-router-dom';
 import DocumentViewer from '../DocumentsPage/DocumentViewer';
-// import axios from 'axios';
 import SignatureBox from '../DocumentsPage/SignatureBox';
 import styled from 'styled-components';
 import media from '../../../Styles/media';
@@ -20,8 +19,10 @@ const DocumentPreperationActionsModal = styled.div`
     position: absolute;
     padding: 20px;
     bottom: 0px;
-    background-color: gray /* flex-direction: column */ @media ${media.tablet} {
-        flex-direction: column; // Color will be red on mobile devices
+    background-color: gray;
+
+    @media ${media.tablet} {
+        flex-direction: column;
     }
 `;
 

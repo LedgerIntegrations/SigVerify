@@ -1,26 +1,138 @@
-import { useContext } from 'react';
-import styles from './Settings.module.css';
-import Tile from '../../../helperComponents/Tile/Tile';
+import { useContext, useState } from 'react';
+import styled from 'styled-components';
 import { AccountContext } from '../../../../App';
 
-function Settings() {
-    const [accountObject, setAccountObject] = useContext(AccountContext);
-    console.log('account context in settins page: ', accountObject);
-    return (
-        <div className={styles.dashboard}>
-            <div className={styles.dashboardInnerDiv}>
-                <h1>Settings</h1>
-                <p>This section will be used to configure all your account settings.</p>
+const OutterSettingsContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+    padding: 0px 0px;
+    margin-top: 0px;
+    z-index: 10;
+    max-width: 550px;
+    margin-inline: auto;
+`;
 
-                <div className={styles.tiles}>
-                    <Tile title="setting1" icon="💡" link="/settings" finePrint="" />
-                    <Tile title="setting2" icon="💡" link="/settings" finePrint="" />
-                    <Tile title="setting3" icon="💡" link="/settings" finePrint="" />
-                    <Tile title="setting4" icon="💡" link="/settings" finePrint="" />
-                    {/* Add more tiles as needed */}
-                </div>
-            </div>
-        </div>
+const InnerSettingsContainer = styled.div`
+  width: 100%;
+`
+
+const FormContainer = styled.div`
+display: flex;
+justify-content: center;
+  form {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      max-width: 400px;
+      gap: 5px;
+
+      label {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+      }
+  }
+
+`;
+
+function Settings() {
+    // eslint-disable-next-line no-unused-vars
+    const [accountObject, setAccountObject] = useContext(AccountContext);
+    const [patientInfo, setPatientInfo] = useState({
+        name: '',
+        address: '',
+        birthdate: '',
+        city: '',
+        state: '',
+        zip: '',
+        phoneNumber: '',
+    });
+
+    const handleChange = (event) => {
+        setPatientInfo({
+            ...patientInfo,
+            [event.target.name]: event.target.value,
+        });
+    };
+
+    const handleSubmit = async (event) => {
+      event.preventDefault();
+     const patientInfoString = JSON.stringify(patientInfo);
+     console.log(patientInfoString);
+
+        try {
+            const response = await fetch('http://localhost:3000/encrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(patientInfoString),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+          console.log("raw response: ", response)
+
+            // Handle response here
+            const result = await response.json();
+            console.log('Server response: ', result);
+        } catch (error) {
+            console.error('Error during data submission:', error);
+        }
+    };
+
+    console.log('account context in settings page: ', accountObject);
+
+    return (
+        <OutterSettingsContainer>
+            <InnerSettingsContainer>
+                <h1>Patient Information Form</h1>
+                <p>This section will be used to capture patient details.</p>
+
+                <FormContainer>
+                    <form onSubmit={handleSubmit}>
+                        <label>
+                            Name:
+                            <input type="text" name="name" value={patientInfo.name} onChange={handleChange} />
+                        </label>
+                        <label>
+                            Address:
+                            <input type="text" name="address" value={patientInfo.address} onChange={handleChange} />
+                        </label>
+                        <label>
+                            Birthdate:
+                            <input type="date" name="birthdate" value={patientInfo.birthdate} onChange={handleChange} />
+                        </label>
+                        <label>
+                            City:
+                            <input type="text" name="city" value={patientInfo.city} onChange={handleChange} />
+                        </label>
+                        <label>
+                            State:
+                            <input type="text" name="state" value={patientInfo.state} onChange={handleChange} />
+                        </label>
+                        <label>
+                            Zip:
+                            <input type="text" name="zip" value={patientInfo.zip} onChange={handleChange} />
+                        </label>
+                        <label>
+                            Phone Number:
+                            <input
+                                type="tel"
+                                name="phoneNumber"
+                                value={patientInfo.phoneNumber}
+                                onChange={handleChange}
+                            />
+                        </label>
+                        <button type="submit">Submit</button>
+                    </form>
+                </FormContainer>
+            </InnerSettingsContainer>
+        </OutterSettingsContainer>
     );
 }
 

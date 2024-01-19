@@ -25,12 +25,12 @@ const WelcomeIntroTierRank = styled.p`
     margin: 0px;
     margin-bottom: 20px;
     color: #000000;
-    box-shadow: inset 1px 1px 1px 1px rgba(59, 59, 59, 0.5),
-            2px 2px 10px 0px rgba(0, 0, 0, .1),
-            0px 0px 0px 0px rgba(0, 0, 0, .1);
+    box-shadow: inset 1px 1px 1px 1px rgba(59, 59, 59, 0.5), 2px 2px 10px 0px rgba(0, 0, 0, 0.1),
+        0px 0px 0px 0px rgba(0, 0, 0, 0.1);
 `;
 
 const WelcomeIntroHeader = styled.h3`
+    width: 100%;
     font-size: 42px;
     font-weight: 200;
     font-family: 'Kdam Thmor Pro', sans-serif;
@@ -52,7 +52,7 @@ const WelcomeIntroMessage = styled.p`
     color: #666;
 
     strong {
-        color: #222
+        color: #222;
     }
 `;
 
@@ -75,9 +75,8 @@ const WelcomeIntroStats = styled.div`
         align-items: center;
         padding: 3px 6px;
         padding-top: 8px;
-        box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
-            7px 7px 20px 0px rgba(0, 0, 0, .1),
-            0px 0px 0px 0px rgba(0, 0, 0, .1);
+        box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+            0px 0px 0px 0px rgba(0, 0, 0, 0.1);
 
         p {
             font-size: 9px;
@@ -98,28 +97,32 @@ function ProfileWelcome({ membership }) {
     return (
         <ProfileWelcomeContainer>
             <WelcomeContainerIntro>
-          <WelcomeIntroTierRank>{ membership } Member</WelcomeIntroTierRank>
+                <WelcomeIntroTierRank>{membership} Member</WelcomeIntroTierRank>
 
-                <WelcomeIntroHeader>Hello <strong>{accountObject?.firstName}</strong>,</WelcomeIntroHeader>
-                <WelcomeIntroMessage>welcome back to <strong>SigVerify</strong>.</WelcomeIntroMessage>
+                <WelcomeIntroHeader>
+                    Hello <strong>{accountObject?.firstName}</strong>,
+                </WelcomeIntroHeader>
+                <WelcomeIntroMessage>
+                    welcome back to <strong>SigVerify</strong>.
+                </WelcomeIntroMessage>
             </WelcomeContainerIntro>
 
-              <WelcomeIntroStats>
+            <WelcomeIntroStats>
                 <div>
-                  <span>5</span>
-                  <p>Actions</p>
+                    <span>5</span>
+                    <p>Actions</p>
                 </div>
                 <div>
-                  <span>5</span>
-                  <p>Waiting</p>
+                    <span>5</span>
+                    <p>Waiting</p>
                 </div>
                 <div>
-                  <span>0</span>
-                  <p>Expiring</p>
+                    <span>0</span>
+                    <p>Expiring</p>
                 </div>
-              </WelcomeIntroStats>
+            </WelcomeIntroStats>
         </ProfileWelcomeContainer>
-    )
+    );
 }
 
 export default ProfileWelcome;

@@ -1,6 +1,7 @@
 import { XummSdk } from 'xumm-sdk';
 import dotenv from 'dotenv';
 import { Client as XrplClient } from 'xrpl';
+import xrpl from 'xrpl';
 
 dotenv.config();
 
@@ -38,29 +39,79 @@ const createXummPayloadSubscription = async (uuid) => {
                 return event.data;
             }
         });
+        console.log('entire subscription response: ', subscription);
 
         const resolveData = await subscription.resolved;
+        // entire 'resolveData' response:  {
+        //     payload_uuidv4: '8862bbb3-a51a-4b00-a815-39c6ec372d2d',
+        //     reference_call_uuidv4: '969bbbc4-8b4c-4c73-9bf2-e2a505efaa1e',
+        //     signed: true,
+        //     user_token: true,
+        //     return_url: { app: null, web: null },
+        //     txid: '2F0F4392AF4C5F1B8BB5BCA9D8616996745A940D7723C1D6F5B7AB57460FC988',
+        //     opened_by_deeplink: true,
+        //     custom_meta: { identifier: null, instruction: null }
+        // }
 
+        // only checking if the payload resolved property promise has resolved not if signed or rejected
         if (resolveData) {
-            console.log('Subscribed payload has resolved. Will now lookup tx UUID to return resolved tx data.');
-            const payload = await Sdk.payload.get(uuid);
+            console.log('Open payload has now been finalized. Will now lookup tx UUID to return finalized tx data.');
+            const finalizedPayload = await Sdk.payload.get(uuid);
+
+            console.log('finalized payload data: ', finalizedPayload);
             console.log(`
             Resolved TX Data:
-                Signed: ${payload.meta.signed}
-                Signed By: ${payload.response.account},
-                Signed User Token: ${payload.response.user}
+                Signed: ${finalizedPayload.meta.signed}
+                Signed By: ${finalizedPayload.response.account},
+                Signed User Token: ${finalizedPayload.response.user}
             `);
 
             const specificPropertiesFromPayloadSubscriptionResolution = {
-                loggedIn: payload.meta.signed,
-                verifiedXrplWalletAddress: payload.response.account,
-                userToken: payload.response.user,
+                signed: finalizedPayload.meta.signed,
+                signer: finalizedPayload.response.signer,
+                userToken: finalizedPayload.response.user,
+                txHash: finalizedPayload.response.txid,
+                //tesSUCCESS for fully successful transaction submission to ledger
+                dispatchedResult: finalizedPayload.response.dispatched_result,
             };
 
             return specificPropertiesFromPayloadSubscriptionResolution;
         }
     } catch (error) {
         console.error('Error while verifying:', error);
+    }
+};
+
+const createPaymentTxPayloadWithEncryptedJsonDataInMemo = async (rAddress, encryptedData) => {
+    try {
+        console.log('rAddress: ', rAddress);
+        console.log('encryptedData: ', encryptedData);
+
+        const paymentTxPayloadWithEncryptedJsonDataInMemo = await Sdk.payload.create({
+            TransactionType: 'Payment',
+            Account: rAddress.toString(),
+            Destination: sigverifyWallet,
+            Amount: '1',
+            Fee: '12',
+            Memos: [
+                {
+                    Memo: {
+                        MemoData: xrpl.convertStringToHex(encryptedData),
+                    },
+                },
+            ],
+        });
+
+        console.log('Transaction payload create response: ', paymentTxPayloadWithEncryptedJsonDataInMemo);
+        const generatedPayload = {
+            uuid: paymentTxPayloadWithEncryptedJsonDataInMemo?.uuid,
+            qrLink: paymentTxPayloadWithEncryptedJsonDataInMemo?.next.always,
+            qrImage: paymentTxPayloadWithEncryptedJsonDataInMemo?.refs.qr_png,
+        };
+
+        return generatedPayload;
+    } catch (error) {
+        console.error('Error while creating paymentTxPayloadWithEncryptedJsonDataInMemo:', error.message);
     }
 };
 
@@ -217,6 +268,7 @@ export {
     createXummSigninPayload,
     createXummPayloadSubscription,
     findAllAccountPaymentTransactionsToSigVerifyWallet,
+    createPaymentTxPayloadWithEncryptedJsonDataInMemo,
     createPaymentTxWithDocHashInMemo,
     hasAccountSignedThisDocument,
 };

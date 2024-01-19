@@ -6,8 +6,10 @@ import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
 import { ErrorMessage } from '../../Styles/CommonStyles';
+import KeyPairGeneratorModal from '../../../utils/rsaKeyHandlers/KeyPairGeneratorModal';
 
 //TODO: When registering a email that already exists the error message shown to use is "Request failed with status code 400", need to make message more detailed for user.
+
 const CreateUserContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -124,7 +126,6 @@ const ToggleIcon = styled.span`
     color
 `;
 
-
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);
 };
@@ -145,6 +146,14 @@ const CreateAccountPage = () => {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
 
+    const [showKeyPairModal, setShowKeyPairModal] = useState(false);
+    const [publicKey, setPublicKey] = useState(null);
+
+    const handleKeyPairGenerated = (generatedPublicKey) => {
+        // Convert the public key to a format that can be sent to the server (ArrayBuffer or Base64 encoding)
+        setPublicKey(generatedPublicKey);
+    };
+
     const [formData, setFormData] = useState({
         FirstName: '',
         LastName: '',
@@ -152,6 +161,50 @@ const CreateAccountPage = () => {
         PasswordConfirm: '',
         Token: '',
     });
+
+    const handleModalClose = async () => {
+        setShowKeyPairModal(false);
+
+        if (publicKey) {
+            // Add the public key to the form data
+            const extendedFormData = {
+                ...formData,
+                PublicKey: publicKey,
+            };
+
+            console.log('final extendedform data: ', extendedFormData);
+
+            try {
+                const response = await fetch('http://localhost:3001/api/user/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(extendedFormData),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('Successfully created a user!', data);
+                    const userData = data.user;
+
+                    setAccountObject({ ...userData, loggedIn: true });
+                } else {
+                    // Handle non-200 responses
+                    setFormErrors({
+                        server:
+                            data.error ||
+                            'Failed to create user, try clicking authentication link from email again or re-registering..',
+                    });
+                }
+            } catch (err) {
+                console.error('Network or server error:', err);
+                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
+            }
+        }
+    };
 
     const query = useQuery();
     const token = query.get('token');
@@ -217,41 +270,12 @@ const CreateAccountPage = () => {
         setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
-            try {
-                const response = await fetch('http://localhost:3001/api/user/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(formData),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    console.log('Successfully created a user!', data);
-                    const userData = data.user;
-
-                    setAccountObject({ ...userData, loggedIn: true });
-                } else {
-                    // Handle non-200 responses
-                    setFormErrors({
-                        server:
-                            data.error ||
-                            'Failed to create user, try clicking authentication link from email again or re-registering..',
-                    });
-                }
-            } catch (err) {
-                console.error('Network or server error:', err);
-                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
-            }
+            setShowKeyPairModal(true); // Open the modal to generate key pair
         }
     };
 
     return (
         <CreateUserContainer>
-            {/* <Link to="/" id={styles['back-link']}>← back</Link> */}
             <MainTitle>
                 Create Your <br />
                 Account
@@ -341,6 +365,9 @@ const CreateAccountPage = () => {
                     </form>
                 </InsideFormContainer>
             </CreateUserFormContainer>
+            {showKeyPairModal && (
+                <KeyPairGeneratorModal onClose={handleModalClose} onKeyPairGenerated={handleKeyPairGenerated} />
+            )}
         </CreateUserContainer>
     );
 };

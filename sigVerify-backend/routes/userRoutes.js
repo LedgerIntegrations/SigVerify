@@ -16,5 +16,10 @@ router.put(
     authenticateToken,
     userController.updateDatabaseWithNewVerifiedXrplWalletAddress
 );
+router.post(
+    '/api/user/publicKeyAndWallet',
+    authenticateToken,
+    userController.getUserPublicKeyAndAuthenticatedWalletByHashedEmail
+);
 
 export default router;

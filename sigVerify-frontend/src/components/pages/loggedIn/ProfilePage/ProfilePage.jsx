@@ -24,7 +24,7 @@ const Block = styled.div`
     flex-wrap: wrap;
     justify-content: center;
     align-items: start;
-    gap: 10px;
+    gap: 4vw;
 `;
 
 const ProfileTierLimits = styled.section`
@@ -33,7 +33,7 @@ const ProfileTierLimits = styled.section`
     display: flex;
     flex-direction: column;
     align-items: start;
-    max-width: 250px;
+    max-width: 300px;
 `;
 
 const ProfileIntroWithWalletConnect = styled.section`
@@ -42,7 +42,7 @@ const ProfileIntroWithWalletConnect = styled.section`
     display: flex;
     flex-direction: column;
     align-items: start;
-    max-width: 250px;
+    max-width: 300px;
 `;
 
 const ProfileTierLimitsSection = styled.section`
@@ -164,24 +164,28 @@ const Warning = styled.div`
 const XrplWalletDisplay = styled.div`
     background-color: white;
     text-align: start;
-    min-width: 250px;
-    max-width: 540px;
-    width: 90%;
-    height: 200px;
-    border-radius: 20px;
-    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-        0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    /* min-width: 250px;
+    max-width: 540px; */
+    width: 100%;
+    padding: 20px;
+    margin-block: 10px;
+    border-radius: 10px;
+    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+        4px 4px 5px 0px rgba(0, 0, 0, 0.1);
 
     h2 {
         text-align: start;
-        margin: 20px 30px;
+        font-size: 1em;
         margin-bottom: 0px;
+        margin-top: 0px;
+        color: #666;
+        text-decoration: underline;
     }
 
     em {
         font-size: 9px;
-        margin: 0px 30px;
         text-align: start;
+        font-weight: 800;
     }
 `;
 
@@ -372,6 +376,12 @@ function Profile() {
                         {walletAuthOpened && selectedWalletProvider === 'xumm-xrpl' && (
                             <XummLogin setWalletAuthOpened={setWalletAuthOpened} />
                         )}
+                        {accountObject.xrplWalletAddress && (
+                            <XrplWalletDisplay>
+                                <h2>Authenticated Wallet</h2>
+                                <em>{accountObject.xrplWalletAddress}</em>
+                            </XrplWalletDisplay>
+                        )}
                         {/* Add logic to render the component for 'xdc' provider if selected */}
                     </ProfileIntroWithWalletConnect>
 
@@ -401,16 +411,10 @@ function Profile() {
                             </AccountTotalsSectionMainContent>
                         </ProfileTierLimitsSection>
                         <NavigationSlider navigateTo="/documents" pageName="documents"></NavigationSlider>
+                        <NavigationSlider navigateTo="/forms" pageName="forms"></NavigationSlider>
                     </ProfileTierLimits>
                 </Block>
-                <Block>
-                    {accountObject.xrplWalletAddress && (
-                        <XrplWalletDisplay>
-                            <h2>Wallet</h2>
-                            <em>{accountObject.xrplWalletAddress}</em>
-                        </XrplWalletDisplay>
-                    )}
-                </Block>
+
             </ProfilePage>
         </>
     );

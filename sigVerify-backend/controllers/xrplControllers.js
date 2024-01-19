@@ -3,6 +3,7 @@ import {
     createXummPayloadSubscription as createXummPayloadSubscriptionHelper,
     findAllAccountPaymentTransactionsToSigVerifyWallet as findAllAccountPaymentTransactionsToSigVerifyWalletHelper,
     createPaymentTxWithDocHashInMemo as createPaymentTxWithDocHashInMemoHelper,
+    createPaymentTxPayloadWithEncryptedJsonDataInMemo
 } from './utils/index.js';
 
 const createXummSigninPayload = async (req, res) => {
@@ -30,10 +31,18 @@ const createXummPayloadSubscription = async (req, res) => {
     }
 };
 
-const addAuthenticatedWalletToUserProfile = async (userId, walletAddress) => {};
+const signEncryptedJsonData = async (req, res) => {
+  const { userRAddress, encryptedJsonData } = req.body;
 
-const signDocumentXrplTxCreation = async (req, res) => {
-    //need wallet and document hash params for createPaymentTxWithDocHashInMemo function
+  try {
+    const response = await createPaymentTxPayloadWithEncryptedJsonDataInMemo(userRAddress, encryptedJsonData);
+    res.json(response);
+  } catch (error) {
+    console.error('Error while executing signEncryptedJsonData: ', error);
+    res.status(500).json({
+        error: 'Internal Server Error in signEncryptedJsonData controller.',
+    });
+  }
 };
 
 const findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
@@ -51,10 +60,9 @@ const findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) 
     }
 };
 
-export {
+export  {
     createXummSigninPayload,
     createXummPayloadSubscription,
-    addAuthenticatedWalletToUserProfile,
-    signDocumentXrplTxCreation,
+    signEncryptedJsonData,
     findAllXrplAccountPaymentTransactionsToSigVerifyWallet,
 };

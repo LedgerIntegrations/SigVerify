@@ -1,7 +1,7 @@
-import { useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import DocumentListFilter from './DocumentListFilter';
-import { AccountContext } from '../../../../App';
+import { fetchDocuments } from '../../../../utils/httpRequests/routes/documents';
+import DocumentDetailsModal from './DocumentDetailsModal';
 import { Link } from 'react-router-dom';
 
 const OutterDocumentsContainer = styled.div`
@@ -11,7 +11,7 @@ const OutterDocumentsContainer = styled.div`
     align-items: center;
     text-align: start;
     width: 100%;
-    padding: 0px 10px;
+    padding: 0px 00px;
     z-index: 10;
 `;
 
@@ -19,8 +19,8 @@ const DocumentUploadButton = styled(Link)`
     background-color: #57a9f1;
     color: white;
     position: fixed;
-    bottom: 50px;
-    right: 50px;
+    bottom: 30px;
+    right: 30px;
     padding: 10px;
     border: 1px solid white;
     border-radius: 50%;
@@ -32,8 +32,7 @@ const DocumentUploadButton = styled(Link)`
 
 const DocumentsHeader = styled.div`
     width: 100%;
-    max-width: 600px;
-    padding-inline: 20px;
+    padding: 20px 5vw;
 
     h1 {
         font-size: 1.5em;
@@ -42,132 +41,97 @@ const DocumentsHeader = styled.div`
     }
 `;
 
-const DocumentSection = styled.div`
+const DocumentDisplaySection = styled.section`
+    width: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 10px;
-    padding: 15px;
-    width: 100%;
-    max-width: 600px;
-    margin-top: 14px;
-    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), inset 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-        inset 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    margin-bottom: 10vh;
 `;
 
-const DocumentDisplay = styled.div`
-    width: 100%;
-    max-width: 600px;
+const DocumentListHeader = styled.div`
+    padding: 0px 6px;
+    margin-bottom: 10px;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 10px;
-    padding: 16px;
-    background-color: white;
-    border-radius: 10px;
+    justify-content: space-between;
 
-    div {
+    & > * {
+        width: 20%;
+        text-decoration: underline;
     }
 `;
 
+const DocumentsList = styled.ul`
+    width: 100%;
+    max-width: 600px;
+    background-color: white;
+    padding: 20px 3vw;
+    margin-top: 0px;
+    list-style: none;
+    border: none;
+    border-radius: 10px 10px 10px 10px;
+    min-height: 200px;
+    overflow-y: auto;
+    box-shadow: inset 2px 1px 4px 0px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+        0px 0px 0px 0px rgba(0, 0, 0, 0.1);
 
-const NoDocumentsMessage = styled.p`
-    font-size: 14px;
+    h3 {
+        margin-left: 10px;
+    }
+`;
+
+const DocumentListItem = styled.li`
+    cursor: pointer;
+    border: none;
+    background-color: #ffffff;
+    border: 0.5px solid #c1c1c1;
+    padding: 6px 2px;
+    margin-block: 3px;
+    border-radius: 3px;
+    font-size: 80%;
+    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+        2px 2px 2px 0px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+            0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    }
+`;
+
+const DocumentListItemContents = styled.div`
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 4px;
+
+    & > * {
+        width: 20%;
+    }
 `;
 
 function DocumentsPage() {
-    // eslint-disable-next-line no-unused-vars
-    const [accountObject, setAccountObject] = useContext(AccountContext);
     const [documents, setDocuments] = useState([]);
-
-    async function convertSignedUrlToJsFileObject(url, filename) {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new File([blob], filename, {
-            type: blob.type === 'application/octet-stream' ? 'text/plain' : blob.type,
-        });
-    }
-
-    // Function to handle document deletion
-    const handleDelete = async (documentId) => {
-        // try {
-        //     const response = await fetch('http://localhost:3001/api/document/delete', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({ document_id: documentId }),
-        //         credentials: 'include',
-        //     });
-
-        //     if (!response.ok) {
-        //         throw new Error('Error deleting document');
-        //     }
-
-        //     // Remove the deleted document from the state
-        //     setDocuments(documents.filter((doc) => doc.document_id !== documentId));
-        // } catch (error) {
-        //     console.error('Error deleting document:', error);
-      // }
-
-      console.log("handle delete function documentId: ",documentId)
-    };
-
-    // Function to handle document viewing
-    const handleView = (document) => {
-        // Logic to view the document
-        // Similar to handleDocumentClick in DocumentListFilter
-    };
-
-  const prepareDocument = (document) => {
-      console.log("document item inside prepare document function: ", document)
-    };
+    const [selectedDocument, setSelectedDocument] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
-        const fetchDocuments = async () => {
+        console.log('DOCUMENTS PAGE USEEFFECT FIRING!');
+        // Fetch documents from the server
+        const fetchAllDocuments = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/documents', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // This is necessary to include cookies
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-                console.log('response from /getAllDocuments endpoint in useEffect: ', data);
-                if (!Array.isArray(data)) {
-                    setDocuments([]);
-                    return;
-                }
-                const formattedUserDocuments = data.map(async (document) => {
-                    const convertedDocument = await {
-                        ...document,
-                        File: await convertSignedUrlToJsFileObject(document.signedUrl, document.name),
-                    };
-                    return convertedDocument;
-                });
-
-                const resolvedFormattedUserDocuments = await Promise.all(formattedUserDocuments);
-
-                console.log(
-                    'formattedUserDocuments to add JS File object into each file...',
-                    resolvedFormattedUserDocuments
-                );
-                setDocuments(resolvedFormattedUserDocuments);
+                const response = await fetchDocuments();
+                setDocuments(response.data);
+                console.log(response.data);
             } catch (error) {
                 console.error('Error fetching documents:', error);
             }
         };
+        fetchAllDocuments();
+    }, []);
 
-        fetchDocuments();
-    }, []); // Dependency array empty if you only want to run this once after the component mounts
+    const handleDocumentClick = (document) => {
+        setSelectedDocument(document);
+        setModalOpen(true);
+    };
 
     return (
         <OutterDocumentsContainer>
@@ -187,32 +151,34 @@ function DocumentsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
             </DocumentUploadButton>
+            <DocumentDisplaySection>
+                <DocumentsList>
+                    <DocumentListHeader>
+                        <span>Name</span>
+                        <span>Sharing</span>
+                        <span>Category</span>
+                        <span>Status</span>
+                    </DocumentListHeader>
+                    {!documents || documents.length === 0 ? (
+                        <p>No documents available.</p>
+                    ) : (
+                        documents.map((document) => (
+                            <DocumentListItem key={document.id} onClick={() => handleDocumentClick(document)}>
+                                <DocumentListItemContents>
+                                    <strong>{document.title}</strong>
+                                    <span style={{ color: '#777' }}>{document.role}</span>
+                                    <span style={{ color: '#777' }}>{document.category}</span>
+                                    <span style={{ color: 'orange' }}>
+                                        {document.is_signed ? 'Completed' : 'Pending'}
+                                    </span>
+                                </DocumentListItemContents>
+                            </DocumentListItem>
+                        ))
+                    )}
+                </DocumentsList>
+            </DocumentDisplaySection>
 
-            <DocumentSection>
-                <DocumentDisplay>
-                    {documents.length === 0 && (
-                        <NoDocumentsMessage>No documents found for this user.</NoDocumentsMessage>
-                    )}
-                    {documents.length > 0 && (
-                        <DocumentListFilter
-                            documents={documents}
-                            options={['all documents', 'signed documents', 'unsigned documents']}
-                        />
-                    )}
-                </DocumentDisplay>
-            </DocumentSection>
-            {/* <DocumentsList>
-                {documents.map((item, index) => (
-                    <li key={index}>
-                        <strong>{item.title}</strong>
-                        <div>
-                            <button onClick={() => handleDelete(item.document_id)}>Delete</button>
-                            <button onClick={() => handleView(item)}>View</button>
-                            <button onClick={() => prepareDocument(item)}>Prep</button>
-                        </div>
-                    </li>
-                ))}
-            </DocumentsList> */}
+            {modalOpen && <DocumentDetailsModal cid={selectedDocument.ipfs_hash} onClose={() => setModalOpen(false)} />}
         </OutterDocumentsContainer>
     );
 }
