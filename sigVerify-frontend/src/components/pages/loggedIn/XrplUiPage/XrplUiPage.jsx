@@ -1,6 +1,5 @@
 import { useContext, useState } from 'react';
 import styles from './XrplUiPage.module.css';
-// import Tile from '../../../helperComponents/Tile/Tile';
 import { AccountContext } from '../../../../App';
 
 import RSAKeyPairGenerator from '../../../../utils/rsaKeyHandlers/RSAKeyPairGenerator';

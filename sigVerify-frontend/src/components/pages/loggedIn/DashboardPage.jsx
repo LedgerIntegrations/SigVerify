@@ -1,6 +1,6 @@
 // import { useContext } from 'react';
-import Tile from '../../helperComponents/Tile/Tile';
 // import { AccountContext } from '../../../App';
+import Tile from '../../helperComponents/Tile/Tile';
 import styled from 'styled-components';
 import logoImg from '../../../assets/svLogo.png';
 
@@ -101,7 +101,7 @@ const DashboardNavTiles = styled.div`
 
     @media (min-width: 560px) {
         grid-template-columns: 1fr 1fr 1fr 1fr;
-        max-width: 460px; // Adjust this as needed to fit your design
+        max-width: 460px;
     }
 `;
 
@@ -173,26 +173,8 @@ const settingsIcon = (
     </svg>
 );
 
-// const walletIcon = (
-//     <svg
-//         xmlns="http://www.w3.org/2000/svg"
-//         fill="none"
-//         viewBox="0 0 24 24"
-//         strokeWidth={1.5}
-//         stroke="currentColor"
-//         className="w-6 h-6"
-//     >
-//         <path
-//             strokeLinecap="round"
-//             strokeLinejoin="round"
-//             d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3"
-//         />
-//     </svg>
-// );
-
 function Dashboard() {
     // const [accountObject, setAccountObject] = useContext(AccountContext);
-
     return (
         <>
             <div className="backgroundLogoContainer">
@@ -210,7 +192,7 @@ function Dashboard() {
                     <DashboardNavTiles>
                         <Tile title="Profile" icon={profileIcon} link="/profile" finePrint="" />
                         <Tile title="Docs" icon={documentIcon} link="/documents" finePrint="" />
-                        <Tile title="Blockchain" icon={signatureIcon} link="/xrpl-ui" finePrint="" />
+                        <Tile title="Form Templates" icon={signatureIcon} link="/forms" finePrint="" />
                         <Tile title="Contacts" icon={settingsIcon} link="/settings" finePrint="" />
                     </DashboardNavTiles>
                 </DashboardSubSection>

@@ -7,14 +7,14 @@ const DocumentViewerContainer = styled.div`
 `;
 
 // eslint-disable-next-line react/prop-types
-const DocumentViewer = ({ currentDocument, theme }) => {
+const DocumentViewer = ({ currentDocument }) => {
     console.log(currentDocument);
 
     const memoizedUrl = useMemo(() => {
         // eslint-disable-next-line react/prop-types
-        if (currentDocument && currentDocument.File) {
+        if (currentDocument) {
             // eslint-disable-next-line react/prop-types
-            return window.URL.createObjectURL(currentDocument.File);
+            return window.URL.createObjectURL(currentDocument);
         }
     }, [currentDocument]);
 
@@ -30,7 +30,7 @@ const DocumentViewer = ({ currentDocument, theme }) => {
     console.log(memoizedUrl);
     return (
         <DocumentViewerContainer>
-        {docs.length > 0 && <DocViewer documents={docs} theme={theme}  pluginRenderers={DocViewerRenderers} />}
+        {docs.length > 0 && <DocViewer documents={docs} pluginRenderers={DocViewerRenderers} />}
         </DocumentViewerContainer>
     );
 };

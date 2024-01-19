@@ -28,6 +28,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include', // This is necessary to include cookies
         })
             .then((response) => response.json())
             .then((signInPayload) => {
@@ -40,14 +41,15 @@ export default function XummLogin({ setWalletAuthOpened }) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'include', // This is necessary to include cookies
                     body: JSON.stringify({ payloadUuid: signInPayload.uuid }),
                 });
             })
             .then((response) => response.json())
             .then((finalSignInPayloadReturnObject) => {
-                console.log('resolved payload data: ', finalSignInPayloadReturnObject);
+                console.log('finalized payload data: ', finalSignInPayloadReturnObject);
 
-                if (finalSignInPayloadReturnObject.loggedIn) {
+                if (finalSignInPayloadReturnObject.signed) {
                     console.log('user successfully signed sign-in payload.');
 
                     //use fetch api to send put request to update users wallet address in db
@@ -58,7 +60,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
                         },
                         credentials: 'include', // This is necessary to include cookies
                         body: JSON.stringify({
-                            newWalletAddress: finalSignInPayloadReturnObject.verifiedXrplWalletAddress,
+                            newWalletAddress: finalSignInPayloadReturnObject.signer,
                         }),
                     })
                         .then((response) => response.json())
@@ -73,8 +75,8 @@ export default function XummLogin({ setWalletAuthOpened }) {
 
                     setAccountObject({
                         ...accountObject,
-                        xrplWalletAddress: finalSignInPayloadReturnObject.verifiedXrplWalletAddress,
-                        ...finalSignInPayloadReturnObject,
+                        xrplWalletAddress: finalSignInPayloadReturnObject.signer,
+                        loggedIn: finalSignInPayloadReturnObject.signed,
                     });
 
                     setPayloadMessage('Congratulations! You are now logged in.');

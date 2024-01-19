@@ -7,7 +7,7 @@ const SlideContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0px 00px;
+  padding: 0px 0px;
   background-color: white;
   border-radius: 10px;
   box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
@@ -16,7 +16,7 @@ const SlideContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 30px;
+  margin-top: 11.5px;
   overflow-y: hidden;
 
   p {
@@ -62,8 +62,8 @@ const Slider = styled.input.attrs({
     border-radius: 3px;
   }
 
-  /* Repeat for Mozilla and Microsoft browsers */
-  /* ... */
+  /* need Mozilla and Microsoft browsers */
+
 `;
 
 
@@ -71,13 +71,19 @@ const SliderText = styled.span`
   position: absolute;
   top: 50%;
   left: 0;
-  margin-inline: 20px;
-  width: calc(100% - 40px);
-  text-align: end;
+  margin-left: 60px;
+  width: calc(100% - 60px);
+  text-align: start;
   font-size: 12px;
   transform: translateY(-50%);
   pointer-events: none; /* Ensures the slider thumb can still be dragged over the text */
   z-index: 1; /* To ensure text is above the track but below the thumb */
+
+  em {
+    text-decoration: underline;
+    margin-inline: 2px;
+    margin-right: 5px;
+  }
 `;
 
 const ColoredOverlay = styled.div`
@@ -123,14 +129,13 @@ const NavigationSlider = ({ navigateTo, pageName }) => {
   }
 
   return (
-    <SlideContainer>
-      <SliderText>Slide to view { pageName } →</SliderText>
-      <ColoredOverlay style={{ width: overlayWidth }} />
-      <Slider
-        value={sliderValue}
-        onChange={handleSliderChange}
-      />
-    </SlideContainer>
+      <SlideContainer>
+          <SliderText>
+              Slide to view <em>{pageName}</em> →
+          </SliderText>
+          <ColoredOverlay style={{ width: overlayWidth }} />
+          <Slider value={sliderValue} onChange={handleSliderChange} />
+      </SlideContainer>
   );
 };
 

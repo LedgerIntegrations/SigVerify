@@ -212,7 +212,7 @@ const LoginPage = () => {
                     const userData = data.user;
                     setAccountObject({ ...userData, loggedIn: true });
                     setIsLogged(true); // Set logged in state only on success
-                    // Handle successful login here (e.g., redirect, set user state, etc.)
+
                 } else {
                     // Handle non-200 responses
                     setFormErrors({ server: data.error || 'Failed to login.' });

@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import { sendEmail as emailer } from './utils/index.js';
 import { sendAuthTokenEmail } from './helpers/index.js';
 import dotenv from 'dotenv';
 
@@ -25,6 +24,37 @@ async function hashEmail(email) {
 async function hashPassword(password) {
     return bcrypt.hash(password, 10);
 }
+
+const getEmailByHashedEmail = async (hashedEmail) => {
+    const client = await pool.connect();
+    try {
+        const getEmailQuery = `
+            SELECT
+                ue.email
+            FROM
+                user_auth ua
+            JOIN
+                user_meta um ON ua.id = um.user_auth_id
+            JOIN
+                user_email ue ON um.id = ue.user_meta_id
+            WHERE
+                ua.hashed_email = $1;
+        `;
+
+        const emailResult = await client.query(getEmailQuery, [hashedEmail]);
+
+        if (emailResult.rows.length === 0) {
+            throw new Error('Email does not exist for this hashed email');
+        }
+
+        return emailResult.rows[0].email;
+    } catch (err) {
+        console.error('Error in getEmailByHashedEmail:', err);
+        throw err; // Propagate the error for handling by the caller
+    } finally {
+        client.release();
+    }
+};
 
 const createInitalUserTablesAndEmailAuthToken = async (req, res) => {
     const { email } = req.body;
@@ -120,10 +150,10 @@ const createInitalUserTablesAndEmailAuthToken = async (req, res) => {
 };
 
 const createNewUser = async (req, res) => {
-    const { FirstName, LastName, Password, PasswordConfirm, Token } = req.body;
+    const { FirstName, LastName, Password, PasswordConfirm, Token, PublicKey } = req.body;
     console.log('createNewUser server function recieved body: ', req.body);
 
-    if (!FirstName || !LastName || !Password || !Token || Password !== PasswordConfirm) {
+    if (!FirstName || !LastName || !Password || !Token || Password !== PasswordConfirm || !PublicKey) {
         return res.status(400).json({
             error: 'Please provide all required fields and ensure passwords match.',
         });
@@ -158,8 +188,11 @@ const createNewUser = async (req, res) => {
         ]);
 
         // Update user_auth table with the hashed password
-        await client.query('UPDATE user_auth SET hashed_password = $1 WHERE id = $2', [hashedPassword, user_auth_id]);
-
+        await client.query('UPDATE user_auth SET hashed_password = $1, public_key = $2 WHERE id = $3', [
+            hashedPassword,
+            PublicKey,
+            user_auth_id,
+        ]);
         // Verify user email
         await client.query('UPDATE user_auth SET auth_token = NULL WHERE id = $1', [user_auth_id]);
 
@@ -169,6 +202,7 @@ const createNewUser = async (req, res) => {
                 ua.id,
                 ua.auth_token,
                 ua.hashed_password,
+                ua.public_key,
                 um.first_name,
                 um.membership,
                 um.verified_xrpl_wallet_address,
@@ -216,6 +250,7 @@ const createNewUser = async (req, res) => {
             user: {
                 firstName: user.first_name,
                 membership: user.membership,
+                publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
                 // other non-sensitive fields
             },
@@ -229,6 +264,7 @@ const createNewUser = async (req, res) => {
     }
 };
 
+// used when a user revisits application with a cookie still in browser to bypass login page
 const authenticateExistingCookie = async (req, res) => {
     const userId = req.user.userId;
     const client = await pool.connect();
@@ -236,6 +272,7 @@ const authenticateExistingCookie = async (req, res) => {
     try {
         const queryForUserDataFromAuthdCookie = `
             SELECT
+                ua.public_key,
                 um.first_name,
                 um.membership,
                 um.verified_xrpl_wallet_address
@@ -260,6 +297,7 @@ const authenticateExistingCookie = async (req, res) => {
             user: {
                 firstName: user.first_name,
                 membership: user.membership,
+                publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
                 // other non-sensitive fields
             },
@@ -291,6 +329,7 @@ const authenticateLogin = async (req, res) => {
                 ua.id,
                 ua.auth_token,
                 ua.hashed_password,
+                ua.public_key,
                 um.first_name,
                 um.membership,
                 um.verified_xrpl_wallet_address
@@ -360,6 +399,7 @@ const authenticateLogin = async (req, res) => {
             user: {
                 firstName: user.first_name,
                 membership: user.membership,
+                publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
                 // other non-sensitive fields
             },
@@ -452,6 +492,50 @@ const getProfilePageData = async (req, res) => {
     }
 };
 
+const getUserPublicKeyAndAuthenticatedWalletByHashedEmail = async (req, res) => {
+    const userId = req.user.userId;
+    const requestedEmailHash = req.body.email;
+    console.log('requestedEmailHash: ', requestedEmailHash);
+
+    const client = await pool.connect();
+    try {
+        const getPublicKeyQuery = `
+            SELECT
+                ua.public_key,
+                um.verified_xrpl_wallet_address
+            FROM
+                user_auth ua
+            JOIN
+                user_meta um ON ua.id = um.user_auth_id
+            WHERE
+                ua.hashed_email = $1;
+        `;
+
+        const userPublicKeyResult = await client.query(getPublicKeyQuery, [requestedEmailHash]);
+
+      if (userPublicKeyResult.rows.length === 0) {
+            return res.status(401).json({ error: 'this email is not found in our database.' });
+        }
+
+        const user = userPublicKeyResult.rows[0];
+
+        res.status(200).json({
+            message: 'found user publickey',
+            data: {
+                publicKey: user.public_key,
+                verifiedWallet: user.verified_xrpl_wallet_address || null,
+            },
+        });
+    } catch (err) {
+        console.error('Error processing request in getting profile page data', err);
+        return res
+            .status(HTTP_INTERNAL_SERVER_ERROR)
+            .json({ error: 'Internal server error querying profile page data' });
+    } finally {
+        client.release();
+    }
+};
+
 export {
     createInitalUserTablesAndEmailAuthToken,
     createNewUser,
@@ -459,4 +543,5 @@ export {
     authenticateLogin,
     updateDatabaseWithNewVerifiedXrplWalletAddress,
     getProfilePageData,
+    getUserPublicKeyAndAuthenticatedWalletByHashedEmail,
 };

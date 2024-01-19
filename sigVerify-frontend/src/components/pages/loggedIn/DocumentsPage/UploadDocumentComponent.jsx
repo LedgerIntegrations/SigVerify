@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { createDocument } from '../../../../utils/httpRequests/document';
+import { fetchUserPublicKeyAndWallet } from '../../../../utils/httpRequests/routes/users';
+import { webCryptoApiHybridEncrypt } from '../../../../utils/rsaKeyHandlers/helpers';
+import { uploadDocument } from '../../../../utils/httpRequests/routes/documents';
+import ErrorModal from '../../../../utils/reusedComponents/ErrorModal';
+import { AccountContext } from '../../../../App';
+import LoadingIcon from '../../../helperComponents/LoadingIcon/LoadingIcon';
+
+//? becoming large component, potential need to modularize functionality
 
 const Container = styled.div`
     display: flex;
@@ -89,40 +96,82 @@ const DocumentForm = styled.form`
     padding: 5px;
 
     div {
+        width: 100%;
         text-align: start;
         display: flex;
         align-items: start;
-        gap: 15px;
+        gap: 3px;
         margin-bottom: 10px;
         label {
-            min-width: 100px;
+            min-width: 30%;
+            font-size: 0.85em;
+        }
+
+        input {
+            width: 100%;
         }
 
         select {
             font-size: 14px;
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
         }
     }
+`;
+
+const SubmitFormButtonContainer = styled.div`
+    width: 100%;
+    display: flex;
+    justify-content: center;
 
     button {
-        margin-top: 10px;
+        margin-top: 40px;
         padding: 6px 15px;
-        border-radius: 10px;
+        border-radius: 5px;
         font-size: 14px;
         border: 1px solid black;
+        width: 50%;
+    }
+`;
+
+const RecipientTextInput = styled.input`
+    font-size: 0.8em;
+`;
+
+const LoadingComponent = styled.div``;
+
+const UploadComplete = styled.div``;
+
+const EncryptDocumentInput = styled.div`
+    input {
+        width: 50%;
     }
 `;
 
 const UploadDocumentComponent = () => {
     const navigate = useNavigate();
 
+    // eslint-disable-next-line no-unused-vars
+    const [accountObject, setAccountObject] = useContext(AccountContext);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
+
+    const [isDragActive, setIsDragActive] = useState(false);
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [loading, setLoading] = useState(false); // array of temp uploaded files
+    const [uploadComplete, setUploadComplete] = useState(false);
+    const [documents, setDocuments] = useState([]); // This will hold all documents
+    const [encryptDocument, setEncryptDocument] = useState(true); // encryption by default
+
     const [customFormData, setCustomFormData] = useState({
         title: '',
         description: '',
         category: '',
+        emails: '',
     });
-    const [isDragActive, setIsDragActive] = useState(false);
-    const [uploadedFile, setUploadedFile] = useState(null); // array of temp uploaded files
-    const [documents, setDocuments] = useState([]); // This will hold all documents
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -132,32 +181,151 @@ const UploadDocumentComponent = () => {
         }));
     };
 
+    async function readFileAsArrayBuffer(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.onerror = (error) => reject(error);
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    const arrayBufferToBase64 = async (buffer) => {
+        const bytes = await new Uint8Array(buffer);
+        const binary = await bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+        return btoa(binary);
+    };
+
+    async function return256Hash(data) {
+        const encoder = new TextEncoder();
+        const buffer = encoder.encode(data);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(hashBuffer))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('');
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData();
-        formData.append('files', uploadedFile);
-        formData.append('customFormData', JSON.stringify(customFormData));
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
+        setLoading(true);
 
         try {
-            const response = await createDocument(formData);
-            console.log('response from file upload axios post: ', response.data);
-            navigate('/documents');
-        } catch (err) {
-            if (err.isAuthError) {
-                // Redirect to login page
-                navigate('/login-user');
-            } else if (err.response) {
-                // Other errors
-                console.error(`Error ${err.response.status}: ${err.response.statusText}`);
-            } else {
-                console.log('Error', err.message);
-            }
-        }
+            // TODO: convert current react recipient email input element to a (+) button feature that adds new input boxes for multiple emails, removing the comma seperated string current implementation
+            const emailArray = customFormData.emails.split(',').map((email) => email.trim());
 
-        //redirect to documents page
+            const hashedEmailPromises = emailArray.map((email) => return256Hash(email));
+            const hashedEmails = await Promise.all(hashedEmailPromises);
+            const publicKeyAndWalletPromises = hashedEmails.map(async (hashedEmail, index) => {
+                try {
+                    const {
+                        data: { data: userData },
+                    } = await fetchUserPublicKeyAndWallet(hashedEmail);
+                    return {
+                        publicKey: userData.publicKey,
+                        wallet: userData.verifiedWallet,
+                    };
+                } catch (error) {
+                    // Update the error message to include the specific email
+                    setErrorMessage(`No user was found for the email: ${emailArray[index]}`);
+                    setShowErrorModal(true);
+                }
+            });
+            // returned list of queried publickey, and wallet from centalized db by given email
+            const publicKeysWithHashedEmailsAndWallet = await Promise.all(publicKeyAndWalletPromises);
+
+            // convert uploaded file to an ArrayBuffer to uniformlly manage the document raw data
+            const arrayBufferOfFile = await readFileAsArrayBuffer(uploadedFile);
+            // hash raw file binary data for trustless document tamper resistance
+            const sha256HashOfOriginalFileBinary = await return256Hash(arrayBufferOfFile);
+
+            // payload placeholder to add payloads if multiple recipients designated to be sent to server via iterable
+            let payloads = [];
+
+            // dynamically change document payload to be encrypted or unencrypted based on user selection
+            if (encryptDocument) {
+                const publicKeys = publicKeysWithHashedEmailsAndWallet.map(({ publicKey }) => publicKey);
+                const encryptionResults = await webCryptoApiHybridEncrypt(publicKeys, arrayBufferOfFile);
+                console.log('encrypted document results: ', encryptionResults);
+
+                // only thing changing is 'encrypted', 'encryptedProperties', and 'rawProperties' data
+                payloads = await encryptionResults.map((encryptionResult, index) => ({
+                    original_file_name: uploadedFile.name,
+                    original_file_format: uploadedFile.type,
+                    original_file_size: uploadedFile.size,
+                    original_file_hash: sha256HashOfOriginalFileBinary,
+                    required_signers_wallets: publicKeysWithHashedEmailsAndWallet.map(({ wallet }) => wallet),
+                    recipient_signer_wallet: publicKeysWithHashedEmailsAndWallet[index].wallet,
+                    metadata: {
+                        title: customFormData.title,
+                        description: customFormData.description,
+                        category: customFormData.category,
+                        creation_date: new Date().toISOString(),
+                        author: accountObject.xrplWalletAddress,
+                        all_recipients: hashedEmails,
+                        receiver: hashedEmails[index],
+                    },
+                    encrypted: true,
+                    encryptionProperties: {
+                        encrypted_data: encryptionResult.encryptedData,
+                        encrypted_aes_key: encryptionResult.encryptedAesKeyBase64,
+                        iv_base64: encryptionResult.iv,
+                        encrypted_data_format: 'base64',
+                        encryption_algorithm: 'AES-GCM',
+                        encryption_aes_key_length: 256,
+                        encryption_aes_key_hash: encryptionResult.aesKeyHash,
+                    },
+                    rawProperties: null,
+                }));
+            } else {
+                const rawPropertiesPromises = hashedEmails.map(async (item, index) => {
+                    const unencryptedDataBase64 = await arrayBufferToBase64(arrayBufferOfFile);
+                    return {
+                        original_file_name: uploadedFile.name,
+                        original_file_format: uploadedFile.type,
+                        original_file_size: uploadedFile.size,
+                        original_file_hash: sha256HashOfOriginalFileBinary,
+                        required_signers_wallets: publicKeysWithHashedEmailsAndWallet.map(({ wallet }) => wallet),
+                        recipient_signer_wallet: publicKeysWithHashedEmailsAndWallet[index].wallet,
+                        metadata: {
+                            title: customFormData.title,
+                            description: customFormData.description,
+                            category: customFormData.category,
+                            creation_date: new Date().toISOString(),
+                            author: accountObject.xrplWalletAddress,
+                            all_recipients: hashedEmails,
+                            receiver: hashedEmails[index],
+                        },
+                        encrypted: false,
+                        encryptionProperties: null,
+                        rawProperties: {
+                            unencrypted_data: unencryptedDataBase64,
+                            unencrypted_data_format: 'base64',
+                        },
+                    };
+                });
+
+                payloads = await Promise.all(rawPropertiesPromises);
+            }
+
+            // Uploading each encrypted document iterably
+            for (const payload of payloads) {
+                // send document payload with metadata to server to be formatted and stored on ipfs
+                const responseData = await uploadDocument(payload);
+                console.log(responseData);
+            }
+
+            // TODO: uploaded document metadata and created document ipfs cid linked to creating rAddress and recipient rAddresses in centralized db for faster querying / sorting of viewable documents and their relations
+
+            // navigate('/documents');
+        } catch (error) {
+            console.error('Error during document upload:', error);
+            setLoading(false);
+            setUploadComplete(false);
+        } finally {
+            setUploadedFile(null);
+            setLoading(false);
+            setUploadComplete(true);
+        }
     };
 
     const onUpload = (newDocument) => {
@@ -165,7 +333,6 @@ const UploadDocumentComponent = () => {
     };
 
     const onDelete = () => {
-        // setDocuments((prevDocs) => prevDocs.filter((doc) => doc.name !== docName));
         setUploadedFile(null);
     };
 
@@ -188,7 +355,6 @@ const UploadDocumentComponent = () => {
     const processFile = (file) => {
         if (file) {
             console.log('file inside processFile: ', file);
-            // setUploadedFiles((prevFiles) => [...prevFiles, file]); // Add new file to the array
             setUploadedFile(file); // Add new file to the array
             onUpload({ name: file.name, isSigned: false });
         }
@@ -225,8 +391,26 @@ const UploadDocumentComponent = () => {
                     Drag and drop a file here, or click to select a file
                     <HiddenUploadInput id="hiddenFileInput" type="file" onChange={handleFileChange} />
                 </UploadDragBox>
+                {loading && (
+                    <LoadingComponent>
+                        <h6>Uploading Document to IPFS...</h6>
+                        <LoadingIcon />
+                    </LoadingComponent>
+                )}
+                {uploadComplete && (
+                    <UploadComplete>
+                        <h6>File uploaded successfully!</h6>
+                        <button
+                            onClick={() => {
+                                navigate('/documents');
+                            }}
+                        >
+                            view document
+                        </button>
+                    </UploadComplete>
+                )}
 
-                {uploadedFile && (
+                {uploadedFile && !loading && (
                     <UploadFileBox>
                         <UplaodedFileDiv>
                             <span>{uploadedFile.name}</span>
@@ -271,12 +455,34 @@ const UploadDocumentComponent = () => {
                                     <option value="custom">Other</option>
                                 </select>
                             </div>
-                            <button type="submit" className="buttonPop">
-                                Submit
-                            </button>
+                            <div>
+                                <label>Recipient Emails:</label>
+                                <RecipientTextInput
+                                    type="text"
+                                    name="emails"
+                                    value={customFormData.emails}
+                                    onChange={handleChange}
+                                    placeholder="Enter emails separated by commas"
+                                />
+                            </div>
+                            <EncryptDocumentInput>
+                                <label>Encrypt Document:</label>
+                                <input
+                                    style={{ width: '50px' }}
+                                    type="checkbox"
+                                    checked={encryptDocument}
+                                    onChange={() => setEncryptDocument(!encryptDocument)}
+                                />
+                            </EncryptDocumentInput>
+                            <SubmitFormButtonContainer>
+                                <button type="submit" className="buttonPop">
+                                    Submit
+                                </button>
+                            </SubmitFormButtonContainer>
                         </DocumentForm>
                     </UploadFileBox>
                 )}
+                {showErrorModal && <ErrorModal message={errorMessage} onClose={() => setShowErrorModal(false)} />}
             </UploadDocumentContainer>
         </Container>
     );

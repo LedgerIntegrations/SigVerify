@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import { AccountContext } from '../App';
 
 const serverUrl = 'http://localhost:3001';
 const axiosInstance = axios.create({
