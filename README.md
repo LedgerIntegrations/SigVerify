@@ -17,13 +17,19 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 
 ## Preview Unfinished Mock Demo
 
-![Landing Page](./sigVerify-frontend/src/assets/homePage_demo.png)
-![Landing Page](./sigVerify-frontend/src/assets/loginPage_demo.png)
-![Landing Page](./sigVerify-frontend/src/assets/loginPageQr_demo.png)
-![Landing Page](./sigVerify-frontend/src/assets/pdfUpload.png)
-![Landing Page](./sigVerify-frontend/src/assets/signUploadedDoc_demo.png)
-![Landing Page](./sigVerify-frontend/src/assets/accountSignatures_demo.png)
-![Landing Page](./sigVerify-frontend/src/assets/verifySignaturesPage_demo.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-createAccount.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-genKeypairs.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-dashboard.png)
+
+![Landing Page](./sigVerify-frontend/src/assets/mobile-unauthenticatedProfile.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-authenticateWallet.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-profile.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-documents.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-documentDetails.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-decryptedDocument.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-signDocument.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-documentUpload.png)
+![Landing Page](./sigVerify-frontend/src/assets/mobile-navigation.png)
 
 
 <br />
@@ -31,12 +37,15 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 
 ## Technologies 🛠
 
-- **React**: Front-end framework.
-- **Express.js**: Node.js framework for managing servers and routes.
 - **Node**: JavaScript runtime.
-- **Vue**: Front-end build environment.
+- **Express.js**: Node.js framework for managing servers and routes.
+- **PostgreSQL**: Relational database.
+- **Vite**: Front-end build tool.
+- **React**: Front-end framework.
+- **Styled-Components**: Modular component styling for react.
 - **Xrpl**: XRPL JavaScript library.
-- **XamanSdk**: Allow developers to deliver xrpl and other (sign-in) payloads to Xaman app users.
+- **Xumm-Sdk**: Allow developers to deliver xrpl and other (sign-in) payloads to Xaman app users.
+- **Pinata**: IPFS pinning services.
 
 <br />
 <hr>
@@ -45,9 +54,9 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 
 ### Xaman Functionality
 - Management of xrpl keypairs
-- Wallet Authentication / Verification.
-- Login authentication.
-- Transaction signing.
+- Wallet Authentication / Querying.
+- Composing xrpl transaction payloads to be submitted to ledger.
+- Easy to use QR code system built-in for signing payloads.
 
 ### XRPL Functionality
 - Transaction and document hash storage on ledger.
@@ -59,9 +68,18 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ### Base Functionality
 - Document upload ( currently .pdf or .txt for mvp ).
 - Document preview.
-- Document Hashing (Sha-256).
-- Profile drop-down based on authenticated wallet.
-- Responsive design
+- Document Hashing (Sha-512).
+- End-to-end document encryption.
+- RSA-OAEP and AES-GCM encryption algorithms for encryption and decryption of documents.
+- XRPL wallet authentication and linkage to account.
+- Mapping of authenticated emails to authenticated xrpl r-addresses.
+- Sharing of encrypted or unencrypted documents with other users.
+- Designate required signatures on documents (single or multi).
+- Centralized database to track and relate all decentralized aspects smoothly and efficiently.
+(document IPFS CIDs attached to appropriate xrpl 'signature' transaction payloads before signing)
+- UI to view all created documents you have been mentioned in as (signer/viewer).
+- Status of all documents you are mentioned in signed / partial signed / completed.
+- links to all ipfs documents and signature hashes in document viewer UI.
 
 <br />
 <hr>
@@ -71,12 +89,12 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 - User-friendly navigation.
 - identity verification.
 - Intuitive dashboard.
-- multi - sig for documents.
+- multi - sig for documents. ✅
 - document editor.
-- drag-and-drop document upload.
-- document sharing in-app.
-- detailed user profiles
-- signature history
+- drag-and-drop document upload. ✅
+- document sharing in-app. ✅
+- detailed user profiles.
+- signature history.
 - upload / signature of all document types and more.
 - customizable signature fields and visual signature templates.
 
