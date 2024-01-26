@@ -20,7 +20,6 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-createAccount.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-genKeypairs.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-dashboard.png)
-
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-unauthenticatedProfile.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-authenticateWallet.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-profile.png)
@@ -30,7 +29,6 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-signDocument.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-documentUpload.png)
 ![Landing Page](./sigVerify-frontend/src/assets/mobile-navigation.png)
-
 
 <br />
 <hr>
