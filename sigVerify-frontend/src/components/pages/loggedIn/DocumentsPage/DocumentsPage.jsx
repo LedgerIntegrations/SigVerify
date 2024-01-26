@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import { fetchDocuments } from '../../../../utils/httpRequests/routes/documents';
 import DocumentDetailsModal from './DocumentDetailsModal';
 import { Link } from 'react-router-dom';
+import { AccountContext } from '../../../../App';
 
 const OutterDocumentsContainer = styled.div`
     display: flex;
@@ -109,6 +110,8 @@ const DocumentListItemContents = styled.div`
 `;
 
 function DocumentsPage() {
+    const [accountObject, setAccountObject] = useContext(AccountContext);
+
     const [documents, setDocuments] = useState([]);
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -169,7 +172,13 @@ function DocumentsPage() {
                                     <span style={{ color: '#777' }}>{document.role}</span>
                                     <span style={{ color: '#777' }}>{document.category}</span>
                                     <span style={{ color: 'orange' }}>
-                                        {document.is_signed ? 'Completed' : 'Pending'}
+                                        {document.required_signers_wallets.length > 0 &&
+                                        document.missing_signatures.length === 0
+                                            ? 'Complete'
+                                            : document.missing_signatures.length <
+                                              document.required_signers_wallets.length
+                                            ? 'Partial'
+                                            : 'Pending'}
                                     </span>
                                 </DocumentListItemContents>
                             </DocumentListItem>
@@ -178,7 +187,13 @@ function DocumentsPage() {
                 </DocumentsList>
             </DocumentDisplaySection>
 
-            {modalOpen && <DocumentDetailsModal cid={selectedDocument.ipfs_hash} onClose={() => setModalOpen(false)} />}
+            {modalOpen && (
+                <DocumentDetailsModal
+                    dbDocData={selectedDocument}
+                    userHashedEmail={accountObject.emailHash}
+                    onClose={() => setModalOpen(false)}
+                />
+            )}
         </OutterDocumentsContainer>
     );
 }

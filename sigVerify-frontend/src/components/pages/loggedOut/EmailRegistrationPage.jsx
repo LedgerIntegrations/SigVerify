@@ -140,10 +140,11 @@ function EmailRegistrationPage() {
 
         await axios
             .post('http://localhost:3001/api/user/register', { email })
-            .then((response) => {
-                const { ok, message } = response.data;
+          .then((response) => {
+              console.log(response)
+              const { emailSent, message } = response.data;
 
-                if (!ok) {
+                if (!emailSent) {
                     throw new Error(message || 'Failed to register.');
                 }
 

@@ -18,31 +18,31 @@ async function encryptDataWithAesGcm(data) {
         const aesKey = await window.crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
 
         // Generate an IV for AES-GCM
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const ivUint8Array = window.crypto.getRandomValues(new Uint8Array(12));
 
         // Encrypt the data using AES-GCM
-        const encryptedData = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, aesKey, data);
+        const aesEncryptedDocumentDataArrayBuffer = await window.crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv: ivUint8Array },
+            aesKey,
+            data
+        );
 
         // Export the AES key
-        const exportedAesKey = await window.crypto.subtle.exportKey('raw', aesKey);
-
-        // Hash the raw data and the exported AES key
-        const rawDataSha512Hash = await hashData(data);
-        const aesKeySha512Hash = await hashData(exportedAesKey);
+        const exportedAesKeyArrayBuffer = await window.crypto.subtle.exportKey('raw', aesKey);
+        const sha512HashedArrayBufferOfExportedAesKey = await hashData(exportedAesKeyArrayBuffer);
 
         return {
-            rawDataSha512Hash, // hashed arrayBuffer of raw document data
-            aesKeySha512Hash, // hashed arrayBuffer of exported AES key
-            encryptedData,
-            aesKey,
-            iv,
+            sha512HashedArrayBufferOfExportedAesKey,
+            aesEncryptedDocumentDataArrayBuffer,
+            aesCryptoKeyUsed: aesKey,
+            ivUint8Array,
         };
     } catch (error) {
         console.error('AES-GCM encryption error:', error);
         throw error;
     }
 }
-
+// encrypts aes encryption key using RSA-OAEP public key
 async function encryptAesKeyWithPublicKey(aesKey, publicKey) {
     try {
         // Export the AES key
@@ -50,44 +50,51 @@ async function encryptAesKeyWithPublicKey(aesKey, publicKey) {
 
         // Encrypt the exported AES key using RSA-OAEP
         const encryptedAesKey = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, exportedAesKey);
-
-        return {
-            encryptedAesKey,
-            publicKeyUsed: publicKey,
-        };
+        const rsaOaepEncryptedAesKeyArrayBufferBase64Encoded = await arrayBufferToBase64(encryptedAesKey);
+        return rsaOaepEncryptedAesKeyArrayBufferBase64Encoded;
     } catch (error) {
         console.error('RSA encryption error:', error);
         throw error;
     }
 }
-
-const webCryptoApiHybridEncrypt = async (publicKeysBase64, data) => {
+// usersThatCanDecrypt: [{emailHash, publicKeyBase64, wallet}]
+const webCryptoApiHybridEncrypt = async (usersThatCanDecrypt, data) => {
     try {
         // Encrypt data with AES-GCM
-        const { encryptedData, aesKey, iv, rawDataSha512Hash, aesKeySha512Hash } = await encryptDataWithAesGcm(data);
+        const {
+            sha512HashedArrayBufferOfExportedAesKey,
+            aesEncryptedDocumentDataArrayBuffer,
+            aesCryptoKeyUsed,
+            ivUint8Array,
+        } = await encryptDataWithAesGcm(data);
 
-        // Encrypt AES key with each public key
-        const encryptedAesKeys = await Promise.all(
-            publicKeysBase64.map(async (publicKeyBase64) => {
-                const publicKey = await importCryptoKey(publicKeyBase64, 'public');
-                return encryptAesKeyWithPublicKey(aesKey, publicKey);
+        // Encrypt AES key with each public key and add encryptedAes key to array of given users
+        const arrayOfUsersWithCorrespondingEncryptedAesKeyUsingEachPublicKey = await Promise.all(
+            usersThatCanDecrypt.map(async (user) => {
+                const publicKey = await importCryptoKey(user.publicKeyBase64, 'public');
+                const encryptedAesKeyBase64 = await encryptAesKeyWithPublicKey(aesCryptoKeyUsed, publicKey);
+                return {
+                    ...user,
+                    encryptedAesKeyBase64,
+                };
             })
         );
 
         // Convert data to base64
-        const encryptedDataBase64 = arrayBufferToBase64(encryptedData);
-        const ivBase64 = arrayBufferToBase64(iv);
-        const aesKeyHashBase64 = arrayBufferToBase64(aesKeySha512Hash);
-        const rawDataSha512HashBase64 = arrayBufferToBase64(rawDataSha512Hash);
+        const aesEncryptedDocumentDataArrayBufferBase64Encoded = arrayBufferToBase64(
+            aesEncryptedDocumentDataArrayBuffer
+        );
+        const ivUint8ArrayBase64Encoded = arrayBufferToBase64(ivUint8Array);
+        const sha512HashedArrayBufferOfExportedAesKeyBase64Encoded = arrayBufferToBase64(
+            sha512HashedArrayBufferOfExportedAesKey
+        );
 
-        return encryptedAesKeys.map((encryptedAesKey) => ({
-            dataHash: rawDataSha512HashBase64,
-            aesKeyHash: aesKeyHashBase64,
-            encryptedData: encryptedDataBase64,
-            encryptedAesKeyBase64: arrayBufferToBase64(encryptedAesKey.encryptedAesKey),
-            publicKeyUsedBase64: encryptedAesKey.publicKeyUsed,
-            iv: ivBase64,
-        }));
+        return {
+            sha512HashedArrayBufferOfExportedAesKeyBase64Encoded,
+            aesEncryptedDocumentDataArrayBufferBase64Encoded,
+            arrayOfUsersWithCorrespondingEncryptedAesKeyUsingEachPublicKey,
+            ivUint8ArrayBase64Encoded,
+        };
     } catch (error) {
         console.error('Error in hybrid encryption:', error);
         throw error;

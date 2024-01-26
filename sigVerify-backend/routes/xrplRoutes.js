@@ -5,13 +5,17 @@ import authenticateToken from '../middleware/authenticateToken.js';
 const router = express.Router();
 
 // protected routes
-router.get('/api/xrpl/createXummSigninPayload', authenticateToken, xrplController.createXummSigninPayload);
-router.post('/api/xrpl/subscribeToPayload', authenticateToken, xrplController.createXummPayloadSubscription);
+router.get('/api/xrpl/createXamanSigninPayload', authenticateToken, xrplController.createXamanSigninPayload);
+router.post('/api/xrpl/subscribeToPayload', authenticateToken, xrplController.createXamanPayloadSubscription);
 router.post(
     '/api/xrpl/findAllAccountPaymentTransactionsToSigVerifyWallet',
     authenticateToken,
     xrplController.findAllXrplAccountPaymentTransactionsToSigVerifyWallet
 );
 
-router.post('/api/xrpl/signEncryptedJsonData', authenticateToken, xrplController.signEncryptedJsonData);
+router.post(
+    '/api/xrpl/create/memoPaymentTxPayload',
+    authenticateToken,
+    xrplController.generateXamanPayloadForPaymentTxWithMemo
+);
 export default router;

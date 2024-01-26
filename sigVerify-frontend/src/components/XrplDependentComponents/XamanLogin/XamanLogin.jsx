@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import './XummLogin.css';
+import './XamanLogin.css';
 import { useContext, useState } from 'react';
 import { AccountContext } from '../../../App';
 // import { useNavigate } from 'react-router-dom';
@@ -7,10 +7,10 @@ import { AccountContext } from '../../../App';
 // needs updating - currently taken out of application temporarily
 
 // eslint-disable-next-line react/prop-types
-export default function XummLogin({ setWalletAuthOpened }) {
+export default function XamanLogin({ setWalletAuthOpened }) {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [payloadCreate, setPayloadCreate] = useState({});
-    const [payloadMessage, setPayloadMessage] = useState('Scan & sign with XUMM!');
+    const [payloadMessage, setPayloadMessage] = useState('Scan & sign with Xaman!');
 
     // const navigate = useNavigate();
     console.log('AccountContext: ', accountObject);
@@ -21,9 +21,9 @@ export default function XummLogin({ setWalletAuthOpened }) {
         }
     }, []);
 
-    const authenticateXumm = async () => {
-        // RETURN xumm sign-in payload object to display to client for signature
-        await fetch('http://localhost:3001/api/xrpl/createXummSigninPayload', {
+    const authenticateXaman = async () => {
+        // RETURN Xaman sign-in payload object to display to client for signature
+        await fetch('http://localhost:3001/api/xrpl/createXamanSigninPayload', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
                     console.log('User Failed to sign in.');
                     setPayloadCreate({});
                     setPayloadMessage(
-                        "Account 'sign-in' QR was rejected. Please reload web-page or click 'Genereate QR' again. Cannot proceed to 'Profile' without signing from XUMM wallet."
+                        "Account 'sign-in' QR was rejected. Please reload web-page or click 'Genereate QR' again. Cannot proceed to 'Profile' without signing from Xaman wallet."
                     );
                 }
             })
@@ -113,7 +113,7 @@ export default function XummLogin({ setWalletAuthOpened }) {
                 </div>
             )}
             <p id="signInMsg">{payloadMessage}</p>
-            <button className="buttonPop" onClick={authenticateXumm}>
+            <button className="buttonPop" onClick={authenticateXaman}>
                 Generate QR
             </button>
         </div>

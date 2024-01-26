@@ -5,7 +5,7 @@ import NavigationSlider from './NavigationSlider';
 import styled from 'styled-components';
 import logoImg from '../../../../assets/svLogo.png';
 
-import XummLogin from '../../../XrplDependentComponents/XummLogin/XummLogin';
+import XamanLogin from '../../../XrplDependentComponents/XamanLogin/XamanLogin';
 
 const ProfilePage = styled.div`
     display: flex;
@@ -210,10 +210,10 @@ const WalletForm = styled.form`
     transform: translateX(-50%);
 
     button {
-      position: relative;
-      top: -10px;
-      right: -47%;
-      padding-block: 2px;
+        position: relative;
+        top: -10px;
+        right: -47%;
+        padding-block: 2px;
     }
 
     label {
@@ -251,8 +251,8 @@ function Profile() {
     //     setSelectedWalletProvider(provider);
     //     setShowWalletProviders(false);
 
-    //     // If XUMM is selected, open the XUMM login component
-    //     if (provider === 'xumm-xrpl') {
+    //     // If Xaman is selected, open the Xaman login component
+    //     if (provider === 'Xaman-xrpl') {
     //         setWalletAuthOpened(true);
     //     }
     //     // Add similar conditions for other providers if needed
@@ -266,7 +266,7 @@ function Profile() {
         setShowWalletProviders(false);
 
         // Open the login component based on the selected provider
-        if (provider === 'xumm-xrpl') {
+        if (provider === 'Xaman-xrpl') {
             setWalletAuthOpened(true);
         } else if (provider === 'xdc') {
             // Implement the login logic for 'xdc'
@@ -361,7 +361,7 @@ function Profile() {
                                         </button>
                                         <label htmlFor="walletProvider">Choose a wallet provider:</label>
                                         <select name="walletProvider" id="walletProvider">
-                                            <option value="xumm-xrpl">XUMM</option>
+                                            <option value="Xaman-xrpl">Xaman</option>
                                             <option value="xdc">XDC</option>
                                             {/* Add more options for other wallet providers here */}
                                         </select>
@@ -373,8 +373,8 @@ function Profile() {
                             </>
                         )}
 
-                        {walletAuthOpened && selectedWalletProvider === 'xumm-xrpl' && (
-                            <XummLogin setWalletAuthOpened={setWalletAuthOpened} />
+                        {walletAuthOpened && selectedWalletProvider === 'Xaman-xrpl' && (
+                            <XamanLogin setWalletAuthOpened={setWalletAuthOpened} />
                         )}
                         {accountObject.xrplWalletAddress && (
                             <XrplWalletDisplay>
@@ -414,7 +414,6 @@ function Profile() {
                         <NavigationSlider navigateTo="/forms" pageName="forms"></NavigationSlider>
                     </ProfileTierLimits>
                 </Block>
-
             </ProfilePage>
         </>
     );

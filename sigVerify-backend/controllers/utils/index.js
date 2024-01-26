@@ -1,9 +1,8 @@
 export { sendEmail } from './sendMail.js';
 export { sendGmail } from './sendGmail.js';
 export {
-    createXummSigninPayload,
-    createXummPayloadSubscription,
-    createPaymentTxPayloadWithEncryptedJsonDataInMemo,
+    createXamanSigninPayload,
+    createXamanPayloadSubscription,
+    createPaymentTxPayloadWithGivenDataInMemo,
     findAllAccountPaymentTransactionsToSigVerifyWallet,
-    createPaymentTxWithDocHashInMemo,
 } from './xrplHelpers.js';

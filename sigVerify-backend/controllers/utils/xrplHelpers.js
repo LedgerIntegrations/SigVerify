@@ -7,10 +7,10 @@ dotenv.config();
 
 const Sdk = new XummSdk(process.env.XUMM_API_KEY, process.env.XUMM_API_SECRET);
 
-//current temp wallet
+// current temp wallet that is recieving all signature transactions
 const sigverifyWallet = 'rMuU5YQaxChGsC6Tx1HGdCWxcqVxfEsTPo';
 
-const createXummSigninPayload = async () => {
+const createXamanSigninPayload = async () => {
     try {
         const signInPayload = await Sdk.payload.create({
             TransactionType: 'SignIn',
@@ -29,7 +29,7 @@ const createXummSigninPayload = async () => {
     }
 };
 
-const createXummPayloadSubscription = async (uuid) => {
+const createXamanPayloadSubscription = async (uuid) => {
     console.log('checking uuid send in req: ', uuid);
 
     try {
@@ -82,12 +82,12 @@ const createXummPayloadSubscription = async (uuid) => {
     }
 };
 
-const createPaymentTxPayloadWithEncryptedJsonDataInMemo = async (rAddress, encryptedData) => {
+const createPaymentTxPayloadWithGivenDataInMemo = async (rAddress, data) => {
     try {
         console.log('rAddress: ', rAddress);
-        console.log('encryptedData: ', encryptedData);
+        console.log('encryptedData: ', data);
 
-        const paymentTxPayloadWithEncryptedJsonDataInMemo = await Sdk.payload.create({
+        const paymentTxPayloadWithGivenDataInMemoResponse = await Sdk.payload.create({
             TransactionType: 'Payment',
             Account: rAddress.toString(),
             Destination: sigverifyWallet,
@@ -96,59 +96,26 @@ const createPaymentTxPayloadWithEncryptedJsonDataInMemo = async (rAddress, encry
             Memos: [
                 {
                     Memo: {
-                        MemoData: xrpl.convertStringToHex(encryptedData),
+                        MemoData: xrpl.convertStringToHex(data),
                     },
                 },
             ],
         });
 
-        console.log('Transaction payload create response: ', paymentTxPayloadWithEncryptedJsonDataInMemo);
+        console.log('Transaction payload create response: ', paymentTxPayloadWithGivenDataInMemoResponse);
         const generatedPayload = {
-            uuid: paymentTxPayloadWithEncryptedJsonDataInMemo?.uuid,
-            qrLink: paymentTxPayloadWithEncryptedJsonDataInMemo?.next.always,
-            qrImage: paymentTxPayloadWithEncryptedJsonDataInMemo?.refs.qr_png,
+            uuid: paymentTxPayloadWithGivenDataInMemoResponse?.uuid,
+            qrLink: paymentTxPayloadWithGivenDataInMemoResponse?.next.always,
+            qrImage: paymentTxPayloadWithGivenDataInMemoResponse?.refs.qr_png,
         };
 
         return generatedPayload;
     } catch (error) {
-        console.error('Error while creating paymentTxPayloadWithEncryptedJsonDataInMemo:', error.message);
+        console.error('Error while creating paymentTxPayloadWithGivenDataInMemoResponse:', error.message);
     }
 };
 
-const createPaymentTxWithDocHashInMemo = async (rAddress, documentHash) => {
-    try {
-        console.log('rAddress: ', rAddress);
-        console.log('document hash: ', documentHash);
-
-        const txPayloadForPaymentToSelfWithDocHashInMemo = await Sdk.payload.create({
-            TransactionType: 'Payment',
-            Account: rAddress.toString(),
-            Destination: sigverifyWallet,
-            Amount: '1',
-            Fee: '12',
-            Memos: [
-                {
-                    Memo: {
-                        MemoData: xrpl.convertStringToHex(documentHash),
-                    },
-                },
-            ],
-        });
-
-        console.log('Transaction payload create response: ', txPayloadForPaymentToSelfWithDocHashInMemo);
-        const response = {
-            documentHash: documentHash,
-            uuid: txPayloadForPaymentToSelfWithDocHashInMemo?.uuid,
-            qrLink: txPayloadForPaymentToSelfWithDocHashInMemo?.next.always,
-            qrImage: txPayloadForPaymentToSelfWithDocHashInMemo?.refs.qr_png,
-        };
-
-        return response;
-    } catch (error) {
-        console.error('Error while creating payment transaction:', error.message);
-    }
-};
-
+//! currently deprecated, possible re-implementation
 const findAllAccountPaymentTransactionsToSigVerifyWallet = async (rAddress) => {
     const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
 
@@ -206,6 +173,7 @@ const findAllAccountPaymentTransactionsToSigVerifyWallet = async (rAddress) => {
     }
 };
 
+//! currently deprecated, possible re-implementation
 const hasAccountSignedThisDocument = async (targetRAddress, documentHash) => {
     const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
 
@@ -265,10 +233,9 @@ const hasAccountSignedThisDocument = async (targetRAddress, documentHash) => {
 };
 
 export {
-    createXummSigninPayload,
-    createXummPayloadSubscription,
+    createXamanSigninPayload,
+    createXamanPayloadSubscription,
     findAllAccountPaymentTransactionsToSigVerifyWallet,
-    createPaymentTxPayloadWithEncryptedJsonDataInMemo,
-    createPaymentTxWithDocHashInMemo,
+    createPaymentTxPayloadWithGivenDataInMemo,
     hasAccountSignedThisDocument,
 };

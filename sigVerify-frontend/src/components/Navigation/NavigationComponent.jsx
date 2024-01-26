@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import logoImg from '../../assets/svLogo.png';
 import TogglerButton from '../helperComponents/TogglerButton/TogglerButton';
 import { AccountContext } from '../../App';
-
+import { removeUserAuthTokenCookie } from '../../utils/httpRequests/routes/users';
 const slideIn = keyframes`
 from {
      transform: translateX(-100%);
@@ -43,7 +43,6 @@ const NavigationHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     /* padding-inline: 10px; */
-
 `;
 
 const MiddleNav = styled.div`
@@ -196,7 +195,6 @@ const SettingsItem = styled.li`
     display: flex;
     flex-direction: column;
     align-items: start; // This will vertically center the link within the list item
-    /* border: 1px solid black; */
     border-radius: 10px;
     margin-inline: 10px;
     width: 90%;
@@ -222,14 +220,14 @@ const SettingsItem = styled.li`
 `;
 
 const SettingsButton = styled.button`
-  font-size: 11px;
-  border-radius: 5px;
-  border: none;
-  padding: 4px 8px;
-  padding-top: 7px;
-  color: white;
+    font-size: 11px;
+    border-radius: 5px;
+    border: none;
+    padding: 4px 8px;
+    padding-top: 7px;
+    color: white;
 
-  background-color: #474747;
+    background-color: #474747;
 `;
 
 const NavigationLink = styled(Link)`
@@ -291,6 +289,16 @@ const LogoNavigation = styled(Link)`
         width: 42px;
         margin: 0px;
     }
+`;
+
+const LogoutButton = styled.button`
+    padding: 5px 20px;
+    color: #9d3c2f;
+    border-radius: 5px;
+    border: none;
+    align-self: center;
+    margin-top: 20px;
+    background-color: #ededed;
 `;
 
 const twitterSvg = (
@@ -377,6 +385,12 @@ const NavigationComponent = () => {
     const goBack = () => {
         navigate(-1);
     };
+  const logoutUser = async () => {
+    setAccountObject({ loggedIn: false });
+    window.sessionStorage.clear();
+    const removeCookieResponse = await removeUserAuthTokenCookie();
+    console.log(removeCookieResponse)
+    };
 
     const [hamburgerIsOpen, setHamburgerIsOpen] = useState(false);
     const [hamburgerHasBeenOpened, setHamburgerHasBeenOpened] = useState(false);
@@ -449,6 +463,11 @@ const NavigationComponent = () => {
                     <NavigationLink to="/xrpl-ui" className="buttonPop">
                         XRPL
                     </NavigationLink>
+                </NavigationItem>
+                <NavigationItem>
+                    <LogoutButton onClick={logoutUser} to="/" className="buttonPop">
+                        LOGOUT
+                    </LogoutButton>
                 </NavigationItem>
             </NavigationListAnimated>
             <SettingsListAnimated $settingsIsOpen={settingsIsOpen} $settingsHasBeenOpened={settingsHasBeenOpened}>

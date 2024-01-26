@@ -63,7 +63,7 @@ svg {
   color: white;
 } */
 
-#doc-nav-info {
+/* #doc-nav-info {
   margin: 0px;
   margin-top: 2px;
 }
@@ -84,10 +84,16 @@ svg {
 
 #no-renderer-download {
   display: none;
-}
+} */
 
 #header-bar {
   font-size: 12px;
+  min-height: 30px;
+  box-shadow: inset .5px .5px 2px .5px rgba(59, 59, 59, 0.5);
+}
+
+#pdf-controls {
+  padding-top: 6.5px;
 }
 
 button.loading

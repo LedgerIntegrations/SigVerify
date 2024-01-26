@@ -34,14 +34,14 @@ async function decryptData(encryptedData, aesKey, iv) {
     );
 }
 
-async function handleDecrypt(userPrivateKeyBase64, documentData) {
+async function handleDecrypt(userPrivateKeyBase64, encryptedAesKey, documentData) {
     try {
         const privateKey = await importPrivateKey(userPrivateKeyBase64);
-        const decryptedAesKey = await decryptAesKey(documentData.properties.encrypted_aes_key, privateKey);
+        const decryptedAesKey = await decryptAesKey(encryptedAesKey, privateKey);
         const decryptedDataBuffer = await decryptData(
-            documentData.properties.encrypted_data,
+            documentData.document.data.data,
             decryptedAesKey,
-            documentData.properties.iv_base64
+            documentData.document.data.ivBase64
         );
       // return arrayBufferToString(decryptedDataBuffer); // Corrected this line
       return decryptedDataBuffer;
@@ -50,11 +50,6 @@ async function handleDecrypt(userPrivateKeyBase64, documentData) {
         console.error('Decryption error:', error);
         throw error; // Or handle the error as required
     }
-}
-
-function arrayBufferToString(buffer) {
-    const decoder = new TextDecoder('utf-8');
-    return decoder.decode(buffer);
 }
 
 export { handleDecrypt };

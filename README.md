@@ -36,14 +36,14 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 - **Node**: JavaScript runtime.
 - **Vue**: Front-end build environment.
 - **Xrpl**: XRPL JavaScript library.
-- **XummSdk**: Allow developers to deliver xrpl and other (sign-in) payloads to Xumm app users.
+- **XamanSdk**: Allow developers to deliver xrpl and other (sign-in) payloads to Xaman app users.
 
 <br />
 <hr>
 
 ## Current Functionalities 🌟
 
-### Xumm Functionality
+### Xaman Functionality
 - Management of xrpl keypairs
 - Wallet Authentication / Verification.
 - Login authentication.
@@ -67,7 +67,7 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 <hr>
 
 ## Future Functionalities 🔮
-- xumm push notifications for payloads after initial sign-in.
+- Xaman push notifications for payloads after initial sign-in.
 - User-friendly navigation.
 - identity verification.
 - Intuitive dashboard.
@@ -88,10 +88,10 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 1. Clone the project from GitHub.
 2. Navigate to the `sigVerify-frontend` directory in the terminal and run 'npm i' to install all front-end dependencies.
 3. Navigate to the `sigVerify-backend` directory in the terminal and run 'npm i' to install all back-end dependencies.
-4. Copy the `.env.dist` file in the root of the `sigVerify-backend` directory to create a new file named `.env`. Add your API key and secret for XUMM API in the `.env` file. <br />
+4. Copy the `.env.dist` file in the root of the `sigVerify-backend` directory to create a new file named `.env`. Add your API key and secret for Xaman API in the `.env` file. <br />
    ```bash
-   XUMM_API_KEY="api key here"
-   XUMM_API_SECRET="api secret here"
+   Xaman_API_KEY="api key here"
+   Xaman_API_SECRET="api secret here"
    POSTGRES_HOST="sigverify-database"
    POSTGRES_USER="postgres"
    POSTGRES_PASSWORD="postgres"
@@ -106,6 +106,6 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
    ```
 5. Execute 'docker-compose up -d' in the `sigVerify-backend` terminal.
 6. Open a second terminal, navigate to `sigVerify-frontend`, and execute 'npm run dev' in the terminal. Then, navigate to the outputted localhost URL.
-7. For current development and testing, switch XUMM's advanced setting to use XRPL test node: `wss://testnet.xrpl-labs.com`. The XRPL backend web socket is already pre-configured to the XRPL testnet: `wss://s.altnet.rippletest.net:51233` for you.
+7. For current development and testing, switch Xaman's advanced setting to use XRPL test node: `wss://testnet.xrpl-labs.com`. The XRPL backend web socket is already pre-configured to the XRPL testnet: `wss://s.altnet.rippletest.net:51233` for you.
 
 
