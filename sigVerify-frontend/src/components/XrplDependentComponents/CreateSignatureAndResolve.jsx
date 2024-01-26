@@ -1,23 +1,100 @@
 import { useEffect } from 'react';
-import './XummLogin/XummLogin.css';
+import './XamanLogin/XamanLogin.css';
 import { useContext, useState } from 'react';
 import { AccountContext } from '../../App';
-// import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { createMemoPaymentTxPayloadRequest, subscribeToXrplPayloadRequest } from '../../utils/httpRequests/routes/xrpl';
 
-import {
-    generateSignEncryptedJsonDataPayloadAxiosRequest,
-    subscribeToXrplPayloadAxiosRequest,
-} from '../../utils/httpRequests/routes/xrpl';
+const CreateSignatureContainer = styled.div`
+    min-height: fit-content;
+    width: 70vw;
+    max-width: 320px;
+    min-width: 250px;
+    display: flex;
+    position: absolute;
+    background-color: white;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    padding-top: 15px;
+    border-radius: 24px;
+    margin-block: 5vh;
+    box-shadow: 0px 10px 18px 0px #242a49cb;
+    font-size: 0.8em;
+    z-index: 1005;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 200px;
 
+    h1 {
+        margin-top: 0px;
+        color: black;
+        -webkit-text-stroke: 1px white;
+        margin-bottom: 0px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 2rem;
+    }
+
+    button {
+        border: 1px solid gray;
+        margin-top: 1vh;
+        padding: 5px 20px;
+        border-radius: 20px;
+    }
+
+    @media (min-width: 440px) {
+        max-width: 300px;
+    }
+`;
+
+const CloseModalButton = styled.button`
+    margin-bottom: 20px;
+    margin-top: 0px;
+    transform: translateX(100%);
+    background-color: rgb(64, 99, 224);
+    color: white;
+    border: none;
+`;
+
+const QrDiv = styled.div`
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    img {
+        margin-top: 1.5vh;
+        height: 130px;
+        width: 130px;
+
+        @media (min-width: 640px) {
+            width: 120px;
+            height: 120px;
+        }
+    }
+
+    a {
+        font-size: 0.75rem;
+        max-width: 60vw;
+        padding: 0.7rem;
+        color: white;
+    }
+`;
+
+const GenerateQrButton = styled.button`
+    background-color: rgb(64, 99, 224);
+    color: white;
+    margin-top: 0px;
+    margin-bottom: 20px;
+    border: none;
+`;
 // eslint-disable-next-line react/prop-types
-export default function CreateSignatureAndResolve({
-    setWalletAuthOpened,
-    encryptedJsonData,
-    setDocumentSignatureStatus,
-}) {
+export default function CreateSignatureAndResolve({ setPayloadSigningComponentOpened, memoData, setSignatureStatus }) {
     const [accountObject, setAccountObject] = useContext(AccountContext);
-    const [payloadCreate, setPayloadCreate] = useState({});
-    const [payloadMessage, setPayloadMessage] = useState('Scan & sign with XUMM!');
+    const [payloadDataState, setPayloadDataState] = useState({});
+    const [payloadMessage, setPayloadMessage] = useState('Scan & sign with Xaman!');
     const [isButtonClicked, setIsButtonClicked] = useState(false);
     // const navigate = useNavigate();
     console.log('AccountContext: ', accountObject);
@@ -25,44 +102,40 @@ export default function CreateSignatureAndResolve({
     useEffect(() => {
         // Reset button click state when the component is opened
         setIsButtonClicked(false);
-    }, [setWalletAuthOpened]);
+    }, [setPayloadSigningComponentOpened]);
 
-    const authenticateXumm = async () => {
+    const authenticateXaman = async () => {
         setIsButtonClicked(true);
-        // RETURN xumm sign-in payload object to display to client for signature
+        // RETURN Xaman sign-in payload object to display to client for signature
         try {
-            const response = await generateSignEncryptedJsonDataPayloadAxiosRequest(
-                accountObject.xrplWalletAddress,
-                encryptedJsonData
-            );
+            const response = await createMemoPaymentTxPayloadRequest(accountObject.xrplWalletAddress, memoData);
 
             console.log('axios response: ', response);
 
-            const jsonPayloadResponseForSigningEncryptedData = response.data;
-            console.log(jsonPayloadResponseForSigningEncryptedData);
-            setPayloadCreate(jsonPayloadResponseForSigningEncryptedData);
+            const createdPayloadData = response.data;
+            console.log(createdPayloadData);
+            setPayloadDataState(createdPayloadData);
 
             // After receiving the sign-in payload object, make a second request to listen to payload uuid for signature / reject
-            const subscribeResponse = await subscribeToXrplPayloadAxiosRequest({
-                payloadUuid: jsonPayloadResponseForSigningEncryptedData.uuid,
+            const subscribeResponse = await subscribeToXrplPayloadRequest({
+                payloadUuid: createdPayloadData.uuid,
             });
-            const finalencryptedJsonSignaturePayloadReturnObject = subscribeResponse.data;
-            console.log('resolved payload data: ', finalencryptedJsonSignaturePayloadReturnObject);
+            const payloadSubscribeResponseData = subscribeResponse.data;
+            console.log('resolved payload data: ', payloadSubscribeResponseData);
             // checking if payload resolve signed property is true
-            if (finalencryptedJsonSignaturePayloadReturnObject.signed) {
+            if (payloadSubscribeResponseData.signed) {
                 console.log('user successfully signed payload.');
                 setPayloadMessage('Document has been successfully signed!');
-                setDocumentSignatureStatus({
+                setSignatureStatus({
                     signed: true,
-                    resolveData: finalencryptedJsonSignaturePayloadReturnObject,
+                    resolveData: payloadSubscribeResponseData,
                 });
 
-                setPayloadCreate({});
-                setWalletAuthOpened(false);
-                // navigate('/profile');
+                setPayloadDataState({});
+                setPayloadSigningComponentOpened(false);
             } else {
                 console.log('User Failed to sign encrypted form data via xrpl tx.');
-                setPayloadCreate({});
+                setPayloadDataState({});
                 setPayloadMessage(
                     "Sign Document payload was rejected. Please reload web-page or close modal and click 'Sign & Submit' again to retry."
                 );
@@ -73,30 +146,30 @@ export default function CreateSignatureAndResolve({
     };
 
     return (
-        <div className="loginComponent" style={{ bottom: '-500px' }}>
-            <button
+        <CreateSignatureContainer>
+            <CloseModalButton
                 id="closeModalButton"
                 className="buttonPop"
                 onClick={() => {
-                    setWalletAuthOpened(false);
+                    setPayloadSigningComponentOpened(false);
                 }}
             >
                 Close
-            </button>
+            </CloseModalButton>
             <h1>Sign Document</h1>
-            {Object.keys(payloadCreate).length === 0 ? null : (
-                <div className="payloadDiv">
-                    <a href={payloadCreate?.qrLink} target="_blank" rel="noreferrer">
-                        <img src={payloadCreate?.qrImage} />
+            {Object.keys(payloadDataState).length === 0 ? null : (
+                <QrDiv>
+                    <a href={payloadDataState?.qrLink} target="_blank" rel="noreferrer">
+                        <img src={payloadDataState?.qrImage} />
                     </a>
-                </div>
+                </QrDiv>
             )}
             <p id="signInMsg">{payloadMessage}</p>
             {!isButtonClicked && (
-                <button className="buttonPop" id="generateQr" onClick={authenticateXumm}>
+                <GenerateQrButton className="buttonPop" onClick={authenticateXaman}>
                     Generate Signature QR
-                </button>
+                </GenerateQrButton>
             )}
-        </div>
+        </CreateSignatureContainer>
     );
 }

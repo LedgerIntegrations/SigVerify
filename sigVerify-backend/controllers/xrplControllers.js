@@ -1,29 +1,28 @@
 import {
-    createXummSigninPayload as createXummSigninPayloadHelper,
-    createXummPayloadSubscription as createXummPayloadSubscriptionHelper,
+    createXamanSigninPayload as createXamanSigninPayloadHelper,
+    createXamanPayloadSubscription as createXamanPayloadSubscriptionHelper,
     findAllAccountPaymentTransactionsToSigVerifyWallet as findAllAccountPaymentTransactionsToSigVerifyWalletHelper,
-    createPaymentTxWithDocHashInMemo as createPaymentTxWithDocHashInMemoHelper,
-    createPaymentTxPayloadWithEncryptedJsonDataInMemo
+    createPaymentTxPayloadWithGivenDataInMemo,
 } from './utils/index.js';
 
-const createXummSigninPayload = async (req, res) => {
+const createXamanSigninPayload = async (req, res) => {
     try {
-        const response = await createXummSigninPayloadHelper();
+        const response = await createXamanSigninPayloadHelper();
         res.json(response);
     } catch (error) {
         console.error('Error while create sign-in payload: ', error);
         res.status(500).json({
-            error: 'Internal Server Error in createXummSigninPayload controller.',
+            error: 'Internal Server Error in createXamanSigninPayload controller.',
         });
     }
 };
 
 //responds back to client with specificPropertiesFromPayloadSubscriptionResolution
-const createXummPayloadSubscription = async (req, res) => {
+const createXamanPayloadSubscription = async (req, res) => {
     const uuid = req.body.payloadUuid;
     console.log('checking uuid send in req: ', uuid);
     try {
-        const specificPropertiesFromPayloadSubscriptionResolution = await createXummPayloadSubscriptionHelper(uuid);
+        const specificPropertiesFromPayloadSubscriptionResolution = await createXamanPayloadSubscriptionHelper(uuid);
         res.json(specificPropertiesFromPayloadSubscriptionResolution);
     } catch (error) {
         console.error('Error while verifying:', error);
@@ -31,18 +30,18 @@ const createXummPayloadSubscription = async (req, res) => {
     }
 };
 
-const signEncryptedJsonData = async (req, res) => {
-  const { userRAddress, encryptedJsonData } = req.body;
+const generateXamanPayloadForPaymentTxWithMemo = async (req, res) => {
+    const { userRAddress, memoData } = req.body;
 
-  try {
-    const response = await createPaymentTxPayloadWithEncryptedJsonDataInMemo(userRAddress, encryptedJsonData);
-    res.json(response);
-  } catch (error) {
-    console.error('Error while executing signEncryptedJsonData: ', error);
-    res.status(500).json({
-        error: 'Internal Server Error in signEncryptedJsonData controller.',
-    });
-  }
+    try {
+        const response = await createPaymentTxPayloadWithGivenDataInMemo(userRAddress, memoData);
+        res.json(response);
+    } catch (error) {
+        console.error('Error while executing signEncryptedJsonData: ', error);
+        res.status(500).json({
+            error: 'Internal Server Error in signEncryptedJsonData controller.',
+        });
+    }
 };
 
 const findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) => {
@@ -60,9 +59,9 @@ const findAllXrplAccountPaymentTransactionsToSigVerifyWallet = async (req, res) 
     }
 };
 
-export  {
-    createXummSigninPayload,
-    createXummPayloadSubscription,
-    signEncryptedJsonData,
+export {
+    createXamanSigninPayload,
+    createXamanPayloadSubscription,
+    generateXamanPayloadForPaymentTxWithMemo,
     findAllXrplAccountPaymentTransactionsToSigVerifyWallet,
 };

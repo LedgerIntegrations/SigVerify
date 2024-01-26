@@ -1,4 +1,4 @@
-import './UploadSingleFileAndSendToCreateSignatureQrEndpoint.css'
+import './UploadSingleFileAndSendToCreateSignatureQrEndpoint.css';
 import React, { useContext, useState, useRef } from 'react';
 import { AccountContext } from '../../../App';
 import DocumentPreview from '../DocumentPreview/DocumentPreview'; //does not exist needs to be reworked
@@ -9,7 +9,7 @@ function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const abortController = useRef(new AbortController()); // for aborting the fetch request
 
-    const [userPromptMessage, setUserPromptMessage] = useState("Waiting for upload of document");
+    const [userPromptMessage, setUserPromptMessage] = useState('Waiting for upload of document');
     const [file, setFile] = useState(null);
     const [txPayloadForPaymentToSelfWithDocHashInMemo, settxPayloadForPaymentToSelfWithDocHashInMemo] = useState(null);
 
@@ -37,8 +37,8 @@ function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
                 return;
             }
             const result = await response.json();
-            console.log(result)
-            settxPayloadForPaymentToSelfWithDocHashInMemo(result)
+            console.log(result);
+            settxPayloadForPaymentToSelfWithDocHashInMemo(result);
 
             const subscriptionToPaymentTx = await fetch('http://localhost:3001/api/user/subscribeToPayload', {
                 method: 'POST',
@@ -46,28 +46,28 @@ function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ payloadUuid: result.uuid }),
-                signal: abortController.current.signal // Pass the signal to the fetch request
+                signal: abortController.current.signal, // Pass the signal to the fetch request
             });
 
             const subscriptionToPaymentTxResponseJson = await subscriptionToPaymentTx.json();
             if (subscriptionToPaymentTxResponseJson.loggedIn) {
-                setUserPromptMessage("Document has been signed, and submitted to the blockchain forever!");
+                setUserPromptMessage('Document has been signed, and submitted to the blockchain forever!');
                 settxPayloadForPaymentToSelfWithDocHashInMemo(null);
                 setFile(null);
             }
 
             if (!subscriptionToPaymentTxResponseJson.loggedIn) {
-                setUserPromptMessage("Payload was declined!");
+                setUserPromptMessage('Payload was declined!');
                 settxPayloadForPaymentToSelfWithDocHashInMemo(null);
                 setFile(null);
             }
         } catch (err) {
             if (err.name === 'AbortError') {
-                console.log("Fetch request has been aborted");
+                console.log('Fetch request has been aborted');
             } else {
                 console.log(err);
             }
-        };
+        }
     };
 
     return (
@@ -78,35 +78,38 @@ function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
                     <li>Upload document you desire to sign.</li>
                     <li>Review document.</li>
                     <li>Click 'Verify'</li>
-                    <li>Sign generated QR via XUMM app.</li>
+                    <li>Sign generated QR via Xaman app.</li>
                 </ol>
             </div>
-            <section id='upload-document-section'>
+            <section id="upload-document-section">
                 <h4>Upload Document</h4>
                 <div>
                     <label id="fileLabel">
                         Choose File
-                        <input type="file" id="fileInput" onChange={(e) => {
-                            resetPayload(); // Reset the payload when a new file is selected
-                            setFile(e.target.files[0]);
-                            setUserPromptMessage("Document uploaded. Review it below before proceeding.");
-                            e.target.value = null;
-                        }} />
+                        <input
+                            type="file"
+                            id="fileInput"
+                            onChange={(e) => {
+                                resetPayload(); // Reset the payload when a new file is selected
+                                setFile(e.target.files[0]);
+                                setUserPromptMessage('Document uploaded. Review it below before proceeding.');
+                                e.target.value = null;
+                            }}
+                        />
                     </label>
                     <span id="upload-fileName">{file ? file.name : 'No file chosen'}</span>
                 </div>
-               
             </section>
 
             {txPayloadForPaymentToSelfWithDocHashInMemo ? (
                 <div id="payloadDataDiv">
                     {/* <p>Document Hash: <em>{txPayloadForPaymentToSelfWithDocHashInMemo.documentHash}</em></p> */}
-                    <a href={txPayloadForPaymentToSelfWithDocHashInMemo.qrLink} target='_blank' rel="noreferrer">
+                    <a href={txPayloadForPaymentToSelfWithDocHashInMemo.qrLink} target="_blank" rel="noreferrer">
                         <img src={txPayloadForPaymentToSelfWithDocHashInMemo.qrImage} alt="QR Code" />
                     </a>
-                    <p id="sign-msg">Waiting for payload to be signed via XUMM...</p>
+                    <p id="sign-msg">Waiting for payload to be signed via Xaman...</p>
                 </div>
-            ) :
+            ) : (
                 <p id="userPromptMessage">
                     {userPromptMessage}
                     <em className="loading-dots">
@@ -114,10 +117,13 @@ function UploadSingleFileAndSendToCreateSignatureQrEndpoint() {
                         <span className="dot"></span>
                         <span className="dot"></span>
                     </em>
-                </p>}
-                {
-                    file && <button onClick={handleSubmit} className='buttonPop verifyButton'>Verify</button>
-                }
+                </p>
+            )}
+            {file && (
+                <button onClick={handleSubmit} className="buttonPop verifyButton">
+                    Verify
+                </button>
+            )}
             <div id="upload-document-container-preview">
                 <DocumentPreview file={file} id="doc-preview" />
             </div>

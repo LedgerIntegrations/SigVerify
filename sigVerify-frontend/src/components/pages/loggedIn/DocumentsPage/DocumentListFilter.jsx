@@ -141,7 +141,6 @@ const DocumentListFilter = ({ options, documents }) => {
                 filteredDocs = documents;
                 break;
             case 'signed documents':
-                // Assuming each document has a 'signed' property
                 // eslint-disable-next-line react/prop-types
                 filteredDocs = documents.filter((doc) => doc.signed);
                 break;

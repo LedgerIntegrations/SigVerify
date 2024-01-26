@@ -55,6 +55,7 @@ const LoginFormSection = styled.div`
     flex-direction: column;
     align-items: center;
     opacity: 0.9;
+    margin-bottom: 10px;
 `;
 
 const LoginFormContainer = styled.div`

@@ -23,6 +23,29 @@ export const uploadDocument = async (formData) => {
     }
 };
 
+export const addDocumentSignature = async (docId, xrplTxHash) => {
+    try {
+        const response = await axiosInstance.post(
+            '/api/document/addSignature',
+            { docId, xrplTxHash },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error('Failed to upload document');
+        }
+    } catch (error) {
+        console.error('Error during document upload:', error);
+        throw error; // Re-throw the error for the caller to handle
+    }
+};
+
 // export const updateDocument = (docId, formData) =>
 //     axiosInstance.put(`/api/documents/${docId}`, formData, {
 //         headers: {

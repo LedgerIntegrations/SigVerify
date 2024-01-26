@@ -201,6 +201,7 @@ const createNewUser = async (req, res) => {
             SELECT
                 ua.id,
                 ua.auth_token,
+                ua.hashed_email,
                 ua.hashed_password,
                 ua.public_key,
                 um.first_name,
@@ -224,6 +225,8 @@ const createNewUser = async (req, res) => {
         }
 
         const user = newUserData.rows[0];
+
+        console.log('new created user: ', user);
 
         await client.query('COMMIT');
 
@@ -252,6 +255,7 @@ const createNewUser = async (req, res) => {
                 membership: user.membership,
                 publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
+                emailHash: user.hashed_email,
                 // other non-sensitive fields
             },
         });
@@ -273,6 +277,7 @@ const authenticateExistingCookie = async (req, res) => {
         const queryForUserDataFromAuthdCookie = `
             SELECT
                 ua.public_key,
+                ua.hashed_email,
                 um.first_name,
                 um.membership,
                 um.verified_xrpl_wallet_address
@@ -299,6 +304,7 @@ const authenticateExistingCookie = async (req, res) => {
                 membership: user.membership,
                 publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
+                emailHash: user.hashed_email,
                 // other non-sensitive fields
             },
         });
@@ -307,6 +313,15 @@ const authenticateExistingCookie = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error inside authenticateExistingCookie' });
     } finally {
         client.release();
+    }
+};
+
+const removeAuthTokenCookie = async (req, res) => {
+    try {
+        res.clearCookie('authToken', { path: '/' });
+        res.send('Logged out');
+    } catch (err) {
+        console.log(err);
     }
 };
 
@@ -401,6 +416,7 @@ const authenticateLogin = async (req, res) => {
                 membership: user.membership,
                 publicKey: user.public_key,
                 xrplWalletAddress: user.verified_xrpl_wallet_address,
+                emailHash: hashedEmail,
                 // other non-sensitive fields
             },
         });
@@ -513,17 +529,21 @@ const getUserPublicKeyAndAuthenticatedWalletByHashedEmail = async (req, res) => 
 
         const userPublicKeyResult = await client.query(getPublicKeyQuery, [requestedEmailHash]);
 
-      if (userPublicKeyResult.rows.length === 0) {
+        if (userPublicKeyResult.rows.length === 0) {
             return res.status(401).json({ error: 'this email is not found in our database.' });
         }
 
         const user = userPublicKeyResult.rows[0];
 
+        // if (user.verified_xrpl_wallet_address === null) {
+        //     return res.status(401).json({ error: 'User has not authenticated a xrpl wallet yet.' });
+        // }
+
         res.status(200).json({
-            message: 'found user publickey',
+            message: 'found user publickey and verified wallet.',
             data: {
                 publicKey: user.public_key,
-                verifiedWallet: user.verified_xrpl_wallet_address || null,
+                verifiedWallet: user.verified_xrpl_wallet_address,
             },
         });
     } catch (err) {
@@ -544,4 +564,5 @@ export {
     updateDatabaseWithNewVerifiedXrplWalletAddress,
     getProfilePageData,
     getUserPublicKeyAndAuthenticatedWalletByHashedEmail,
+    removeAuthTokenCookie,
 };

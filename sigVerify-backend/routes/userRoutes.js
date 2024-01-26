@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/api/user/register', userController.createInitalUserTablesAndEmailAuthToken);
 router.post('/api/user/create', userController.createNewUser);
 router.post('/api/user/login', userController.authenticateLogin);
+router.get('/api/user/logout', userController.removeAuthTokenCookie);
 
 // Protected routes
 router.post('/api/authenticateCookie', authenticateToken, userController.authenticateExistingCookie);
@@ -16,6 +17,7 @@ router.put(
     authenticateToken,
     userController.updateDatabaseWithNewVerifiedXrplWalletAddress
 );
+
 router.post(
     '/api/user/publicKeyAndWallet',
     authenticateToken,

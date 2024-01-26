@@ -35,7 +35,7 @@ const WelcomeIntroHeader = styled.h3`
     font-weight: 200;
     font-family: 'Kdam Thmor Pro', sans-serif;
     margin: 0px;
-    margin-left: 10px;
+    /* margin-left: 10px; */
     color: #666;
 
     strong {

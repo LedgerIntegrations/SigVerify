@@ -16,7 +16,7 @@ export const signDocument = async (req, res) => {
         // Create a hash of the document
         const hash = crypto.createHash('sha256').update(document).digest();
         const base64DocHash = hash.toString('base64');
-        //create xumm payment tx with doc hash in memo and destination as sigVerifyWallet
+        //create Xaman payment tx with doc hash in memo and destination as sigVerifyWallet
         const newPaymentTxPayloadObject = await createTransactionPayload(rAddress, base64DocHash);
 
         res.json(newPaymentTxPayloadObject);
@@ -29,7 +29,7 @@ export const signDocument = async (req, res) => {
 export const verifySignature = async (req, res) => {
     try {
         const targetRAddress = req.body.targetRAddress;
-        console.log(req.file); // The uploaded file data is available in req.file
+        console.log(req.file); // uploaded file data is available in req.file
         const document = req.file.buffer; // Buffer of the uploaded file
 
         if (!document) {

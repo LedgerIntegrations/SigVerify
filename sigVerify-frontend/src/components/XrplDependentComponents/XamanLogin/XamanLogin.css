@@ -17,7 +17,7 @@
     margin-block: 5vh;
     box-shadow: 0px 10px 18px 0px #242a49cb;
     font-size: .8em;
-    z-index: 20;
+    z-index: 1005;
     left: 50%;
     transform: translateX(-50%);
 }

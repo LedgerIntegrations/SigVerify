@@ -1,20 +1,23 @@
 import { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserPublicKeyAndWallet } from '../../../../utils/httpRequests/routes/users';
+import { fetchUserPublicKeyAndWalletByHashedEmail } from '../../../../utils/httpRequests/routes/users';
 import { webCryptoApiHybridEncrypt } from '../../../../utils/rsaKeyHandlers/helpers';
 import { uploadDocument } from '../../../../utils/httpRequests/routes/documents';
 import ErrorModal from '../../../../utils/reusedComponents/ErrorModal';
 import { AccountContext } from '../../../../App';
 import LoadingIcon from '../../../helperComponents/LoadingIcon/LoadingIcon';
+import { FaTrashAlt } from 'react-icons/fa';
+
+// import { upload } from '../../../../../../sigVerify-backend/config/s3Bucket';
 
 //? becoming large component, potential need to modularize functionality
+//!! NEED TO MODULARIZE COMPONENT SOON GETTING TOO LARGE
 
 const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-inline: 5px;
 `;
 
 const UploadDocumentContainer = styled.div`
@@ -101,9 +104,15 @@ const DocumentForm = styled.form`
         display: flex;
         align-items: start;
         gap: 3px;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
+
+        > * div {
+            display: flex;
+            align-items: center;
+        }
+
         label {
-            min-width: 30%;
+            min-width: 33%;
             font-size: 0.85em;
         }
 
@@ -128,12 +137,17 @@ const SubmitFormButtonContainer = styled.div`
     justify-content: center;
 
     button {
-        margin-top: 40px;
+        margin-top: 20px;
         padding: 6px 15px;
         border-radius: 5px;
         font-size: 14px;
-        border: 1px solid black;
-        width: 50%;
+        border: 1px solid #888;
+        width: 95%;
+        color: #888;
+
+        &:hover {
+            color: black;
+        }
     }
 `;
 
@@ -151,6 +165,21 @@ const EncryptDocumentInput = styled.div`
     }
 `;
 
+const EmailTextInputBoxesContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
+const AddEmailInputButton = styled.button`
+    font-size: 0.8em;
+`;
+
+const DeleteEmailIcon = styled(FaTrashAlt)`
+    cursor: pointer;
+    margin-left: 10px;
+    color: red;
+`;
+
 const UploadDocumentComponent = () => {
     const navigate = useNavigate();
 
@@ -166,12 +195,83 @@ const UploadDocumentComponent = () => {
     const [documents, setDocuments] = useState([]); // This will hold all documents
     const [encryptDocument, setEncryptDocument] = useState(true); // encryption by default
 
+    const [signerEmails, setSignerEmails] = useState([]);
+    const [viewerEmails, setViewerEmails] = useState([]);
+
     const [customFormData, setCustomFormData] = useState({
         title: '',
         description: '',
         category: '',
-        emails: '',
     });
+
+    const handleSignerEmailChange = (index, value) => {
+        const updatedEmails = [...signerEmails];
+        updatedEmails[index] = value;
+        setSignerEmails(updatedEmails);
+    };
+
+    const handleViewerEmailChange = (index, value) => {
+        const updatedEmails = [...viewerEmails];
+        updatedEmails[index] = value;
+        setViewerEmails(updatedEmails);
+    };
+
+    // Functions to add a new email field
+    const addSignerEmailField = () => {
+        setSignerEmails([...signerEmails, '']);
+    };
+
+    const addViewerEmailField = () => {
+        setViewerEmails([...viewerEmails, '']);
+    };
+
+    const removeSignerEmailField = (index) => {
+        setSignerEmails(signerEmails.filter((_, i) => i !== index));
+    };
+
+    const removeViewerEmailField = (index) => {
+        setViewerEmails(viewerEmails.filter((_, i) => i !== index));
+    };
+
+    async function returnArrayOfSha256HashedEmails(arrayOfEmails) {
+        const hashedEmailPromises = arrayOfEmails.map((email) => return256Hash(email.trim()));
+        const hashedEmailArray = await Promise.all(hashedEmailPromises);
+        console.log('hashed email array: ', hashedEmailArray);
+        return hashedEmailArray;
+    }
+
+    //! later want to seperate this to return pubKeys and wallets seperately for unecrypted docs to unauthenticated users (no reg wallet yet)
+    //* [ raw email ] --> [ { emailHash, publicKey, wallet } ]
+    async function fetchPublicKeysAndWalletsForEmails(emailsArray, usersMustHaveAuthenticatedWallets) {
+        // Hash the emails
+        const hashedEmails = await returnArrayOfSha256HashedEmails(emailsArray);
+
+        // Fetch public keys and wallets for each hashed email
+        const publicKeyHashedEmailAndWalletPromises = hashedEmails.map(async (hashedEmail, index) => {
+            try {
+                const response = await fetchUserPublicKeyAndWalletByHashedEmail(hashedEmail);
+                const userData = response.data.data;
+
+                if (usersMustHaveAuthenticatedWallets && userData.verifiedWallet === null) {
+                    throw new Error('Found a user without an authenticated xrpl wallet.');
+                }
+                return {
+                    emailHash: hashedEmail,
+                    publicKeyBase64: userData.publicKey,
+                    wallet: userData.verifiedWallet,
+                };
+            } catch (error) {
+                setErrorMessage(
+                    `Either the user does not exist or they have not authenticated a xrpl wallet for email: ${emailsArray[index]} `
+                );
+                setShowErrorModal(true);
+                throw new Error('Invalid email or a recipient user wallet not authenticated.');
+            }
+        });
+
+        // Return the array of public keys and wallets
+        return Promise.all(publicKeyHashedEmailAndWalletPromises);
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -205,126 +305,142 @@ const UploadDocumentComponent = () => {
             .join('');
     }
 
+    const return512HashOfArrayBuffer = async (data) => {
+        const hashedData = await window.crypto.subtle.digest('SHA-512', data);
+        return hashedData;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        //TODO: can modify for only encrypted document handling to throw error later
+        if (!accountObject.xrplWalletAddress) {
+            setErrorMessage(
+                "You must first authenticate a XRPL wallet if you want to use our document functionality. Navigate to the 'Profile Page' and click authenticate wallet."
+            );
+            setShowErrorModal(true);
+            throw new Error('You must first authenticate a XRPL wallet if you want to use our document functionality.');
+        }
+
         setLoading(true);
 
         try {
-            // TODO: convert current react recipient email input element to a (+) button feature that adds new input boxes for multiple emails, removing the comma seperated string current implementation
-            const emailArray = customFormData.emails.split(',').map((email) => email.trim());
-
-            const hashedEmailPromises = emailArray.map((email) => return256Hash(email));
-            const hashedEmails = await Promise.all(hashedEmailPromises);
-            const publicKeyAndWalletPromises = hashedEmails.map(async (hashedEmail, index) => {
-                try {
-                    const {
-                        data: { data: userData },
-                    } = await fetchUserPublicKeyAndWallet(hashedEmail);
-                    return {
-                        publicKey: userData.publicKey,
-                        wallet: userData.verifiedWallet,
-                    };
-                } catch (error) {
-                    // Update the error message to include the specific email
-                    setErrorMessage(`No user was found for the email: ${emailArray[index]}`);
-                    setShowErrorModal(true);
-                }
-            });
-            // returned list of queried publickey, and wallet from centalized db by given email
-            const publicKeysWithHashedEmailsAndWallet = await Promise.all(publicKeyAndWalletPromises);
-
-            // convert uploaded file to an ArrayBuffer to uniformlly manage the document raw data
+            // hashing and encoding raw uploaded file data
             const arrayBufferOfFile = await readFileAsArrayBuffer(uploadedFile);
-            // hash raw file binary data for trustless document tamper resistance
-            const sha256HashOfOriginalFileBinary = await return256Hash(arrayBufferOfFile);
+            const sha512HashOfOriginalFileArrayBuffer = await return512HashOfArrayBuffer(arrayBufferOfFile);
+            const base64EncodedSha512HashOfOriginalFileArrayBuffer = await arrayBufferToBase64(
+                sha512HashOfOriginalFileArrayBuffer
+            );
 
-            // payload placeholder to add payloads if multiple recipients designated to be sent to server via iterable
-            let payloads = [];
+            // payload placeholder, will be updated depending on encryption status
+            let payload;
+
+            //* list of signer, viewer, all recipient, and unique all recipients [ { emailHash, publicKey, wallet } ]
+            const arrayOfSignersPublicKeysEmailsAndWallets = await fetchPublicKeysAndWalletsForEmails(
+                signerEmails,
+                true
+            );
+            const arrayOfViewersPublicKeysEmailsAndWallets = await fetchPublicKeysAndWalletsForEmails(
+                viewerEmails,
+                false
+            );
+            const arrayOfAllPublicKeysEmailsAndWallets = [
+                ...arrayOfSignersPublicKeysEmailsAndWallets,
+                ...arrayOfViewersPublicKeysEmailsAndWallets,
+            ];
+            // in case user enters same email for signer and cc
+            const uniqueArrayOfAllPublicKeysEmailsAndWallets = arrayOfAllPublicKeysEmailsAndWallets.reduce(
+                (accumulator, current) => {
+                    if (!accumulator.some((item) => item.emailHash === current.emailHash)) {
+                        accumulator.push(current);
+                    }
+                    return accumulator;
+                },
+                []
+            );
 
             // dynamically change document payload to be encrypted or unencrypted based on user selection
             if (encryptDocument) {
-                const publicKeys = publicKeysWithHashedEmailsAndWallet.map(({ publicKey }) => publicKey);
-                const encryptionResults = await webCryptoApiHybridEncrypt(publicKeys, arrayBufferOfFile);
-                console.log('encrypted document results: ', encryptionResults);
+                // send list of all signers and cc users that can view encrypted to encryption function to return users with aesKeys
+                const documentEncryptionResults = await webCryptoApiHybridEncrypt(
+                    uniqueArrayOfAllPublicKeysEmailsAndWallets,
+                    arrayBufferOfFile
+                );
 
-                // only thing changing is 'encrypted', 'encryptedProperties', and 'rawProperties' data
-                payloads = await encryptionResults.map((encryptionResult, index) => ({
-                    original_file_name: uploadedFile.name,
-                    original_file_format: uploadedFile.type,
-                    original_file_size: uploadedFile.size,
-                    original_file_hash: sha256HashOfOriginalFileBinary,
-                    required_signers_wallets: publicKeysWithHashedEmailsAndWallet.map(({ wallet }) => wallet),
-                    recipient_signer_wallet: publicKeysWithHashedEmailsAndWallet[index].wallet,
+                console.log('documentEncryptionResults:', documentEncryptionResults);
+
+                const accessControls =
+                    documentEncryptionResults.arrayOfUsersWithCorrespondingEncryptedAesKeyUsingEachPublicKey.reduce(
+                        (accumulator, { emailHash, encryptedAesKeyBase64 }) => {
+                            accumulator[emailHash] = encryptedAesKeyBase64;
+                            return accumulator;
+                        },
+                        {}
+                  );
+
+                // construct encrypted document payload to send to server
+                payload = {
+                    originalFileName: uploadedFile.name,
+                    originalFileFormat: uploadedFile.type,
+                    originalFileSize: uploadedFile.size,
+                    base64EncodedSha512HashOfOriginalFileArrayBuffer,
+                    requiredSignersWallets: arrayOfSignersPublicKeysEmailsAndWallets.map(({ wallet }) => wallet),
+                    author: accountObject.xrplWalletAddress,
                     metadata: {
                         title: customFormData.title,
                         description: customFormData.description,
                         category: customFormData.category,
-                        creation_date: new Date().toISOString(),
-                        author: accountObject.xrplWalletAddress,
-                        all_recipients: hashedEmails,
-                        receiver: hashedEmails[index],
+                        creationDate: new Date().toISOString(),
                     },
                     encrypted: true,
-                    encryptionProperties: {
-                        encrypted_data: encryptionResult.encryptedData,
-                        encrypted_aes_key: encryptionResult.encryptedAesKeyBase64,
-                        iv_base64: encryptionResult.iv,
-                        encrypted_data_format: 'base64',
-                        encryption_algorithm: 'AES-GCM',
-                        encryption_aes_key_length: 256,
-                        encryption_aes_key_hash: encryptionResult.aesKeyHash,
+                    data: {
+                        data: documentEncryptionResults.aesEncryptedDocumentDataArrayBufferBase64Encoded,
+                        encryptionAesKeyHash:
+                            documentEncryptionResults.sha512HashedArrayBufferOfExportedAesKeyBase64Encoded,
+                        accessControls: accessControls,
+                        ivBase64: documentEncryptionResults.ivUint8ArrayBase64Encoded,
+                        encoding: 'base64',
+                        documentDataEncryptionAlgorithm: 'AES-GCM',
+                        encryptionAesKeyLength: 256,
+                        aesKeysEncryptionAlgorithm: 'RSA-OAEP',
                     },
-                    rawProperties: null,
-                }));
+                };
             } else {
-                const rawPropertiesPromises = hashedEmails.map(async (item, index) => {
-                    const unencryptedDataBase64 = await arrayBufferToBase64(arrayBufferOfFile);
-                    return {
-                        original_file_name: uploadedFile.name,
-                        original_file_format: uploadedFile.type,
-                        original_file_size: uploadedFile.size,
-                        original_file_hash: sha256HashOfOriginalFileBinary,
-                        required_signers_wallets: publicKeysWithHashedEmailsAndWallet.map(({ wallet }) => wallet),
-                        recipient_signer_wallet: publicKeysWithHashedEmailsAndWallet[index].wallet,
-                        metadata: {
-                            title: customFormData.title,
-                            description: customFormData.description,
-                            category: customFormData.category,
-                            creation_date: new Date().toISOString(),
-                            author: accountObject.xrplWalletAddress,
-                            all_recipients: hashedEmails,
-                            receiver: hashedEmails[index],
-                        },
-                        encrypted: false,
-                        encryptionProperties: null,
-                        rawProperties: {
-                            unencrypted_data: unencryptedDataBase64,
-                            unencrypted_data_format: 'base64',
-                        },
-                    };
-                });
-
-                payloads = await Promise.all(rawPropertiesPromises);
+                const unencryptedDataBase64 = await arrayBufferToBase64(arrayBufferOfFile);
+                // construct unencrypted document payload to send to server
+                payload = {
+                    originalFileName: uploadedFile.name,
+                    originalFileFormat: uploadedFile.type,
+                    originalFileSize: uploadedFile.size,
+                    base64EncodedSha512HashOfOriginalFileArrayBuffer,
+                    requiredSignersWallets: arrayOfSignersPublicKeysEmailsAndWallets.map(({ wallet }) => wallet),
+                    author: accountObject.xrplWalletAddress,
+                    metadata: {
+                        title: customFormData.title,
+                        description: customFormData.description,
+                        category: customFormData.category,
+                        creationDate: new Date().toISOString(),
+                    },
+                    encrypted: false,
+                    data: {
+                        data: unencryptedDataBase64,
+                        encoding: 'base64',
+                        accessControls: uniqueArrayOfAllPublicKeysEmailsAndWallets.map(({ emailHash }) => emailHash),
+                    },
+                };
             }
+            console.log('payload:::: ', payload);
 
-            // Uploading each encrypted document iterably
-            for (const payload of payloads) {
-                // send document payload with metadata to server to be formatted and stored on ipfs
-                const responseData = await uploadDocument(payload);
-                console.log(responseData);
-            }
+            // Upload document payload
+            const responseData = await uploadDocument(payload);
+            console.log('Document upload response data: ', responseData);
 
-            // TODO: uploaded document metadata and created document ipfs cid linked to creating rAddress and recipient rAddresses in centralized db for faster querying / sorting of viewable documents and their relations
-
-            // navigate('/documents');
+            setUploadComplete(true);
+            setLoading(false);
+            setUploadedFile(null);
         } catch (error) {
             console.error('Error during document upload:', error);
-            setLoading(false);
-            setUploadComplete(false);
-        } finally {
-            setUploadedFile(null);
-            setLoading(false);
-            setUploadComplete(true);
+            setLoading(false); // Stop loading
         }
     };
 
@@ -397,7 +513,7 @@ const UploadDocumentComponent = () => {
                         <LoadingIcon />
                     </LoadingComponent>
                 )}
-                {uploadComplete && (
+                {uploadComplete && !showErrorModal && (
                     <UploadComplete>
                         <h6>File uploaded successfully!</h6>
                         <button
@@ -456,14 +572,46 @@ const UploadDocumentComponent = () => {
                                 </select>
                             </div>
                             <div>
-                                <label>Recipient Emails:</label>
-                                <RecipientTextInput
-                                    type="text"
-                                    name="emails"
-                                    value={customFormData.emails}
-                                    onChange={handleChange}
-                                    placeholder="Enter emails separated by commas"
-                                />
+                                <label>Required Signer Emails:</label>
+                                <EmailTextInputBoxesContainer>
+                                    {signerEmails.map((email, index) => (
+                                        <div key={index}>
+                                            <input
+                                                type="text"
+                                                value={email}
+                                                onChange={(e) => handleSignerEmailChange(index, e.target.value)}
+                                                placeholder="Enter signer email"
+                                            />
+                                            {signerEmails.length > 0 && (
+                                                <DeleteEmailIcon onClick={() => removeSignerEmailField(index)} />
+                                            )}
+                                        </div>
+                                    ))}
+                                    <AddEmailInputButton type="button" onClick={addSignerEmailField}>
+                                        Add Signer Email
+                                    </AddEmailInputButton>
+                                </EmailTextInputBoxesContainer>
+                            </div>
+                            <div>
+                                <label>CC Emails (Viewers):</label>
+                                <EmailTextInputBoxesContainer>
+                                    {viewerEmails.map((email, index) => (
+                                        <div key={index}>
+                                            <input
+                                                type="text"
+                                                value={email}
+                                                onChange={(e) => handleViewerEmailChange(index, e.target.value)}
+                                                placeholder="Enter viewer email"
+                                            />
+                                            {viewerEmails.length > 0 && (
+                                                <DeleteEmailIcon onClick={() => removeViewerEmailField(index)} />
+                                            )}
+                                        </div>
+                                    ))}
+                                    <AddEmailInputButton type="button" onClick={addViewerEmailField}>
+                                        Add Viewer Email
+                                    </AddEmailInputButton>
+                                </EmailTextInputBoxesContainer>
                             </div>
                             <EncryptDocumentInput>
                                 <label>Encrypt Document:</label>

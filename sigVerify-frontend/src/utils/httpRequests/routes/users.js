@@ -1,6 +1,8 @@
 import axiosInstance from '../axiosInstance';
 
-export const fetchUserPublicKeyAndWallet = (email) =>
+export const fetchUserPublicKeyAndWalletByHashedEmail = (email) =>
     axiosInstance.post('/api/user/publicKeyAndWallet', {
         email: email,
     });
+
+export const removeUserAuthTokenCookie = () => axiosInstance.get('/api/user/logout');

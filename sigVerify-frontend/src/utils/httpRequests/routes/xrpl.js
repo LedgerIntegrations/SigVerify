@@ -1,10 +1,10 @@
 import axiosInstance from '../axiosInstance';
 
-export const generateSignEncryptedJsonDataPayloadAxiosRequest = (rAddress, encryptedJsonData) =>
-    axiosInstance.post('/api/xrpl/signEncryptedJsonData', {
+export const createMemoPaymentTxPayloadRequest = (rAddress, memoData) =>
+    axiosInstance.post('/api/xrpl/create/memoPaymentTxPayload', {
         userRAddress: rAddress,
-        encryptedJsonData,
+        memoData,
     });
 
-export const subscribeToXrplPayloadAxiosRequest = (uuid) =>
+export const subscribeToXrplPayloadRequest = (uuid) =>
     axiosInstance.post('/api/xrpl/subscribeToPayload', uuid);

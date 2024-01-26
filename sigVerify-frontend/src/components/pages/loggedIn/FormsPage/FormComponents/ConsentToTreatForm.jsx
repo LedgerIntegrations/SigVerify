@@ -29,9 +29,9 @@ const FormContainer = styled.form`
 function ConsentToTreatForm() {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
-    const [walletAuthOpened, setWalletAuthOpened] = useState(false);
+    const [payloadSigningComponentOpened, setPayloadSigningComponentOpened] = useState(false);
     const [encryptedJsonFormData, setEncryptedJsonFormData] = useState('');
-    const [documentSignatureStatus, setDocumentSignatureStatus] = useState({ signed: false });
+    const [signatureStatus, setSignatureStatus] = useState({ signed: false });
 
     const [formData, setFormData] = useState({
         patientName: '',
@@ -109,7 +109,7 @@ function ConsentToTreatForm() {
         };
 
         setEncryptedJsonFormData(payload);
-        setWalletAuthOpened(true);
+        payloadSigningComponentOpened(true);
 
         // Handle the form submission logic here
         console.log('raw payload', payload);
@@ -118,20 +118,20 @@ function ConsentToTreatForm() {
         console.log('json payload: ', jsonPayload);
     };
 
-    if (documentSignatureStatus.signed && documentSignatureStatus.resolveData.dispatchedResult === 'tesSUCCESS') {
-        console.log(documentSignatureStatus);
+    if (signatureStatus.signed && signatureStatus.resolveData.dispatchedResult === 'tesSUCCESS') {
+        console.log(signatureStatus);
         const finalEncryptedJsonFormData = {
             ...encryptedJsonFormData,
             status: 'complete',
-            xrplSignatureHash: documentSignatureStatus.resolveData.txHash,
-            xrplSigner: documentSignatureStatus.resolveData.signer,
+            xrplSignatureHash: signatureStatus.resolveData.txHash,
+            xrplSigner: signatureStatus.resolveData.signer,
         };
 
         console.log('final encryptedJsonFormData to send to server: ', finalEncryptedJsonFormData);
 
         //send request to server
     } else {
-        console.log('document not signed yet: ', documentSignatureStatus);
+        console.log('document not signed yet: ', signatureStatus);
     }
 
     return (
@@ -193,11 +193,11 @@ function ConsentToTreatForm() {
             </div>
 
             <br />
-            {walletAuthOpened && (
+            {payloadSigningComponentOpened && (
                 <CreateSignatureAndResolve
-                    setWalletAuthOpened={setWalletAuthOpened}
-                    encryptedJsonData={encryptedJsonFormData.formData}
-                    setDocumentSignatureStatus={setDocumentSignatureStatus}
+                    setPayloadSigningComponentOpened={setPayloadSigningComponentOpened}
+                    memoData={encryptedJsonFormData.formData}
+                    setSignatureStatus={setSignatureStatus}
                 />
             )}
             <label style={{ marginBottom: '10px' }}>
@@ -238,7 +238,7 @@ function ConsentToTreatForm() {
 
             <button type="submit">Sign & Submit</button>
 
-            {documentSignatureStatus.signed ? (
+            {signatureStatus.signed ? (
                 <p style={{ color: 'green' }}>Successfully signed document!</p>
             ) : (
                 <p style={{ color: 'blue' }}>Waiting for document signature...</p>
