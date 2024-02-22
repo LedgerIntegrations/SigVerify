@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import logoImg from '../../assets/svLogo.png';
 import TogglerButton from '../helperComponents/TogglerButton/TogglerButton';
 import { AccountContext } from '../../App';
-import { removeUserAuthTokenCookie } from '../../utils/httpRequests/routes/users';
+import kickUnauthenticatedUser from '../../utils/httpRequests/kickUnauthenticatedUser';
 const slideIn = keyframes`
 from {
      transform: translateX(-100%);
@@ -385,11 +385,9 @@ const NavigationComponent = () => {
     const goBack = () => {
         navigate(-1);
     };
-  const logoutUser = async () => {
-    setAccountObject({ loggedIn: false });
-    window.sessionStorage.clear();
-    const removeCookieResponse = await removeUserAuthTokenCookie();
-    console.log(removeCookieResponse)
+
+    const logoutUser = async () => {
+        await kickUnauthenticatedUser(setAccountObject);
     };
 
     const [hamburgerIsOpen, setHamburgerIsOpen] = useState(false);
