@@ -1,10 +1,12 @@
 import { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
+import { FaFileSignature } from 'react-icons/fa';
+import { CiStar } from 'react-icons/ci';
 import { fetchDocuments } from '../../../../utils/httpRequests/routes/documents';
 import DocumentDetailsModal from './DocumentDetailsModal';
 import { Link } from 'react-router-dom';
 import { AccountContext } from '../../../../App';
-
+import { useAxios } from '../../../../utils/httpRequests/AxiosContext';
 const OutterDocumentsContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -44,9 +46,12 @@ const DocumentsHeader = styled.div`
 
 const DocumentDisplaySection = styled.section`
     width: 100%;
+    max-width: 800px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    /* flex-direction: column; */
+    /* flex-wrap: wrap; */
+    overflow: auto;
+    justify-content: start;
     align-items: center;
 `;
 
@@ -64,17 +69,18 @@ const DocumentListHeader = styled.div`
 
 const DocumentsList = styled.ul`
     width: 100%;
-    max-width: 600px;
-    background-color: white;
-    padding: 20px 3vw;
+    min-width: 320px;
+    max-width: 400px;
+    /* background-color: white; */
+    padding: 20px 2vw;
     margin-top: 0px;
     list-style: none;
     border: none;
     border-radius: 10px 10px 10px 10px;
     min-height: 200px;
     overflow-y: auto;
-    box-shadow: inset 2px 1px 4px 0px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-        0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    /* box-shadow: inset 2px 1px 4px 0px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+        0px 0px 0px 0px rgba(0, 0, 0, 0.1); */
 
     h3 {
         margin-left: 10px;
@@ -83,31 +89,111 @@ const DocumentsList = styled.ul`
 
 const DocumentListItem = styled.li`
     cursor: pointer;
-    border: none;
-    background-color: #ffffff;
-    border: 0.5px solid #c1c1c1;
-    padding: 6px 2px;
+    background-color: ${(props) => (props.isActive ? '#e4f0fee6' : '#ffffff')};
+    border: ${(props) => (props.isActive ? '1px solid #6fa2fa' : '0.5px solid #c1c1c1')};
     margin-block: 3px;
-    border-radius: 3px;
+    border-radius: 10px;
     font-size: 80%;
     box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
         2px 2px 2px 0px rgba(0, 0, 0, 0.1);
 
-    &:hover {
-        box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-            0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    .dropdown-content {
+        display: none;
+        padding: 10px;
+        // Styling for the hidden content
+    }
+
+    .dropdown-content.show {
+        display: block;
+        // Additional styling when content is shown
     }
 `;
 
 const DocumentListItemContents = styled.div`
     display: flex;
-    justify-content: space-between;
-    padding: 0px 4px;
+    flex-direction: column;
+    padding: 13px;
+    border-bottom: 0.5px solid #c1c1c1;
 
-    & > * {
-        width: 20%;
+    .main-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0px 4px;
+
+        h3 {
+            margin-left: 0px;
+            margin-top: 7px;
+            margin-bottom: 10px;
+        }
+
+        div {
+            display: flex;
+            gap: 10px;
+        }
+    }
+
+    .main-content {
+        display: flex;
+        justify-content: space-between;
+        padding: 0px 7px;
+
+        svg {
+            padding: 5px 0px;
+            margin-left: 5px;
+            height: 50%;
+            width: 100%;
+            min-width: 60px;
+
+            path {
+            }
+        }
+
+        #chunk1 {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+        }
+
+        #senderAndReciever {
+          display: flex;
+          flex-direction: column;
+        }
+
+    }
+
+    .see-more {
+        color: #57a9f1;
+        cursor: pointer;
+        margin-top: 5px;
+        text-align: start;
+        padding: 0px 5px;
+        width: fit-content;
     }
 `;
+
+const SignatureIconContainer = styled.div`
+    background-color: #efefef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    max-width: 50px;
+    border-radius: 50%;
+`;
+
+const StyledSignatureIcon = styled(FaFileSignature)`
+    /* height: 26px;
+    width: 24px; */
+`;
+
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() returns 0-11
+    const year = date.getFullYear().toString().slice(2);
+    return `${month}.${year}`;
+};
 
 function DocumentsPage() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
@@ -115,6 +201,10 @@ function DocumentsPage() {
     const [documents, setDocuments] = useState([]);
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [openedDocumentId, setOpenedDocumentId] = useState(null);
+    const [activeId, setActiveId] = useState(null);
+
+    const axios = useAxios();
 
     useEffect(() => {
         console.log('DOCUMENTS PAGE USEEFFECT FIRING!');
@@ -131,9 +221,19 @@ function DocumentsPage() {
         fetchAllDocuments();
     }, []);
 
+    const toggleDropdown = (event, documentId) => {
+        event.stopPropagation(); // Prevent click from bubbling up
+        if (openedDocumentId === documentId) {
+            setOpenedDocumentId(null);
+        } else {
+            setOpenedDocumentId(documentId);
+        }
+    };
+
     const handleDocumentClick = (document) => {
         setSelectedDocument(document);
         setModalOpen(true);
+        setActiveId(document.id); // Set the active document ID
     };
 
     return (
@@ -156,21 +256,33 @@ function DocumentsPage() {
             </DocumentUploadButton>
             <DocumentDisplaySection>
                 <DocumentsList>
-                    <DocumentListHeader>
-                        <span>Name</span>
-                        <span>Sharing</span>
-                        <span>Category</span>
-                        <span>Status</span>
-                    </DocumentListHeader>
-                    {!documents || documents.length === 0 ? (
-                        <p>No documents available.</p>
-                    ) : (
-                        documents.map((document) => (
-                            <DocumentListItem key={document.id} onClick={() => handleDocumentClick(document)}>
-                                <DocumentListItemContents>
-                                    <strong>{document.title}</strong>
-                                    <span style={{ color: '#777' }}>{document.role}</span>
-                                    <span style={{ color: '#777' }}>{document.category}</span>
+                    {documents.map((document) => (
+                        <DocumentListItem
+                            key={document.id} // Assuming each document has a unique ID
+                            isActive={activeId === document.id}
+                            onClick={() => handleDocumentClick(document)}
+                        >
+                            {' '}
+                            <DocumentListItemContents>
+                                <div className="main-title">
+                                    <h3>{document.title}</h3>
+                                    <div>
+                                        <strong>{formatDate(document.created_at)}</strong>
+                                        <CiStar />
+                                    </div>
+                                </div>
+                                <div className="main-content">
+                                    {/* Main content of each document */}
+                                    <div id="chunk1">
+                                        <SignatureIconContainer>
+                                            <StyledSignatureIcon />
+                                        </SignatureIconContainer>
+                                        <div id="senderAndReciever">
+                                            <strong>Creator: {document.title}</strong> {/* Title */}
+                                            <span style={{ color: '#777' }}>To: {document.role}</span> {/* User's Role */}
+                                        </div>
+                                    </div>
+
                                     <span style={{ color: 'orange' }}>
                                         {document.required_signers_wallets.length > 0 &&
                                         document.missing_signatures.length === 0
@@ -180,10 +292,55 @@ function DocumentsPage() {
                                             ? 'Partial'
                                             : 'Pending'}
                                     </span>
-                                </DocumentListItemContents>
-                            </DocumentListItem>
-                        ))
-                    )}
+                                    {/* Status */}
+                                </div>
+                                <div className="see-more" onClick={(e) => toggleDropdown(e, document.id)}>
+                                    {openedDocumentId === document.id ? 'See Less' : 'See More'}
+                                </div>
+                            </DocumentListItemContents>
+                            <div className={`dropdown-content ${openedDocumentId === document.id ? 'show' : ''}`}>
+                                {/* Additional details in dropdown */}
+                                <p>
+                                    Description: <em>{document.description}</em>
+                                </p>
+                                <p>
+                                    Category: <em>{document.category}</em>
+                                </p>
+                                <p>
+                                    Document Type: <em>{document.document_type}</em>
+                                </p>
+                                <p>
+                                    Document Size: <em>{document.document_size}</em>
+                                </p>
+                                <p>
+                                    Encrypted: <em>{document.encrypted ? 'Yes' : 'No'}</em>
+                                </p>
+                                <p>
+                                    Expires At: <em>{document.expires_at || 'N/A'}</em>
+                                </p>
+                                <p>
+                                    Created At: <em>{new Date(document.created_at).toLocaleString()}</em>
+                                </p>
+                                <p>
+                                    Updated At: <em>{new Date(document.updated_at).toLocaleString()}</em>
+                                </p>
+                                <p>
+                                    IPFS Hash: <em>{document.ipfs_hash}</em>
+                                </p>
+                                <p>
+                                    Required Signers: <em>{document.required_signers_wallets.join(', ')}</em>
+                                </p>
+                                <p>
+                                    XRPL Transaction Hashes:{' '}
+                                    <em>
+                                        {document.xrpl_tx_hashes.length > 0
+                                            ? document.xrpl_tx_hashes.join(', ')
+                                            : 'None'}
+                                    </em>
+                                </p>
+                            </div>
+                        </DocumentListItem>
+                    ))}
                 </DocumentsList>
             </DocumentDisplaySection>
 

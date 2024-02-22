@@ -1,10 +1,13 @@
 import React from 'react';
 import './App.css';
 import styled from 'styled-components';
-import axiosInstance from './utils/httpRequests/axiosInstance';
+import createAxiosInstance from './utils/httpRequests/axiosInstance';
+import { AxiosProvider } from './utils/httpRequests/AxiosContext';
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+// import { removeUserAuthTokenCookie } from './utils/httpRequests/routes/users';
+import kickUnauthenticatedUser from './utils/httpRequests/kickUnauthenticatedUser';
 
 // styled components
 const AppWrapper = styled.div`
@@ -38,7 +41,7 @@ import NavigationComponent from './components/Navigation/NavigationComponent';
 // pages (shown to logged in users, wrapped with Navigation component)
 import Dashboard from './components/pages/loggedIn/DashboardPage';
 import DocumentsPage from './components/pages/loggedIn/DocumentsPage/DocumentsPage';
-import XrplUiPage from './components/pages/loggedIn/XrplUiPage/XrplUiPage';
+// import XrplUiPage from './components/pages/loggedIn/XrplUiPage/XrplUiPage';
 import Profile from './components/pages/loggedIn/ProfilePage/ProfilePage';
 import Settings from './components/pages/loggedIn/Settings/Settings';
 import UploadDocumentComponent from './components/pages/loggedIn/DocumentsPage/UploadDocumentComponent';
@@ -92,20 +95,28 @@ function App() {
     // const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     console.log('account object from app component: ', accountObject);
+    // Initialize Axios instance with setAccountObject
+    const axiosInstance = createAxiosInstance(setAccountObject);
+
     useEffect(() => {
         // Function to check the authentication cookie
         const checkAuthenticationCookie = async () => {
             try {
                 // Make an Axios request to 'api/authenticateCookie' with the 'withCredentials' option set to true
                 const response = await axiosInstance.post('api/authenticateCookie', {});
-
+                console.log(response.status);
                 // Assuming 'api/authenticateCookie' returns a success status code (e.g., 200), update the accountObject if authentication is successful.
                 if (response.status === 200) {
                     setAccountObject({ loggedIn: true, ...response.data.user });
+                } else {
+                    await kickUnauthenticatedUser(setAccountObject);
                 }
             } catch (error) {
                 // Handle any errors here, such as network errors or authentication failure.
                 console.error('Authentication failed:', error);
+                if (error.response.status === 401) {
+                    await kickUnauthenticatedUser(setAccountObject);
+                }
             }
         };
 
@@ -116,117 +127,121 @@ function App() {
     return (
         <Router>
             <AccountContext.Provider value={[accountObject, setAccountObject]}>
-                <AppWrapper>
-                    <Routes>
-                        {/* LOGGED OUT ROUTES */}
-                        <Route
-                            path="/"
-                            element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />}
-                        />
-                        <Route
-                            path="/login-user"
-                            element={
-                                accountObject.loggedIn ? (
-                                    <Navigate to="/dashboard" replace />
-                                ) : (
-                                    React.createElement(LoginPage)
-                                )
-                            }
-                        />
-                        <Route
-                            path="/register-user"
-                            element={
-                                accountObject.loggedIn ? (
-                                    <Navigate to="/dashboard" replace />
-                                ) : (
-                                    React.createElement(EmailRegistrationPage)
-                                )
-                            }
-                        />
-                        <Route
-                            path="/create-user"
-                            element={
-                                accountObject.loggedIn ? (
-                                    <Navigate to="/dashboard" replace />
-                                ) : (
-                                    React.createElement(CreateAccountPage)
-                                )
-                            }
-                        />
+                <AxiosProvider>
+                    <AppWrapper>
+                        <Routes>
+                            {/* LOGGED OUT ROUTES */}
+                            <Route
+                                path="/"
+                                element={
+                                    accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />
+                                }
+                            />
+                            <Route
+                                path="/login-user"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        <Navigate to="/dashboard" replace />
+                                    ) : (
+                                        React.createElement(LoginPage)
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/register-user"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        <Navigate to="/dashboard" replace />
+                                    ) : (
+                                        React.createElement(EmailRegistrationPage)
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/create-user"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        <Navigate to="/dashboard" replace />
+                                    ) : (
+                                        React.createElement(CreateAccountPage)
+                                    )
+                                }
+                            />
 
-                        {/* LOGGED IN ROUTES */}
-                        <Route
-                            path="/dashboard"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(Dashboard))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/profile"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(Profile))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/settings"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(Settings))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/documents"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(DocumentsPage))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/upload"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(UploadDocumentComponent))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/forms"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(FormsPage))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/prepare"
-                            element={
-                                accountObject.loggedIn ? (
-                                    React.createElement(withNavigation(DocumentPreparation))
-                                ) : (
-                                    <Navigate to="/" replace />
-                                )
-                            }
-                        />
-                    </Routes>
-                </AppWrapper>
+                            {/* LOGGED IN ROUTES */}
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(Dashboard))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/profile"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(Profile))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/settings"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(Settings))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/documents"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(DocumentsPage))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/upload"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(UploadDocumentComponent))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/forms"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(FormsPage))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/prepare"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(DocumentPreparation))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                        </Routes>
+                    </AppWrapper>
+                </AxiosProvider>
             </AccountContext.Provider>
         </Router>
     );
