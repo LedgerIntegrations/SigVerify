@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { sendAuthTokenEmail } from './helpers/index.js';
 import dotenv from 'dotenv';
+import * as UserModel from '../models/User.js';
+import { generateAndSetAuthToken } from './utils/authUtils.js';
 
 dotenv.config();
 
@@ -12,7 +14,7 @@ dotenv.config();
 const loginApiRoute = 'http://localhost:3001/api/user/login';
 const loginClientRoute = 'http://localhost:5173/login-user';
 
-const SIGNUP_TOKEN_LENGTH = 16;
+const SIGNUP_TOKEN_LENGTH = 32;
 const HTTP_OK = 200;
 const HTTP_INTERNAL_SERVER_ERROR = 500;
 
@@ -25,133 +27,56 @@ async function hashPassword(password) {
     return bcrypt.hash(password, 10);
 }
 
-const getEmailByHashedEmail = async (hashedEmail) => {
-    const client = await pool.connect();
-    try {
-        const getEmailQuery = `
-            SELECT
-                ue.email
-            FROM
-                user_auth ua
-            JOIN
-                user_meta um ON ua.id = um.user_auth_id
-            JOIN
-                user_email ue ON um.id = ue.user_meta_id
-            WHERE
-                ua.hashed_email = $1;
-        `;
-
-        const emailResult = await client.query(getEmailQuery, [hashedEmail]);
-
-        if (emailResult.rows.length === 0) {
-            throw new Error('Email does not exist for this hashed email');
-        }
-
-        return emailResult.rows[0].email;
-    } catch (err) {
-        console.error('Error in getEmailByHashedEmail:', err);
-        throw err; // Propagate the error for handling by the caller
-    } finally {
-        client.release();
-    }
-};
-
-const createInitalUserTablesAndEmailAuthToken = async (req, res) => {
+// create tables if email doesnt already exist ✅ step 1
+const createInitialUserTablesAndEmailAuthToken = async (req, res) => {
     const { email } = req.body;
-    const client = await pool.connect();
-
     try {
-        await client.query('BEGIN');
-        //
-        const queryIsEmailInDb = `
-            SELECT ua.auth_token
-            FROM user_email ue
-            JOIN user_meta um ON ue.user_meta_id = um.id
-            JOIN user_auth ua ON um.user_auth_id = ua.id
-            WHERE ue.email = $1 AND ua.auth_token IS NOT NULL;
-        `;
+        // * 1 = email already authenticated, 2 = email exists but unauthenticated, 3 = email does not exist
+        const userAuthToken = await UserModel.authTokenStatus(email);
 
-        const returnedAuthTokenFromQueriedEmail = await client.query(queryIsEmailInDb, [email]);
-        console.log('db user query by email response: ', returnedAuthTokenFromQueriedEmail);
+        // user exists, but the email has not been authenticated yet
+        if (userAuthToken === 2) {
+            // * send new email with link to authenticate and exit function
+            await sendAuthTokenEmail(email, userAuthToken);
 
-        //if email is in db that is not verified
-        if (returnedAuthTokenFromQueriedEmail.rows.length > 0) {
-            const userAuthToken = returnedAuthTokenFromQueriedEmail.rows[0].auth_token;
-
-            //if token exists in auth, email not verified --> send auth email
-            if (userAuthToken !== null) {
-                await sendAuthTokenEmail(email, userAuthToken);
-                return res.status(HTTP_OK).json({
-                    userAuthenticated: false,
-                    emailSent: true,
-                    message: `Email was already registered but still needs to be verified. Re-sending authentication email to: ${email} .`,
-                });
-            }
-            // email exists, and auth_token  === null --> account is already verified
-            if (userAuthToken === null) {
-                return res.status(HTTP_OK).json({
-                    userAuthenticated: true,
-                    emailSent: false,
-                    message: `This email has already been authenticated! Please login at: ${loginClientRoute}`,
-                });
-            }
+            return res.status(HTTP_OK).json({
+                userAuthenticated: false,
+                emailSent: true,
+                message: `Email was already registered but still needs to be verified. Re-sending authentication email to: ${email}.`,
+            });
         }
-
-        // email not found in db
-        const newAuthToken = crypto.randomBytes(SIGNUP_TOKEN_LENGTH).toString('hex');
-        const hashedEmail = await hashEmail(email);
-
-        try {
-            const newUserAuthTableEntryId = await client.query(
-                'INSERT INTO user_auth (hashed_email, auth_token) VALUES ($1, $2) RETURNING id',
-                [hashedEmail, newAuthToken]
-            );
-            console.log('newUserAuthTableEntryId result: ', newUserAuthTableEntryId);
-
-            const newUserMetaTableEntryId = await client.query(
-                'INSERT INTO user_meta (user_auth_id) VALUES ($1) RETURNING id',
-                [newUserAuthTableEntryId.rows[0].id]
-            );
-            console.log('newUserMetaTableEntryId result: ', newUserMetaTableEntryId);
-
-            await client.query('INSERT INTO user_email (user_meta_id, email) VALUES ($1, $2) RETURNING id', [
-                newUserMetaTableEntryId.rows[0].id,
-                email,
-            ]);
-        } catch (err) {
-            if (err.code === '23505') {
-                // Unique constraint error
-                throw new Error('The provided email is already registered.');
-            }
-            throw err; // Re-throw other errors to be caught in the outer catch block
+        // email has already been authenticated
+        if (userAuthToken === 1) {
+            // * send response user already authenticated and exists, exit
+            return res.status(HTTP_OK).json({
+                userAuthenticated: true, // Assuming this should be true if authenticated
+                emailSent: false,
+                message: 'This email is already registered and authenticated, proceed to login.',
+            });
         }
+        // if null, user email doesn't exist in database
+        if (userAuthToken === null) {
+            const newAuthToken = crypto.randomBytes(SIGNUP_TOKEN_LENGTH).toString('hex');
 
-        await client.query('COMMIT');
-        console.log('Commit');
-        await sendAuthTokenEmail(email, newAuthToken);
-        console.log('SendToken');
-        return res.status(HTTP_OK).json({
-            userAuthenticated: false,
-            emailSent: true,
-            message: `Email registered! Authentication e-mail sent to: ${email} .`,
-        });
+            // initial user created without profile info, used for email auth initially
+            await UserModel.createNewUser(email, newAuthToken);
+            await sendAuthTokenEmail(email, newAuthToken);
+
+            return res.status(HTTP_OK).json({
+                userAuthenticated: false,
+                emailSent: true,
+                message: `Email registered! Authentication e-mail sent to: ${email}.`,
+            });
+        }
     } catch (err) {
-        console.log('Error internal');
-        await client.query('ROLLBACK');
         console.error('Error processing request', err);
-        if (err.message === 'The provided email is already registered.') {
-            return res.status(400).json({ error: err.message });
-        }
         return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
-    } finally {
-        console.log('Finally');
-        client.release();
     }
 };
 
-const createNewUser = async (req, res) => {
+// verification of auth token and adding new profile data ✅ step 2
+const addInitialUserProfileData = async (req, res) => {
     const { FirstName, LastName, Password, PasswordConfirm, Token, PublicKey } = req.body;
-    console.log('createNewUser server function recieved body: ', req.body);
 
     if (!FirstName || !LastName || !Password || !Token || Password !== PasswordConfirm || !PublicKey) {
         return res.status(400).json({
@@ -159,152 +84,79 @@ const createNewUser = async (req, res) => {
         });
     }
 
-    const client = await pool.connect();
-
     try {
-        await client.query('BEGIN');
+        const userCredentialsId = await UserModel.verifyUserToken(Token);
+        if (userCredentialsId === null) {
+            return res.status(404).json({ error: 'User with the provided email not found or already created.' });
+        }
 
-        // Hash the password
         const hashedPassword = await hashPassword(Password);
+        await UserModel.updateUserCredentials(userCredentialsId, hashedPassword, PublicKey);
+        await UserModel.createUserProfile(userCredentialsId, FirstName, LastName);
 
-        const authData = await client.query('SELECT * FROM user_auth WHERE auth_token = $1', [Token]);
-        if (authData.rows.length === 0) {
-            throw new Error('User with the provided email not found.');
-        }
+        //get profile id from credentials id
+        const userProfileId = await UserModel.getUserProfileIdByCredentialsId(userCredentialsId);
 
-        const usersAuthData = authData.rows[0];
+        // Use the utility function to generate and set the auth token
+        await generateAndSetAuthToken(res, userProfileId);
 
-        if (usersAuthData.auth_token === null) {
-            throw new Error('user is already created.');
-        }
-
-        const { id: user_auth_id } = usersAuthData;
-
-        // Update user_meta details of entry that has FK user_auth_id matching our userAuthData.id
-        await client.query('UPDATE user_meta SET first_name = $1, last_name = $2 WHERE user_auth_id = $3', [
-            FirstName,
-            LastName,
-            user_auth_id,
-        ]);
-
-        // Update user_auth table with the hashed password
-        await client.query('UPDATE user_auth SET hashed_password = $1, public_key = $2 WHERE id = $3', [
-            hashedPassword,
-            PublicKey,
-            user_auth_id,
-        ]);
-        // Verify user email
-        await client.query('UPDATE user_auth SET auth_token = NULL WHERE id = $1', [user_auth_id]);
-
-        // New query to fetch updated user data
-        const newUserDataQuery = `
-            SELECT
-                ua.id,
-                ua.auth_token,
-                ua.hashed_email,
-                ua.hashed_password,
-                ua.public_key,
-                um.first_name,
-                um.membership,
-                um.verified_xrpl_wallet_address,
-                ue.email
-            FROM
-                user_auth AS ua
-            JOIN
-                user_meta AS um ON um.user_auth_id = ua.id
-            LEFT JOIN
-                user_email AS ue ON um.id = ue.user_meta_id
-            WHERE
-                ua.id = $1;
-        `;
-
-        const newUserData = await client.query(newUserDataQuery, [user_auth_id]);
-
-        if (newUserData.rows.length === 0) {
-            throw new Error('User data not found by user_auth id.');
-        }
-
-        const user = newUserData.rows[0];
-
-        console.log('new created user: ', user);
-
-        await client.query('COMMIT');
-
-        const authToken = jwt.sign(
-            {
-                userId: user.id,
-                email: user.email,
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: '24h', // Expires in 24 hours
-            }
-        );
-
-        res.cookie('authToken', authToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development', // send only on HTTPS (except in development)
-            maxAge: 24 * 60 * 60 * 1000, // cookie expiry, set to match JWT expiry
-        });
-
-        // After setting the HTTP-only cookie, send a success response
         res.status(200).json({
-            message: 'user creation successful',
+            message: 'User creation successful',
             user: {
-                firstName: user.first_name,
-                membership: user.membership,
-                publicKey: user.public_key,
-                xrplWalletAddress: user.verified_xrpl_wallet_address,
-                emailHash: user.hashed_email,
-                // other non-sensitive fields
+                firstName: FirstName,
+                lastName: LastName,
+                membership: 'free', // Default membership type unless specified
+                publicKey: PublicKey,
+                xrplWallet: null,
+                // Add other non-sensitive fields as needed
             },
         });
     } catch (err) {
-        await client.query('ROLLBACK');
         console.error('Error processing request', err);
-        return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: err.message });
-    } finally {
-        client.release();
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };
 
-// used when a user revisits application with a cookie still in browser to bypass login page
+// used when a user revisits application with a cookie still in browser to bypass login page ✅
 const authenticateExistingCookie = async (req, res) => {
-    const userId = req.user.userId;
+    const profileId = req.user.profileId;
     const client = await pool.connect();
 
     try {
         const queryForUserDataFromAuthdCookie = `
             SELECT
-                ua.public_key,
-                ua.hashed_email,
-                um.first_name,
-                um.membership,
-                um.verified_xrpl_wallet_address
+                uc.public_key,
+                uc.hashed_email,
+                up.first_name,
+                up.last_name,
+                up.membership,
+                xw.wallet_address
             FROM
-                user_auth AS ua
-            JOIN
-                user_meta AS um ON um.user_auth_id = ua.id
+                user_profiles AS up
+            INNER JOIN
+                user_credentials AS uc ON up.user_credentials_id = uc.id
+            LEFT JOIN
+                xrpl_wallets AS xw ON up.id = xw.user_profile_id
             WHERE
-                um.user_auth_id = $1;
+                up.id = $1;
         `;
 
-        const authdUserData = await client.query(queryForUserDataFromAuthdCookie, [userId]);
+        const profileData = await client.query(queryForUserDataFromAuthdCookie, [profileId]);
 
-        if (authdUserData.rows.length === 0) {
+        if (profileData.rows.length === 0) {
             return res.status(401).json({ error: 'User from cookie not found.', loggedIn: false });
         }
 
-        const user = authdUserData.rows[0];
+        const user = profileData.rows[0];
 
         res.status(200).json({
             message: 'Login successful',
             user: {
                 firstName: user.first_name,
+                lastName: user.last_name,
                 membership: user.membership,
                 publicKey: user.public_key,
-                xrplWalletAddress: user.verified_xrpl_wallet_address,
-                emailHash: user.hashed_email,
+                xrplWallet: user.wallet_address,
                 // other non-sensitive fields
             },
         });
@@ -327,7 +179,6 @@ const removeAuthTokenCookie = async (req, res) => {
 
 const authenticateLogin = async (req, res) => {
     const { Email, Password } = req.body;
-    console.log('user login credential on server:', Email, Password);
 
     if (!Email || !Password) {
         return res.status(400).json({
@@ -339,24 +190,26 @@ const authenticateLogin = async (req, res) => {
     const client = await pool.connect();
 
     try {
+        const hashedEmail = await hashEmail(Email); // Ensuring consistency in hashing
         const loginQuery = `
             SELECT
-                ua.id,
-                ua.auth_token,
-                ua.hashed_password,
-                ua.public_key,
-                um.first_name,
-                um.membership,
-                um.verified_xrpl_wallet_address
+                uc.id,
+                uc.auth_token,
+                uc.hashed_password,
+                uc.public_key,
+                up.id AS profileId,
+                up.first_name,
+                up.last_name,
+                up.membership,
+                up.verified_xrpl_wallet_address
             FROM
-                user_auth AS ua
+                user_credentials AS uc
             JOIN
-                user_meta AS um ON um.user_auth_id = ua.id
+                user_profiles AS up ON up.user_credentials_id = uc.id
             WHERE
-                ua.hashed_email = $1;
+                uc.hashed_email = $1;
         `;
-        //!! Do we need to hash email? does this add any security? im thinking it is not useful, allows us to search ua table instead of email table,is this beneficial?
-        const hashedEmail = await hashEmail(Email);
+
         const userLoginResult = await client.query(loginQuery, [hashedEmail]);
 
         if (userLoginResult.rows.length === 0) {
@@ -364,60 +217,40 @@ const authenticateLogin = async (req, res) => {
         }
 
         const user = userLoginResult.rows[0];
-        console.log('returned user in login function on server: ', user);
 
-        // Check if the user's email is not verified (verified account has auth_token === null)
+        // email not verified
         if (user.auth_token !== null) {
             return res.status(401).json({
                 error: 'Email is not verified. Please verify your email first.',
                 loggedIn: false,
             });
         }
-
-        // Check if account attached to email has entered their user info yet (if entered hashed_pw will not be null)
+        // account creation not completed from email verification link
         if (user.hashed_password === null) {
             return res.status(401).json({
                 error: 'Email verified but account not created, follow link from email again.',
                 loggedIn: false,
             });
         }
-        // Compare provided password with stored hashed password
+
         const isPasswordCorrect = await bcrypt.compare(Password, user.hashed_password);
 
         if (!isPasswordCorrect) {
             return res.status(401).json({ error: 'Invalid password.', loggedIn: false });
         }
 
-        const authToken = jwt.sign(
-            {
-                userId: user.id,
-                email: Email,
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: '24h', // Expires in 24 hours
-            }
-        );
+        // Using the utility function to generate and set the auth token
+        generateAndSetAuthToken(res, user.profileId);
 
-        console.log('res.cookie: :', res.cookie);
-        console.log('token: ', authToken);
-
-        res.cookie('authToken', authToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development', // send only on HTTPS (except in development)
-            maxAge: 24 * 60 * 60 * 1000, // cookie expiry, set to match JWT expiry
-        });
-
-        // After setting the HTTP-only cookie, send a success response
         res.status(200).json({
             message: 'Login successful',
             user: {
                 firstName: user.first_name,
+                lastName: user.last_name,
                 membership: user.membership,
                 publicKey: user.public_key,
-                xrplWalletAddress: user.verified_xrpl_wallet_address,
-                emailHash: hashedEmail,
-                // other non-sensitive fields
+                xrplWallet: user.verified_xrpl_wallet_address,
+                // other non-sensitive fields can be added here as needed
             },
         });
     } catch (err) {
@@ -429,7 +262,7 @@ const authenticateLogin = async (req, res) => {
 };
 
 const updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
-    const userId = req.user.userId;
+    const profileId = req.user.profileId;
     const { newWalletAddress } = req.body;
 
     if (!userId || !newWalletAddress) {
@@ -442,14 +275,12 @@ const updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
 
     try {
         const updateQuery = `
-          UPDATE user_meta
+          UPDATE user_profiles
           SET verified_xrpl_wallet_address = $1
-          FROM user_auth
-          WHERE user_meta.user_auth_id = user_auth.id
-          AND user_auth.id = $2;
+          WHERE id = $2;
         `;
 
-        await client.query(updateQuery, [newWalletAddress, userId]);
+        await client.query(updateQuery, [newWalletAddress, profileId]);
 
         return res.status(HTTP_OK).json({
             message: 'XRPL wallet address updated successfully.',
@@ -463,8 +294,8 @@ const updateDatabaseWithNewVerifiedXrplWalletAddress = async (req, res) => {
 };
 
 const getProfilePageData = async (req, res) => {
-    const userId = req.user.userId;
-    console.log('user id inside getProfilePageData endpoint: ', userId);
+    const profileId = req.user.profileId;
+    console.log('user id inside getProfilePageData endpoint: ', profileId);
 
     const client = await pool.connect();
 
@@ -474,19 +305,19 @@ const getProfilePageData = async (req, res) => {
                 COUNT(DISTINCT docs.id) AS total_documents,
                 COUNT(DISTINCT sigs.id) AS total_signatures
             FROM
-                user_meta AS um
+                user_profiles AS up
             LEFT JOIN
-                documents AS docs ON um.id = docs.user_meta_id
+                documents AS docs ON up.id = docs.user_profile_id
             LEFT JOIN
-                signatures AS sigs ON um.id = sigs.user_id
+                signatures AS sigs ON up.id = sigs.user_profile_id
             WHERE
-                um.user_auth_id = $1;
+                up.id = $1;
         `;
 
-        const profileQueryResults = await client.query(profileQuery, [userId]);
+        const profileQueryResults = await client.query(profileQuery, [profileId]);
 
         if (profileQueryResults.rows.length === 0) {
-            return res.status(204).json({ error: 'No data found for your userId.' });
+            return res.status(204).json({ error: 'No data found for your profileId.' });
         }
 
         const { total_documents, total_signatures } = profileQueryResults.rows[0];
@@ -509,7 +340,6 @@ const getProfilePageData = async (req, res) => {
 };
 
 const getUserPublicKeyAndAuthenticatedWalletByHashedEmail = async (req, res) => {
-    const userId = req.user.userId;
     const requestedEmailHash = req.body.email;
     console.log('requestedEmailHash: ', requestedEmailHash);
 
@@ -517,14 +347,14 @@ const getUserPublicKeyAndAuthenticatedWalletByHashedEmail = async (req, res) => 
     try {
         const getPublicKeyQuery = `
             SELECT
-                ua.public_key,
-                um.verified_xrpl_wallet_address
+                uc.public_key,
+                up.verified_xrpl_wallet_address
             FROM
-                user_auth ua
+                user_credentials uc
             JOIN
-                user_meta um ON ua.id = um.user_auth_id
+                user_profiles up ON uc.id = up.user_credentials_id
             WHERE
-                ua.hashed_email = $1;
+                uc.hashed_email = $1;
         `;
 
         const userPublicKeyResult = await client.query(getPublicKeyQuery, [requestedEmailHash]);
@@ -557,12 +387,12 @@ const getUserPublicKeyAndAuthenticatedWalletByHashedEmail = async (req, res) => 
 };
 
 export {
-    createInitalUserTablesAndEmailAuthToken,
-    createNewUser,
+    createInitialUserTablesAndEmailAuthToken,
+    addInitialUserProfileData,
     authenticateExistingCookie,
+    removeAuthTokenCookie,
     authenticateLogin,
     updateDatabaseWithNewVerifiedXrplWalletAddress,
     getProfilePageData,
     getUserPublicKeyAndAuthenticatedWalletByHashedEmail,
-    removeAuthTokenCookie,
 };

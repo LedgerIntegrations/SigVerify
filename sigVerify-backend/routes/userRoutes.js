@@ -4,8 +4,9 @@ import * as userController from '../controllers/userControllers.js';
 import authenticateToken from '../middleware/authenticateToken.js';
 
 const router = express.Router();
-router.post('/api/user/register', userController.createInitalUserTablesAndEmailAuthToken);
-router.post('/api/user/create', userController.createNewUser);
+
+router.post('/api/user/register', userController.createInitialUserTablesAndEmailAuthToken);
+router.post('/api/user/create', userController.addInitialUserProfileData);
 router.post('/api/user/login', userController.authenticateLogin);
 router.get('/api/user/logout', userController.removeAuthTokenCookie);
 

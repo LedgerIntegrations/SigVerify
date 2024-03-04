@@ -7,13 +7,24 @@ BEGIN
 END
 $$;
 
-DROP TABLE IF EXISTS user_meta CASCADE;
-DROP TABLE IF EXISTS user_email CASCADE;
-DROP TABLE IF EXISTS user_auth CASCADE;
+-- Dropping tables if they exist, ensuring to drop in the correct order to respect foreign key constraints
+DROP TABLE IF EXISTS signatures CASCADE;
+DROP TABLE IF EXISTS document_s3_mapping CASCADE;
+DROP TABLE IF EXISTS document_access CASCADE;
+DROP TABLE IF EXISTS aws_s3_buckets CASCADE;
+DROP TABLE IF EXISTS documents CASCADE;
+DROP TABLE IF EXISTS xrpl_wallets CASCADE;
+DROP TABLE IF EXISTS user_contacts CASCADE;
+DROP TABLE IF EXISTS user_profiles CASCADE;
+DROP TABLE IF EXISTS user_credentials CASCADE;
 
+-- Re-create the ENUM for membership type
 CREATE TYPE membership_type AS ENUM ('free', 'standard', 'premium');
 
-CREATE TABLE user_auth (
+CREATE TYPE access_type AS ENUM ('view', 'sign');
+
+-- User credentials
+CREATE TABLE user_credentials (
     id serial8 PRIMARY KEY,
     hashed_email character varying(84) NOT NULL UNIQUE,
     hashed_password character varying(64),
@@ -23,91 +34,90 @@ CREATE TABLE user_auth (
     updated_at timestamptz default current_timestamp
 );
 
--- UNIQUE constraint on user_auth_id ensures that each user_auth record can only be associated with one user_meta record, maintaining a one-to-one relationship.
-CREATE TABLE user_meta (
+-- User profiles
+CREATE TABLE user_profiles (
     id serial8 PRIMARY KEY,
-    user_auth_id bigint UNIQUE NOT NULL REFERENCES user_auth(id),
+    user_credentials_id bigint UNIQUE NOT NULL REFERENCES user_credentials(id),
     first_name character varying(42),
     last_name character varying(42),
-    verified_xrpl_wallet_address character varying(35) default null,
     membership membership_type DEFAULT 'free',
     document_limit int,
     created_at timestamptz default current_timestamp,
     updated_at timestamptz default current_timestamp
 );
 
--- user_email table allows for a one-to-many relationship between user_meta and user_email, enabling multiple email addresses per user.
-CREATE TABLE user_email (
+-- XRPL Wallets
+CREATE TABLE xrpl_wallets (
+    wallet_id serial8 PRIMARY KEY,
+    user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
+    wallet_address character varying(35) NOT NULL UNIQUE,
+    created_at timestamptz default current_timestamp,
+    updated_at timestamptz default current_timestamp
+);
+
+-- User contacts
+CREATE TABLE user_contacts (
     id serial8 PRIMARY KEY,
-    user_meta_id bigint REFERENCES user_meta(id),
+    user_profile_id bigint REFERENCES user_profiles(id),
     email character varying(84) NOT NULL UNIQUE,
     created_at timestamptz default current_timestamp,
     updated_at timestamptz default current_timestamp
 );
 
--- This table has a many-to-one relationship with user_meta, allowing each user to have multiple documents.
--- TODO: ADD ACTUAL ENCRYPTED DATA TO DB AS BACKUP?  --
+-- Documents
 CREATE TABLE documents (
     id serial8 PRIMARY KEY,
-    user_meta_id bigint NOT NULL REFERENCES user_meta(id),
+    user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
     title character varying(255),
     description text,
     category character varying(255) NOT NULL,
     encrypted boolean default false,
-    document_name character varying(86) NOT NULL,
-    document_type character varying(55) NOT NULL,
-    document_size bigint NOT NULL,
-    required_signers_wallets character varying(35)[],
-    all_involved_hashed_emails character varying(84)[],
-    ipfs_hash character varying(255),
     expires_at timestamptz,
     created_at timestamptz DEFAULT current_timestamp,
     updated_at timestamptz DEFAULT current_timestamp
 );
 
--- many to many
+-- AWS S3 Buckets
+-- ! Store sensitive keys securely not in plain text
+CREATE TABLE aws_s3_buckets (
+    s3_bucket_id serial8 PRIMARY KEY,
+    bucket_name character varying(255) NOT NULL UNIQUE,
+    access_key_id character varying(255) NOT NULL,
+    secret_access_key character varying(255) NOT NULL,
+    created_at timestamptz default current_timestamp,
+    updated_at timestamptz default current_timestamp
+);
+
+-- Document S3 Mapping
+CREATE TABLE document_s3_mapping (
+    mapping_id serial8 PRIMARY KEY,
+    document_id bigint NOT NULL REFERENCES documents(id),
+    s3_bucket_id bigint NOT NULL REFERENCES aws_s3_buckets(s3_bucket_id),
+    s3_object_key character varying(255) NOT NULL,
+    created_at timestamptz default current_timestamp,
+    updated_at timestamptz default current_timestamp
+);
+
+-- Document Access
+CREATE TABLE document_access (
+   access_id serial8 PRIMARY KEY,
+   document_id bigint NOT NULL REFERENCES documents(id),
+   user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
+   access_type access_type NOT NULL,
+   created_at timestamptz DEFAULT current_timestamp,
+   updated_at timestamptz DEFAULT current_timestamp
+);
+
+-- Signatures
 CREATE TABLE signatures (
     id serial8 PRIMARY KEY,
     document_id bigint NOT NULL REFERENCES documents(id),
-    user_id bigint NOT NULL REFERENCES user_meta(id),
+    user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
     xrpl_tx_hash character(64),
     signed_at timestamptz DEFAULT current_timestamp
 );
 
--- CREATE TABLE document_permissions (
---     id serial PRIMARY KEY,
---     document_id bigint NOT NULL REFERENCES documents(id),
---     user_id bigint NOT NULL REFERENCES user_meta(id),
---     permission_type character varying(10) NOT NULL, -- 'viewer' or 'signer'
---     created_at timestamptz DEFAULT current_timestamp
--- );
-
-
--- CREATE TABLE forms (
---   id serial8 PRIMARY KEY,
---   form_type character varying
--- )
-
--- -- establishes a many-to-many relationship between users and documents through sender_id, receiver_id, and document_id. It tracks the sharing activity of documents between users.
--- CREATE TABLE document_sharing (
---     id serial8 PRIMARY KEY,
---     sender_id bigint NOT NULL REFERENCES user_meta(id),
---     receiver_id bigint NOT NULL REFERENCES user_meta(id),
---     document_id bigint NOT NULL REFERENCES documents(id),
---     status document_status DEFAULT 'pending',
---     sent_at timestamptz DEFAULT current_timestamp
--- );
-
--- -- Junction table for documents and required signers
--- CREATE TABLE document_required_signers (
---     document_id bigint NOT NULL REFERENCES documents(id),
---     user_email_id bigint NOT NULL REFERENCES user_email(id),
---     PRIMARY KEY (document_id, user_email_id),
---     created_at timestamptz DEFAULT current_timestamp,
---     updated_at timestamptz DEFAULT current_timestamp
--- );
-
--- Function to update modified_at
+-- Functions to update the 'updated_at' timestamp
 CREATE OR REPLACE FUNCTION update_modified_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -132,27 +142,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers to use the above function
-CREATE TRIGGER change_updated_at_user_meta
-BEFORE UPDATE ON user_meta
+-- Triggers for automatically updating 'updated_at' fields
+CREATE TRIGGER change_updated_at_user_credentials
+BEFORE UPDATE ON user_credentials
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
-CREATE TRIGGER change_updated_at_user_email
-BEFORE UPDATE ON user_email
+CREATE TRIGGER change_updated_at_user_profiles
+BEFORE UPDATE ON user_profiles
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
-CREATE TRIGGER change_updated_at_user_auth
-BEFORE UPDATE ON user_auth
+CREATE TRIGGER change_updated_at_xrpl_wallets
+BEFORE UPDATE ON xrpl_wallets
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
-CREATE TRIGGER change_updated_at_documents
-BEFORE UPDATE ON documents
+CREATE TRIGGER change_updated_at_aws_s3_buckets
+BEFORE UPDATE ON aws_s3_buckets
 FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
-CREATE TRIGGER user_meta_before_insert_or_update
-BEFORE INSERT OR UPDATE ON user_meta
-FOR EACH ROW EXECUTE FUNCTION set_document_limit();
+CREATE TRIGGER change_updated_at_document_s3_mapping
+BEFORE UPDATE ON document_s3_mapping
+FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
--- CREATE TRIGGER change_updated_at_document_required_signers
--- BEFORE UPDATE ON document_required_signers
--- FOR EACH ROW EXECUTE FUNCTION update_modified_at();
+CREATE TRIGGER change_updated_at_document_access
+BEFORE UPDATE ON document_access
+FOR EACH ROW EXECUTE FUNCTION update_modified_at();
+
+CREATE TRIGGER change_updated_at_signatures
+BEFORE UPDATE ON signatures
+FOR EACH ROW EXECUTE FUNCTION update_modified_at();
