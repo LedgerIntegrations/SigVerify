@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import styled from 'styled-components';
-import createAxiosInstance from './utils/httpRequests/axiosInstance';
+import axiosInstance from './utils/httpRequests/axiosInstance';
 import { AxiosProvider } from './utils/httpRequests/AxiosContext';
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -96,7 +96,7 @@ function App() {
     const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     console.log('account object from app component: ', accountObject);
     // Initialize Axios instance with setAccountObject
-    const axiosInstance = createAxiosInstance(setAccountObject);
+    // const axiosInstance = createAxiosInstance(setAccountObject);
 
     useEffect(() => {
         // Function to check the authentication cookie
