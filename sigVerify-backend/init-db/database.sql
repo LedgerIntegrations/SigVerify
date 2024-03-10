@@ -24,14 +24,26 @@ CREATE TYPE membership_type AS ENUM ('free', 'standard', 'premium');
 CREATE TYPE access_type AS ENUM ('view', 'sign');
 
 -- User credentials
+-- TODO: add last_logout_at
 CREATE TABLE user_credentials (
     id serial8 PRIMARY KEY,
     hashed_email character varying(84) NOT NULL UNIQUE,
     hashed_password character varying(64),
-    public_key character varying(455),
+    public_key character varying(455) UNIQUE,
     auth_token character varying(64) UNIQUE,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
+    reset_pw_token character varying(64) UNIQUE,
+    reset_pw_sent_at timestamp default null,
+    sign_in_count int default 0 NOT NULL,
+    current_sign_in_at timestamp,
+    last_sign_in_at timestamp,
+    current_sign_in_ip character varying(120),
+    last_sign_in_ip character varying(120),
+    failed_attempts integer default 0 NOT NULL,
+    unlock_token character varying(64) UNIQUE,
+    locked_at timestamp,
+    archived_at timestamp,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 -- User profiles
@@ -42,8 +54,8 @@ CREATE TABLE user_profiles (
     last_name character varying(42),
     membership membership_type DEFAULT 'free',
     document_limit int,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 -- XRPL Wallets
@@ -51,8 +63,8 @@ CREATE TABLE xrpl_wallets (
     wallet_id serial8 PRIMARY KEY,
     user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
     wallet_address character varying(35) NOT NULL UNIQUE,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 -- User contacts
@@ -60,8 +72,8 @@ CREATE TABLE user_contacts (
     id serial8 PRIMARY KEY,
     user_profile_id bigint REFERENCES user_profiles(id),
     email character varying(84) NOT NULL UNIQUE,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 -- Documents
@@ -72,30 +84,31 @@ CREATE TABLE documents (
     description text,
     category character varying(255) NOT NULL,
     encrypted boolean default false,
-    expires_at timestamptz,
-    created_at timestamptz DEFAULT current_timestamp,
-    updated_at timestamptz DEFAULT current_timestamp
+    expires_at timestamp DEFAULT null,
+    created_at timestamp DEFAULT current_timestamp,
+    updated_at timestamp DEFAULT current_timestamp
 );
 
 -- AWS S3 Buckets
 -- ! Store sensitive keys securely not in plain text
-CREATE TABLE aws_s3_buckets (
-    s3_bucket_id serial8 PRIMARY KEY,
-    bucket_name character varying(255) NOT NULL UNIQUE,
-    access_key_id character varying(255) NOT NULL,
-    secret_access_key character varying(255) NOT NULL,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
-);
+-- CREATE TABLE aws_s3_buckets (
+--     s3_bucket_id serial8 PRIMARY KEY,
+--     bucket_name character varying(255) NOT NULL UNIQUE,
+--     access_key_id character varying(255) NOT NULL,
+--     secret_access_key character varying(255) NOT NULL,
+--     created_at timestamp default current_timestamp,
+--     updated_at timestamp default current_timestamp
+-- );
 
 -- Document S3 Mapping
+-- s3_bucket_id bigint NOT NULL REFERENCES aws_s3_buckets(s3_bucket_id),
 CREATE TABLE document_s3_mapping (
     mapping_id serial8 PRIMARY KEY,
     document_id bigint NOT NULL REFERENCES documents(id),
-    s3_bucket_id bigint NOT NULL REFERENCES aws_s3_buckets(s3_bucket_id),
     s3_object_key character varying(255) NOT NULL,
-    created_at timestamptz default current_timestamp,
-    updated_at timestamptz default current_timestamp
+    s3_object_url text,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 -- Document Access
@@ -104,8 +117,8 @@ CREATE TABLE document_access (
    document_id bigint NOT NULL REFERENCES documents(id),
    user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
    access_type access_type NOT NULL,
-   created_at timestamptz DEFAULT current_timestamp,
-   updated_at timestamptz DEFAULT current_timestamp
+   created_at timestamp DEFAULT current_timestamp,
+   updated_at timestamp DEFAULT current_timestamp
 );
 
 -- Signatures
@@ -114,7 +127,7 @@ CREATE TABLE signatures (
     document_id bigint NOT NULL REFERENCES documents(id),
     user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
     xrpl_tx_hash character(64),
-    signed_at timestamptz DEFAULT current_timestamp
+    signed_at timestamp DEFAULT current_timestamp
 );
 
 -- Functions to update the 'updated_at' timestamp

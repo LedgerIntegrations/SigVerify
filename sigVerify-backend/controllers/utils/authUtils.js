@@ -7,8 +7,8 @@ import jwt from 'jsonwebtoken';
  * @param {Object} res - The Express response object.
  * @param {String} profileId- The user's profile ID.
  */
-const generateAndSetAuthToken = (res, profileId) => {
-    const authToken = jwt.sign({ profileId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+const generateJwtAndSetAsAuthTokenCookie = (res, profileId) => {
+    const authToken = jwt.sign({ profileId: profileId, checksum: process.env.JWT_CHECKSUM  }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     res.cookie('authToken', authToken, {
         httpOnly: true,
@@ -17,4 +17,4 @@ const generateAndSetAuthToken = (res, profileId) => {
     });
 };
 
-export { generateAndSetAuthToken };
+export { generateJwtAndSetAsAuthTokenCookie };

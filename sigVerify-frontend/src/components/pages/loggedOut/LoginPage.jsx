@@ -6,6 +6,7 @@ import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
 import { ErrorMessage } from '../../Styles/CommonStyles';
+import { arrayBufferToHex } from '../../../utils/encoding';
 
 const LoginPageContainer = styled.div`
     display: flex;
@@ -167,15 +168,27 @@ const LoginPage = () => {
     const [accountObject, setAccountObject] = useContext(AccountContext);
 
     const [formData, setFormData] = useState({
-        Email: '',
-        Password: '',
+        email: '',
+        password: '',
     });
     const [formErrors, setFormErrors] = useState({});
     const [isLogged, setIsLogged] = useState(false);
 
-    const [showPassword, setShowPassword] = useState(false);
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+    const [showpassword, setShowpassword] = useState(false);
+    const togglepasswordVisibility = () => {
+        setShowpassword(!showpassword);
+    };
+
+    const hashPassword = async (password) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        try {
+            const hashed = await crypto.subtle.digest('SHA-256', data);
+            return arrayBufferToHex(hashed);
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            throw new Error('Failed to hash password.');
+        }
     };
 
     const handleInputChange = (event) => {
@@ -190,13 +203,17 @@ const LoginPage = () => {
         event.preventDefault();
         const errors = {};
 
-        if (!formData.Email) errors.Email = 'Email is required';
-        if (!formData.Password) errors.Password = 'Password is required';
+        if (!formData.email) errors.email = 'Email is required';
+        if (!formData.password) errors.password = 'Password is required.';
 
-        setFormErrors(errors);
+      setFormErrors(errors);
+
+      const hashedPassword = await hashPassword(formData.password);
+      setFormData({ ...formData, password: hashedPassword });
 
         if (Object.keys(errors).length === 0) {
             try {
+
                 const response = await fetch('http://localhost:3001/api/user/login', {
                     method: 'POST',
                     headers: {
@@ -213,7 +230,6 @@ const LoginPage = () => {
                     const userData = data.user;
                     setAccountObject({ ...userData, loggedIn: true });
                     setIsLogged(true); // Set logged in state only on success
-
                 } else {
                     // Handle non-200 responses
                     setFormErrors({ server: data.error || 'Failed to login.' });
@@ -242,31 +258,29 @@ const LoginPage = () => {
                     ) : (
                         <form onSubmit={handleSubmit}>
                             <InputGroup>
-                                <label>Email</label>
-                                <input type="email" name="Email" value={formData.Email} onChange={handleInputChange} />
-                                {formErrors.Email && <ErrorText>{formErrors.Email}</ErrorText>}
+                                <label>email</label>
+                                <input type="email" name="email" value={formData.email} onChange={handleInputChange} />
+                                {formErrors.email && <ErrorText>{formErrors.email}</ErrorText>}
                             </InputGroup>
                             <InputGroup>
-                                <label>Password</label>
+                                <label>password</label>
                                 <InputWithIcon>
                                     <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="Password"
-                                        value={formData.Password}
+                                        type={showpassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={formData.password}
                                         onChange={handleInputChange}
                                     />
-                                    <VisibilityIconToggler onClick={togglePasswordVisibility}>
-                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    <VisibilityIconToggler onClick={togglepasswordVisibility}>
+                                        {showpassword ? <FaEyeSlash /> : <FaEye />}
                                     </VisibilityIconToggler>
                                 </InputWithIcon>
-                                {formErrors.Password && <ErrorText>{formErrors.Password}</ErrorText>}
+                                {formErrors.password && <ErrorText>{formErrors.password}</ErrorText>}
                             </InputGroup>
 
                             <button type="submit">Login</button>
                             {formErrors.server && (
-                                <ErrorMessage style={{ marginTop: '10px' }}>
-                                    {formErrors.server}
-                                </ErrorMessage>
+                                <ErrorMessage style={{ marginTop: '10px' }}>{formErrors.server}</ErrorMessage>
                             )}
                         </form>
                     )}
