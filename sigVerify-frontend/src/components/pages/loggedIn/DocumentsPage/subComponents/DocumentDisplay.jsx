@@ -196,7 +196,7 @@ const SignatureIconContainer = styled.div`
     margin-left: 0px;
     color: white;
     box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1);
-    background-color: ${(props) => props.bgColor || '#888'};
+    background-color: ${(props) => props.$bgColor || '#888'};
 
     svg {
         stroke-width: 1.1;
@@ -338,17 +338,17 @@ function getIcon(displayCategory) {
     switch (displayCategory) {
         case 'public':
             return {
-                icon: <FiBookOpen style={{ position: 'relative', left: '.5px', top: '1px', strokeWidth: '3px' }} />,
+                icon: <FiBookOpen style={{ strokeWidth: '2px', height: '15px', width: '15px', position: 'relative', top: '1px', left:'.5px' }} />,
                 color: '#43c3ea',
             }; // Green
-        case 'upload':
-            return { icon: <CiEdit />, color: '#FFC107' };
-        case 'receive':
-            return { icon: <RiUserReceivedLine />, color: '#f64c21' };
+        case 'uploaded':
+            return { icon: <CiEdit style={{ strokeWidth: '1px', height: '15px', width: '15px' }} />, color: '#FFC107' };
+        case 'received':
+            return { icon: <RiUserReceivedLine style={{ strokeWidth: '1px', height: '13px', width: '13px' }} />, color: '#f64c21' };
         case 'sent':
-            return { icon: <BsSend />, color: '#f48414' };
+            return { icon: <BsSend style={{ strokeWidth: '1px', height: '13px', width: '13px' }} />, color: '#f48414' };
         case 'completed':
-            return { icon: <CiCircleCheck />, color: '#40bf4a' };
+        return { icon: <CiCircleCheck style={{ strokeWidth: '2px', height: '17px', width: '17px' }}/>, color: '#40bf4a' };
         default:
             return { icon: <BsUnlock />, color: '#9E9E9E' };
     }
@@ -357,7 +357,7 @@ function getIcon(displayCategory) {
 // eslint-disable-next-line react/prop-types
 function IconDisplay({ displayCategory }) {
     const { icon, color } = getIcon(displayCategory);
-    return <SignatureIconContainer bgColor={color}>{icon}</SignatureIconContainer>;
+    return <SignatureIconContainer $bgColor={color}>{icon}</SignatureIconContainer>;
 }
 
 // eslint-disable-next-line react/prop-types
@@ -472,10 +472,10 @@ function DocumentsDisplay({ arrayOfDocuments = [], viewerAccountId = null, displ
                                             <strong>Public:</strong> <em>{document.public ? 'true' : 'false'}</em>
                                         </section>
                                         <section>
-                                            <strong>Category:</strong> <em>{document.category}</em>
+                                            <strong>Custom Title:</strong> <em>{document.blob ? document.title : document.title}</em>
                                         </section>
                                         <section>
-                                            <strong>Custom Title:</strong> <em>{document.blob ? document.title : document.title}</em>
+                                            <strong>Category:</strong> <em>{document.category}</em>
                                         </section>
                                         <div className="metadata-section">
                                             <RecipientToggleBox>
@@ -525,7 +525,6 @@ function DocumentsDisplay({ arrayOfDocuments = [], viewerAccountId = null, displ
                                                 </>
                                             )}
                                         </div>
-
                                     </DocumentDetailsContent>
 
                                     <DocumentActionButtons>

@@ -1,16 +1,13 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import {
-    fetchUserPrivateDocuments,
-    fetchUserPublicDocumentsByEmail,
-    deletePrivateUnsentDocument,
-} from '../../../../utils/httpRequests/routes/documents';
-import { getSignaturesStatusForDoc } from '../../../../utils/httpRequests/routes/signatures';
-import DocumentsDisplay from './subComponents/DocumentDisplay';
 import { Link } from 'react-router-dom';
 import { MdExpandLess } from 'react-icons/md';
 import { ErrorMessage } from '../../../component-helpers/styled-elements/CommonStyles';
 import { AccountContext } from '../../../../App';
+import useFetchAndCategorizePrivateDocuments from '../../../../utils/hooks/useFetchAndCategorizePrivateDocuments';
+import DocumentsDisplay from './subComponents/DocumentDisplay';
+import { fetchUserPublicDocumentsByEmail } from '../../../../utils/httpRequests/routes/documents';
+import { deletePrivateUnsentDocument } from '../../../../utils/httpRequests/routes/documents';
 
 const OutterDocumentsContainer = styled.div`
     display: flex;
@@ -22,8 +19,7 @@ const OutterDocumentsContainer = styled.div`
     max-width: 600px;
     padding: 12px;
     z-index: 10;
-    /* font-family: 'Teko', sans-serif;
-    font-weight: 400; */
+    /* font-family: 'Teko', sans-serif; */
 `;
 
 const DocumentUploadButton = styled(Link)`
@@ -45,6 +41,7 @@ const DocumentUploadButton = styled(Link)`
 
 const DocumentSections = styled.div`
     width: 100%;
+    margin-bottom: 58px;
 `;
 
 const DocumentsHeader = styled.div`
@@ -92,18 +89,14 @@ const CategoryHeader = styled.div`
 
     svg {
         transition: transform 0.2s;
-        transform: ${(props) => (props.expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
+        transform: ${(props) => (props.$expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
     }
 `;
 
 function DocumentsPage() {
     const [accountObject] = useContext(AccountContext);
-    const [refreshTrigger, setRefreshTrigger] = useState(false);
-    const [receivedPrivateDocuments, setReceivedPrivateDocuments] = useState([]);
-    const [sentPrivateDocuments, setSentPrivateDocuments] = useState([]);
-    const [uploadedPrivateDocuments, setUploadedPrivateDocuments] = useState([]);
     const [publicDocuments, setPublicDocuments] = useState([]);
-    const [completedDocuments, setCompletedDocuments] = useState([]);
+    const { uploaded, received, sent, completed, refresh } = useFetchAndCategorizePrivateDocuments(accountObject);
 
     const [categoriesExpanded, setCategoriesExpanded] = useState({
         uploaded: true,
@@ -121,103 +114,63 @@ function DocumentsPage() {
     };
 
     useEffect(() => {
-        (async () => {
-            try {
-                // Fetch public documents
-                if (accountObject && accountObject.email) {
-                    const publicDocumentsResponse = await fetchUserPublicDocumentsByEmail(accountObject.email);
-                    console.log('publicDocumentsResponse.data: ', publicDocumentsResponse.data);
-                    setPublicDocuments(publicDocumentsResponse.data);
+        async function fetchPublicDocuments() {
+            if (accountObject && accountObject.email) {
+                try {
+                    const response = await fetchUserPublicDocumentsByEmail(accountObject.email);
+                    setPublicDocuments(response.data || []);
+                } catch (error) {
+                    console.error('Error fetching public documents:', error);
                 }
-
-                // Fetch private documents
-                if (accountObject?.loggedIn) {
-                    const privateDocumentsResponse = await fetchUserPrivateDocuments();
-
-                    if (privateDocumentsResponse.data.success) {
-                        const allDocuments = privateDocumentsResponse.data.documents;
-
-                        // Process each document to append signature status asynchronously
-                        const documentsWithStatus = await Promise.all(
-                            allDocuments.map(async (document) => {
-                                try {
-                                    const { data: signatureData } = await getSignaturesStatusForDoc(document.id);
-                                    return { ...document, signatureStatus: signatureData };
-                                } catch (error) {
-                                    console.error('Error fetching signature status for document:', document.id, error);
-                                    return { ...document, signatureStatus: { error: 'Failed to fetch status' } };
-                                }
-                            })
-                        );
-
-                        // Now filter documents into categories after all have been processed
-                        const uploadedDocuments = documentsWithStatus.filter(
-                            (doc) => doc.user_profile_id === accountObject.profile_id && doc.can_add_access
-                        );
-                        const sentDocuments = documentsWithStatus.filter(
-                            (doc) => doc.user_profile_id === accountObject.profile_id && !doc.can_add_access
-                        );
-                        const receivedDocuments = documentsWithStatus.filter(
-                            (doc) =>
-                                doc.user_profile_id !== accountObject.profile_id &&
-                                !doc.can_add_access &&
-                                doc.signatureStatus.signatureStatus !== 'completed'
-                        );
-                        const completedDocuments = documentsWithStatus.filter(
-                            (doc) => !doc.can_add_access && doc.signatureStatus.signatureStatus === 'completed'
-                        );
-
-                        // Update state with the processed and categorized documents
-                        setReceivedPrivateDocuments(receivedDocuments);
-                        setSentPrivateDocuments(sentDocuments);
-                        setUploadedPrivateDocuments(uploadedDocuments);
-                        setCompletedDocuments(completedDocuments);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching documents:', error);
             }
-        })();
-    }, [refreshTrigger]); // Ensure refreshTrigger is correctly defined or used to trigger this effect
+        }
+        fetchPublicDocuments();
+    }, [accountObject]); // Re-fetch public documents when accountObject changes
 
     const deleteUnsentDocument = async (documentId) => {
         try {
             const response = await deletePrivateUnsentDocument(documentId);
-            console.log('Document successfully deleted:', response.data);
-            return response.data; // You can return or handle the data as required for your application logic
-        } catch (error) {
-            // Handle errors that were flagged as authentication errors by the interceptor
-            if (error.isAuthError) {
-                console.error('Authentication error while deleting document:', error);
-                throw new Error('Authentication error. Please log in again.');
+            if (response.status === 200) {
+                console.log('Document successfully deleted:', response.data);
+                refresh(); // Refresh the document lists to reflect this deletion
             }
-
+        } catch (error) {
+            console.error('Error while deleting document:', error);
             if (error.response) {
-                // Handle errors with a response (i.e., non-2xx status codes not related to auth which are caught by interceptor)
                 console.error('Failed to delete document:', error.response.status, error.response.data);
                 throw new Error(`Failed to delete document: ${error.response.data.message || 'Server error'}`);
-            } else if (error.request) {
-                // Handle errors without a response (no server response, network error, etc.)
-                console.error('No response received when attempting to delete document:', error.request);
-                throw new Error('No response from server. Please check your network connection.');
             } else {
-                // Handle errors caused by setting up the request or other Axios issues
-                console.error('Error setting up document deletion request:', error.message);
-                throw new Error('Error setting up the request: ' + error.message);
+                throw new Error('Error deleting document: ' + (error.message || 'Check network connection'));
             }
         }
     };
+
+    // Prepare a mapping to easily access document categories
+    const documentCategories = {
+        uploaded,
+        public: publicDocuments,
+        sent,
+        received,
+        completed,
+    };
+
+  const categoryColors = {
+      public: '#43c3ea', // Blue
+      uploaded: '#FFC107', // Yellow
+      received: '#f64c21', // Red
+      sent: '#f48414', // Orange
+      completed: '#40bf4a', // Green
+  };
 
     return (
         <OutterDocumentsContainer>
             <DocumentsHeader>
                 <h1>Documents</h1>
                 <p>View all your documents linked to this account. All documents below are private except for 'Public' documents.</p>
-
                 {!accountObject.wallet_address && (
                     <p style={{ marginBottom: '20px' }}>
                         <ErrorMessage>
-                            <strong style={{ color: '#e42e00' }}>WARNING:</strong> Some documents might have been sent to you via a xrpl
+                            <strong style={{ color: '#e42e00' }}>WARNING:</strong> Some documents might have been sent to you via a XRPL
                             wallet address, authenticate a wallet to see any additional documents sent to that wallet.
                         </ErrorMessage>
                     </p>
@@ -229,80 +182,27 @@ function DocumentsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
             </DocumentUploadButton>
-            <DocumentSections>
-                <DocumentDisplaySection>
-                    {categoriesExpanded.uploaded && uploadedPrivateDocuments.length > 0 && (
-                        <DocumentsDisplay
-                            arrayOfDocuments={uploadedPrivateDocuments}
-                            viewerAccountId={accountObject.profile_id}
-                            displayCategory={'upload'}
-                            deleteDocument={deleteUnsentDocument} // Passing the delete function as a prop
-                            setRefreshTrigger={setRefreshTrigger}
-                        />
-                    )}
-                </DocumentDisplaySection>
-                <DocumentDisplaySection>
-                    <CategoryHeader expanded={categoriesExpanded.public} onClick={() => toggleCategory('public')}>
-                        <h4>
-                            Public <span>( {publicDocuments.length} )</span>
-                        </h4>
-                        {publicDocuments.length > 0 && <MdExpandLess />}
-                    </CategoryHeader>
-                    {categoriesExpanded.public && publicDocuments.length > 0 && (
-                        <DocumentsDisplay
-                            arrayOfDocuments={publicDocuments}
-                            viewerAccountId={accountObject.profile_id}
-                            displayCategory={'public'}
-                        />
-                    )}
-                </DocumentDisplaySection>
-                <DocumentDisplaySection>
-                    <CategoryHeader expanded={categoriesExpanded.sent} onClick={() => toggleCategory('sent')}>
-                        <h4>
-                            Sent <span>( {sentPrivateDocuments.length} )</span>
-                        </h4>
-                        {sentPrivateDocuments.length > 0 && <MdExpandLess />}
-                    </CategoryHeader>
-                    {categoriesExpanded.sent && sentPrivateDocuments.length > 0 && (
-                        <DocumentsDisplay
-                            arrayOfDocuments={sentPrivateDocuments}
-                            viewerAccountId={accountObject.profile_id}
-                            displayCategory={'sent'}
-                            setRefreshTrigger={setRefreshTrigger}
-                        />
-                    )}
-                </DocumentDisplaySection>
 
-                <DocumentDisplaySection>
-                    <CategoryHeader expanded={categoriesExpanded.received} onClick={() => toggleCategory('received')}>
-                        <h4>
-                            Recieved <span>( {receivedPrivateDocuments.length} )</span>
-                        </h4>
-                        {receivedPrivateDocuments.length > 0 && <MdExpandLess />}
-                    </CategoryHeader>
-                    {categoriesExpanded.received && receivedPrivateDocuments.length > 0 && (
-                        <DocumentsDisplay
-                            arrayOfDocuments={receivedPrivateDocuments}
-                            viewerAccountId={accountObject.profile_id}
-                            displayCategory={'recieve'}
-                        />
-                    )}
-                </DocumentDisplaySection>
-                <DocumentDisplaySection style={{ marginBottom: '50px' }}>
-                    <CategoryHeader expanded={categoriesExpanded.completed} onClick={() => toggleCategory('completed')}>
-                        <h4>
-                            Completed <span>( {completedDocuments.length} )</span>
-                        </h4>
-                        {completedDocuments.length > 0 && <MdExpandLess />}
-                    </CategoryHeader>
-                    {categoriesExpanded.completed && completedDocuments.length > 0 && (
-                        <DocumentsDisplay
-                            arrayOfDocuments={completedDocuments}
-                            viewerAccountId={accountObject.profile_id}
-                            displayCategory={'completed'}
-                        />
-                    )}
-                </DocumentDisplaySection>
+            <DocumentSections>
+                {Object.keys(documentCategories).map((category) => (
+                    <DocumentDisplaySection key={category}>
+                        <CategoryHeader $expanded={categoriesExpanded[category]} onClick={() => toggleCategory(category)}>
+                            <h4>
+                                {category.charAt(0).toUpperCase() + category.slice(1)} <span>({documentCategories[category].length})</span>
+                            </h4>
+                            {documentCategories[category].length > 0 && <MdExpandLess />}
+                        </CategoryHeader>
+                        {categoriesExpanded[category] && documentCategories[category].length > 0 && (
+                            <DocumentsDisplay
+                                arrayOfDocuments={documentCategories[category]}
+                                viewerAccountId={accountObject.profile_id}
+                                displayCategory={category}
+                                deleteDocument={deleteUnsentDocument}
+                                setRefreshTrigger={refresh}
+                            />
+                        )}
+                    </DocumentDisplaySection>
+                ))}
             </DocumentSections>
         </OutterDocumentsContainer>
     );

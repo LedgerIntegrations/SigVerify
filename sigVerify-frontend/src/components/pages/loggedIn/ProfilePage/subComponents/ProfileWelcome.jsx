@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { AccountContext } from '../../../../../App';
 import styled from 'styled-components';
+import useFetchAndCategorizePrivateDocuments from '../../../../../utils/hooks/useFetchAndCategorizePrivateDocuments';
 
 const ProfileWelcomeContainer = styled.div`
     height: fit-content;
@@ -92,8 +93,16 @@ const WelcomeIntroStats = styled.div`
 
 // eslint-disable-next-line react/prop-types
 function ProfileWelcome({ membership }) {
-    // eslint-disable-next-line no-unused-vars
-    const [accountObject, setAccountObject] = useContext(AccountContext);
+    const [accountObject] = useContext(AccountContext);
+
+    // Use the custom hook to fetch and categorize documents
+    const { received, sent, uploaded, completed, error } = useFetchAndCategorizePrivateDocuments(accountObject);
+
+    if (error) {
+        // Handle error appropriately, e.g., display an error message
+        console.error('Failed to fetch or categorize documents:', error);
+    }
+
     return (
         <ProfileWelcomeContainer>
             <WelcomeContainerIntro>
@@ -102,22 +111,22 @@ function ProfileWelcome({ membership }) {
                     Hello <strong>{accountObject?.first_name.charAt(0).toUpperCase() + accountObject?.first_name.slice(1)},</strong>
                 </WelcomeIntroHeader>
                 <WelcomeIntroMessage>
-                    welcome back to <strong>SigVerify</strong>.
+                    Welcome back to <strong>SigVerify</strong>.
                 </WelcomeIntroMessage>
             </WelcomeContainerIntro>
 
             <WelcomeIntroStats>
                 <div>
-                    <span>5</span>
+                    <span>{received.length}</span>
                     <p>Actions</p>
                 </div>
                 <div>
-                    <span>5</span>
+                    <span>{sent.length}</span>
                     <p>Waiting</p>
                 </div>
                 <div>
-                    <span>0</span>
-                    <p>Expiring</p>
+                    <span>{completed.length}</span>
+                    <p>Completed</p>
                 </div>
             </WelcomeIntroStats>
         </ProfileWelcomeContainer>
