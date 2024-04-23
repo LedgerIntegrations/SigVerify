@@ -4,17 +4,17 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './config/db.js'; // Ensure to add '.js' extension
+import pool from './config/db.js';
 
-import xrplRoutes from './routes/xrplRoutes.js'; // Ensure to add '.js' extension
-import documentRoutes from './routes/documentRoutes.js'; // Ensure to add '.js' extension
-import userRoutes from './routes/userRoutes.js'; // Ensure to add '.js' extension
+import userRoutes from './routes/userRoutes.js';
+import xrplRoutes from './routes/xrplRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import signatureRoutes from './routes/signatureRoutes.js'
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 
-// Create an instance of express
 const app = express();
 
 const corsOptions = {
@@ -32,10 +32,11 @@ app.get('/', (req, res) => {
   res.send("You have reached the sigVerify server!");
 });
 
-// imported routes
+// modular routes
 app.use(userRoutes);
-app.use(documentRoutes);
 app.use(xrplRoutes);
+app.use(documentRoutes);
+app.use(signatureRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

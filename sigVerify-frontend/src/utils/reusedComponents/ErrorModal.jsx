@@ -37,6 +37,7 @@ const ErrorMessage = styled.p`
     text-align: center;
 `;
 
+// eslint-disable-next-line react/prop-types
 const ErrorModal = ({ message, onClose }) => {
     return (
         <ModalBackdrop>

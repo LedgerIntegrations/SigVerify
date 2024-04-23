@@ -1,13 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./src/assets/svLogo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SigVerify</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="./src/assets/svLogo.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="./src/assets/apple-icon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SigVerify - Document and Signature Verification Platform">
+  <meta name="keywords" content="document verification, signature verification, blockchain">
+  <meta name="theme-color" content="#4A90E2">
+  <meta property="og:title" content="SigVerify">
+  <meta property="og:description" content="Document and Signature Verification Platform">
+  <meta property="og:image" content="/path/to/image.jpg">
+  <meta property="og:url" content="https://sigverify.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';"> -->
+  <title>SigVerify</title>
+  <!-- <link rel="preload" href="/src/main.jsx" as="script"> -->
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <!-- <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function (err) {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script> -->
+</body>
+
 </html>
+

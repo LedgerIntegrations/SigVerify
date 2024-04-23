@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logoImage from '../../../assets/svLogo.png';
-import LoadingIcon from '../../helperComponents/LoadingIcon/LoadingIcon';
+import LoadingIcon from '../../component-helpers/components/LoadingIcon';
 import axios from 'axios';
 import styled from 'styled-components';
 
@@ -140,9 +140,9 @@ function EmailRegistrationPage() {
 
         await axios
             .post('http://localhost:3001/api/user/register', { email })
-          .then((response) => {
-              console.log(response)
-              const { emailSent, message } = response.data;
+            .then((response) => {
+                console.log(response);
+                const { emailSent, message } = response.data;
 
                 if (!emailSent) {
                     throw new Error(message || 'Failed to register.');
@@ -171,21 +171,14 @@ function EmailRegistrationPage() {
 
             <EmailInputContainer>
                 <h2>Register Email</h2>
-                <EmailInput
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                />
+                <EmailInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
                 <button className={isLoading ? 'loading' : ''} disabled={isLoading} onClick={handleSubmit}>
                     {isLoading ? <LoadingIcon /> : ''}
                     Register
                 </button>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 {currentMessage && (
-                    <p style={{ color: 'green', maxWidth: '310px', fontSize: '.9em', textAlign: 'start' }}>
-                        {currentMessage}
-                    </p>
+                    <p style={{ color: 'green', maxWidth: '310px', fontSize: '.9em', textAlign: 'start' }}>{currentMessage}</p>
                 )}
                 <SignInRedirect>
                     <em>Already have an acccount?</em>

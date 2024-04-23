@@ -114,7 +114,6 @@ const PrivateKetInputSection = styled.section`
 const DecryptButton = styled.button``;
 
 // eslint-disable-next-line react/prop-types
-//cid, documentId,
 function DocumentDetailsModal({ dbDocData, userHashedEmail, onClose }) {
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [currentDocumentCid, setCurrentDocumentCid] = useState(null);

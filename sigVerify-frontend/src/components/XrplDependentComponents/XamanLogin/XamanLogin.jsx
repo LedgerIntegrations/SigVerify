@@ -16,14 +16,15 @@ export default function XamanLogin({ setWalletAuthOpened }) {
     console.log('AccountContext: ', accountObject);
 
     useEffect(() => {
-        if (accountObject.loggedIn) {
-            console.log('login component- we are logged in.');
-        }
+        // if (accountObject.loggedIn) {
+        //     console.log('login component- we are logged in.');
+        // }
+        authenticateXaman();
     }, []);
 
     const authenticateXaman = async () => {
         // RETURN Xaman sign-in payload object to display to client for signature
-        await fetch('http://localhost:3001/api/xrpl/createXamanSigninPayload', {
+        await fetch('http://localhost:3001/api/xrpl/payload/create/signin', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,7 +37,7 @@ export default function XamanLogin({ setWalletAuthOpened }) {
                 setPayloadCreate(signInPayload);
 
                 // After receiving the sign-in payload object, make a second request to listen to payload uuid for signature / reject
-                return fetch('http://localhost:3001/api/xrpl/subscribeToPayload', {
+                return fetch('http://localhost:3001/api/xrpl/payload/subscribe', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -53,7 +54,7 @@ export default function XamanLogin({ setWalletAuthOpened }) {
                     console.log('user successfully signed sign-in payload.');
 
                     //use fetch api to send put request to update users wallet address in db
-                    fetch('http://localhost:3001/api/user/updateWalletAddress', {
+                    fetch('http://localhost:3001/api/user/wallet', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -66,21 +67,25 @@ export default function XamanLogin({ setWalletAuthOpened }) {
                         .then((response) => response.json())
                         .then((updateResponse) => {
                             console.log('Update response:', updateResponse);
-                            // Handle the response from the update API
-                            // Update local state, UI, etc., as needed
+                            console.log('HELOOOOOOOOO I AM UPDATING THE NEW WALLETTTTTTTTTT');
+                            setPayloadMessage('Congratulations! You are now logged in.');
+                            setPayloadCreate({});
+                            setAccountObject({
+                                ...accountObject,
+                                wallet_address: finalSignInPayloadReturnObject.signer,
+                            });
+                            setWalletAuthOpened(false);
                         })
                         .catch((error) => {
-                            console.error('Error updating wallet address:', error);
+                            console.error('Error adding/updating wallet address:', error);
                         });
 
-                    setAccountObject({
-                        ...accountObject,
-                        xrplWalletAddress: finalSignInPayloadReturnObject.signer,
-                        loggedIn: finalSignInPayloadReturnObject.signed,
-                    });
+                    // setAccountObject({
+                    //     ...accountObject,
+                    //     xrplWalletAddress: finalSignInPayloadReturnObject.signer,
+                    //     loggedIn: finalSignInPayloadReturnObject.signed,
+                    // });
 
-                    setPayloadMessage('Congratulations! You are now logged in.');
-                    setPayloadCreate({});
                     // navigate('/profile');
                 } else {
                     console.log('User Failed to sign in.');
@@ -97,14 +102,6 @@ export default function XamanLogin({ setWalletAuthOpened }) {
 
     return (
         <div className="loginComponent">
-            <button
-                onClick={() => {
-                    setWalletAuthOpened(false);
-                }}
-            >
-                Close
-            </button>
-            <h1>Connect</h1>
             {Object.keys(payloadCreate).length === 0 ? null : (
                 <div className="payloadDiv">
                     <a href={payloadCreate?.qrLink} target="_blank" rel="noreferrer">
@@ -113,9 +110,6 @@ export default function XamanLogin({ setWalletAuthOpened }) {
                 </div>
             )}
             <p id="signInMsg">{payloadMessage}</p>
-            <button className="buttonPop" onClick={authenticateXaman}>
-                Generate QR
-            </button>
         </div>
     );
 }

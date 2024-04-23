@@ -1,13 +1,13 @@
 // /sigVerify-backend/controllers/userControllers
-import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import { sendAuthTokenEmail } from './helpers/index.js';
 import dotenv from 'dotenv';
-import UserModel from '../models/User.js';
+import { sendAuthTokenEmail } from './helpers/index.js';
 import { generateJwtAndSetAsAuthTokenCookie } from './utils/authUtils.js';
-import { profile } from 'console';
+import UserModel from '../models/User.js';
+import SignatureModel from '../models/Signature.js';
+import DocumentModel from '../models/Document.js';
 
 dotenv.config();
 
@@ -21,7 +21,6 @@ const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 // * UTILITY FUNCTIONS
 // * ------------------------------------------------
-// Ensuring consistency in hashing
 async function hashEmail(email) {
     return crypto.createHash('sha256').update(email).digest('hex');
 }
@@ -29,7 +28,6 @@ async function hashEmail(email) {
 async function hashPassword(password) {
     return bcrypt.hash(password, 10);
 }
-
 // * ------------------------------------------------
 
 // * check if email already exists, if not create registration initialization tables
@@ -37,12 +35,11 @@ const registerUser = async (req, res) => {
     const { email } = req.body;
     const hashedEmail = await hashEmail(email);
     try {
-        const authToken = await UserModel.getAuthTokenByHashedEmail(hashedEmail);
-
+        const userCredentials = await UserModel.getAuthTokenByHashedEmail(hashedEmail);
         // user exists, but the email has not been authenticated yet
-        if (typeof authToken === 'string') {
+        if (typeof userCredentials.auth_token === 'string') {
             // * send new email with link to authenticate and exit function
-            await sendAuthTokenEmail(email, authToken);
+            await sendAuthTokenEmail(email, userCredentials.auth_token);
 
             return res.status(HTTP_OK).json({
                 userAuthenticated: false,
@@ -51,7 +48,7 @@ const registerUser = async (req, res) => {
             });
         }
         // email has already been authenticated
-        if (authToken === null) {
+        if (userCredentials.auth_token === null) {
             // * send response user already authenticated and exists, exit
             return res.status(HTTP_OK).json({
                 userAuthenticated: true, // Assuming this should be true if authenticated
@@ -60,7 +57,7 @@ const registerUser = async (req, res) => {
             });
         }
         // user email doesn't exist in database
-        if (authToken === 1) {
+        if (userCredentials === 1) {
             // initial user created without profile info, used for email auth initially
             const newAuthToken = await UserModel.initializeUserRegistration(email);
             await sendAuthTokenEmail(email, newAuthToken);
@@ -73,7 +70,9 @@ const registerUser = async (req, res) => {
         }
     } catch (err) {
         console.error('Error processing request', err);
-        return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+        return res
+            .status(HTTP_INTERNAL_SERVER_ERROR)
+            .json({ error: 'Internal server error inside user registration.' });
     }
 };
 
@@ -95,15 +94,19 @@ const completeUserRegistration = async (req, res) => {
         }
 
         const hashedPassword = await hashPassword(password);
-        await UserModel.updateCredentials(userCredentialsId, { hashedPassword, publicKey });
+        // *order matters here, have to finalize to find matching token before switching token to null in updateCredentials
         await UserModel.finalizeUserRegistration(token, firstName, lastName);
+        await UserModel.updateCredentials(userCredentialsId, { hashedPassword, publicKey });
 
         //get profile id from credentials id
         const userProfileId = await UserModel.getUserProfileIdByCredentialsId(userCredentialsId);
-        const userProfileData = await UserModel.getUserProfileDataById(userProfileId);
+        const userProfileData = await UserModel.getUserProfileData(userProfileId);
+        const userEmail = await UserModel.getEmailByProfileId(userProfileId);
 
-        // Use the utility function to generate and set the http only authToken cookie
-        await generateJwtAndSetAsAuthTokenCookie(res, userProfileId);
+        if (userProfileId && userEmail) {
+            // Use the utility function to generate and set the http only authToken cookie
+            await generateJwtAndSetAsAuthTokenCookie(res, userProfileId, userEmail);
+        }
 
         res.status(200).json({
             message: 'New user created successfully.',
@@ -111,7 +114,7 @@ const completeUserRegistration = async (req, res) => {
         });
     } catch (err) {
         console.error('Error processing request', err);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error inside complete user registration.' });
     }
 };
 
@@ -120,7 +123,7 @@ const authenticateExistingCookie = async (req, res) => {
     const profileId = req.user.profileId;
 
     try {
-        const profileData = UserModel.getUserProfileDataById(profileId);
+        const profileData = await UserModel.getUserProfileData(profileId);
 
         res.status(200).json({
             message: 'Existing user cookie authenticated.',
@@ -156,10 +159,10 @@ const authenticateLogin = async (req, res) => {
     try {
         const hashedEmail = await hashEmail(email);
 
-        const userCredentials = UserModel.getAuthTokenByHashedEmail(hashedEmail);
+        const userCredentials = await UserModel.getAuthTokenByHashedEmail(hashedEmail);
 
         // first check if user email exists
-        if (userCredentials === 1) {
+        if (userCredentials.auth_token === 1) {
             return res.status(401).json({ error: 'Email does not exist.', loggedIn: false });
         }
 
@@ -183,10 +186,13 @@ const authenticateLogin = async (req, res) => {
 
         //get profile id from credentials id
         const userProfileId = await UserModel.getUserProfileIdByCredentialsId(userCredentials.id);
-        const userProfileData = await UserModel.getUserProfileDataById(userProfileId);
+        const userProfileData = await UserModel.getUserProfileData(userProfileId);
+        const userEmail = await UserModel.getEmailByProfileId(userProfileId);
 
-        // Use the utility function to generate and set the http only authToken cookie
-        await generateJwtAndSetAsAuthTokenCookie(res, userProfileId);
+        if (userProfileId && userEmail) {
+            // Use the utility function to generate and set the http only authToken cookie
+            await generateJwtAndSetAsAuthTokenCookie(res, userProfileId, userEmail);
+        }
 
         res.status(200).json({
             message: 'Login successful',
@@ -198,29 +204,74 @@ const authenticateLogin = async (req, res) => {
     }
 };
 
-const updateXrplWalletAddress = async (req, res) => {
+const addOrUpdateXrplWalletAddress = async (req, res) => {
     const profileId = req.user.profileId;
     const { newWalletAddress } = req.body;
 
-    if (!userId || !newWalletAddress) {
+    if (!profileId || !newWalletAddress) {
+        return res.status(400).json({ error: 'Missing user ID or new XRPL wallet address.' });
+    }
+
+    try {
+        const success = await UserModel.addOrUpdateUserXrplWallet(newWalletAddress, profileId);
+
+        if (success) {
+            return res.status(200).json({ message: 'XRPL wallet address added/updated successfully.' });
+        } else {
+            return res.status(500).json({ message: 'Failed to add/update XRPL wallet address.' });
+        }
+    } catch (err) {
+        console.error('Error processing request', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const deleteXrplWalletAddress = async (req, res) => {
+    const profileId = req.user.profileId;
+
+    if (!profileId) {
+        return res.status(400).json({ error: 'Missing user profile ID.' });
+    }
+
+    try {
+        const deletedCount = await UserModel.deleteUserXrplWallet(profileId);
+
+        if (deletedCount > 0) {
+            return res.status(200).json({ message: 'XRPL wallet address deleted successfully.' });
+        } else {
+            return res.status(404).json({ message: 'No XRPL wallet address found for the user.' });
+        }
+    } catch (err) {
+        console.error('Error processing request:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+const upgradeMembership = async (req, res) => {
+    const { profileId } = req.user;
+    const { newMembershipType } = req.body;
+
+    // Validate the new membership type
+    const allowedMembershipTypes = ['free', 'standard', 'premium', 'business'];
+    if (!allowedMembershipTypes.includes(newMembershipType)) {
         return res.status(400).json({
-            error: 'Please provide both user ID and new XRPL wallet address.',
+            error: 'Invalid membership type provided.',
         });
     }
 
     try {
-        const successfulUpdateBool = await UserModel.updateUserXrplWalletAddress(newWalletAddress, profileId);
+        // Call the model method to upgrade membership
+        await UserModel.upgradeMembership(profileId, newMembershipType);
 
-        if (successfulUpdateBool) {
-            return res.status(HTTP_OK).json({
-                message: 'XRPL wallet address updated successfully.',
-            });
-        } else {
-            return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ message: 'Failed to update xrpl wallet.' });
-        }
-    } catch (err) {
-        console.error('Error processing request', err);
-        return res.status(HTTP_INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+        return res.status(200).json({
+            message: `Membership upgraded successfully to ${newMembershipType}.`,
+        });
+    } catch (error) {
+        console.error('Error upgrading membership:', error);
+        return res.status(500).json({
+            error: 'Failed to upgrade membership.',
+        });
     }
 };
 
@@ -228,13 +279,35 @@ const getUserProfileData = async (req, res) => {
     const profileId = req.user.profileId;
     try {
         const profileData = await UserModel.getUserProfileData(profileId);
+        const totalUploadedDocuments = await DocumentModel.getAllUploadedDocuments(profileId);
+        const totalSignatures = await SignatureModel.getSignaturesByUserProfileId(profileId);
+
+        const customProfileDate = {
+            ...profileData,
+            total_documents: totalUploadedDocuments.length,
+            total_signatures: totalSignatures.length,
+        };
 
         res.status(200).json({
-            data: profileData,
+            data: customProfileDate,
         });
     } catch (err) {
         console.error('Error processing request', err);
         return res.status(500).json({ error: 'Internal server error inside getUserProfileData controller.' });
+    }
+};
+
+const getUserSignatures = async (req, res) => {
+    const profileId = req.user.profileId;
+    try {
+        const signatures = await SignatureModel.getSignaturesByUserProfileId(profileId);
+
+        res.status(200).json({
+            data: signatures,
+        });
+    } catch (err) {
+        console.error('Error processing request', err);
+        return res.status(500).json({ error: 'Internal server error inside getUserSignatures controller.' });
     }
 };
 
@@ -247,50 +320,66 @@ const getUserPublicKeyAndXrplWalletByHashedEmail = async (req, res) => {
         const getPublicKeyQuery = `
             SELECT
                 uc.public_key,
-                up.verified_xrpl_wallet_address
+                xw.wallet_address
             FROM
                 user_credentials uc
             JOIN
                 user_profiles up ON uc.id = up.user_credentials_id
+            LEFT JOIN
+                xrpl_wallets xw ON up.id = xw.user_profile_id
             WHERE
-                uc.hashed_email = $1;
+                uc.hashed_email = $1
+            ORDER BY
+                xw.created_at DESC
+            LIMIT 1;
         `;
 
         const userPublicKeyResult = await client.query(getPublicKeyQuery, [requestedEmailHash]);
 
         if (userPublicKeyResult.rows.length === 0) {
-            return res.status(401).json({ error: 'this email is not found in our database.' });
+            return res.status(401).json({ error: 'This email is not found in our database.' });
         }
 
         const user = userPublicKeyResult.rows[0];
 
-        // if (user.verified_xrpl_wallet_address === null) {
-        //     return res.status(401).json({ error: 'User has not authenticated a xrpl wallet yet.' });
-        // }
-
         res.status(200).json({
-            message: 'found user publickey and verified wallet.',
+            message: 'Found user public key and verified wallet.',
             data: {
                 publicKey: user.public_key,
-                verifiedWallet: user.verified_xrpl_wallet_address,
+                verifiedWallet: user.wallet_address,
             },
         });
     } catch (err) {
-        console.error('Error processing request in getting profile page data', err);
-        return res
-            .status(HTTP_INTERNAL_SERVER_ERROR)
-            .json({ error: 'Internal server error querying profile page data' });
+        console.error('Error processing request in getting user data', err);
+        return res.status(500).json({ error: 'Internal server error querying user data' });
     } finally {
         client.release();
+    }
+};
+
+const getUserEmail = async (req, res) => {
+    const email = req.user.email;
+
+    if (email) {
+        res.status(200).json({
+            email,
+        });
+    } else {
+        return res.status(401).json({ error: 'email not found for this profile.' });
     }
 };
 
 export {
     registerUser,
     completeUserRegistration,
+    authenticateLogin,
+    getUserProfileData,
     authenticateExistingCookie,
     removeAuthTokenCookie,
-    authenticateLogin,
-    updateXrplWalletAddress,
+    addOrUpdateXrplWalletAddress,
     getUserPublicKeyAndXrplWalletByHashedEmail,
+    getUserEmail,
+    getUserSignatures,
+    upgradeMembership,
+    deleteXrplWalletAddress,
 };

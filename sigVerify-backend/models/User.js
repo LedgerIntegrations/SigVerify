@@ -1,6 +1,3 @@
-// user interface to database
-
-// imports
 import pool from '../config/db.js';
 import crypto from 'crypto';
 
@@ -43,10 +40,42 @@ const generateToken = () => {
 };
 
 class UserModel {
-
     static async poolConnect() {
         return pool.connect();
     }
+
+    /**
+     * Verifies the user token and returns the user's ID if valid.
+     */
+    static async verifyUserToken(token) {
+        const client = await this.poolConnect();
+        try {
+            const { rows } = await client.query('SELECT id FROM user_credentials WHERE auth_token = $1', [token]);
+            return rows.length > 0 ? rows[0].id : null;
+        } catch (err) {
+            console.error('Error verifying user token', err);
+            throw new Error('Error verifying user token');
+        } finally {
+            client.release();
+        }
+    }
+
+    /**
+     * Finds a user by their auth token.
+     */
+    static async findCredentialsByAuthToken(token) {
+        const client = await this.poolConnect();
+        try {
+            const { rows } = await client.query('SELECT * FROM user_credentials WHERE auth_token = $1', [token]);
+            return rows.length > 0 ? rows[0] : null;
+        } catch (err) {
+            console.error('Error finding user by auth token', err);
+            throw new Error('Error finding user by auth token');
+        } finally {
+            client.release();
+        }
+    }
+
     /**
      * Creates initial user profile tables (credentials, profile, and email) with registered email.
      */
@@ -80,9 +109,8 @@ class UserModel {
                 email,
             ]);
 
-          await client.query('COMMIT');
-          return newAuthToken;
-
+            await client.query('COMMIT');
+            return newAuthToken;
         } catch (err) {
             await client.query('ROLLBACK');
             console.error('Error creating new user', err);
@@ -95,15 +123,15 @@ class UserModel {
     /**
      * Updates the existing user profile data with the information submitted from the form.
      */
-    static async finalizeUserRegistration(authToken, firstName, lastName, membershipType = 'free') {
+    static async finalizeUserRegistration(token, firstName, lastName, membershipType = 'free') {
         const client = await this.poolConnect();
 
         try {
             await client.query('BEGIN');
 
             // Use the existing findByAuthToken method to get user credentials
-            const userCredentials = await this.findCredentialsByAuthToken(authToken);
-
+            const userCredentials = await this.findCredentialsByAuthToken(token);
+            console.log('credentials response inside finalise reg: ', userCredentials);
             if (!userCredentials) {
                 throw new Error('Invalid or expired authentication token.');
             }
@@ -220,22 +248,6 @@ class UserModel {
     }
 
     /**
-     * Finds a user by their auth token.
-     */
-    static async findCredentialsByAuthToken(token) {
-        const client = await this.poolConnect();
-        try {
-            const { rows } = await pool.query('SELECT * FROM user_credentials WHERE auth_token = $1', [token]);
-            return rows.length > 0 ? rows[0] : null;
-        } catch (err) {
-            console.error('Error finding user by auth token', err);
-            throw new Error('Error finding user by auth token');
-        } finally {
-            client.release();
-        }
-    }
-
-    /**
      * Updates user credentials upon email verification, setting a hashed password and public key, and clearing the auth token.
      */
     static async updateCredentials(id, { hashedPassword, publicKey }) {
@@ -309,6 +321,37 @@ class UserModel {
     }
 
     /**
+     * Upgrades the user's membership type.
+     * @param {number} userProfileId - The ID of the user profile to upgrade.
+     * @param {string} newMembershipType - The new membership type ('free', 'standard', 'premium', 'business').
+     * @returns {Promise<Object>} The updated user profile data.
+     **/
+    // *when membership is updated, postgresql set_document_limit_before_update trigger runs to also update the maximum_documents property
+    static async upgradeMembership(userProfileId, newMembershipType) {
+        const client = await this.poolConnect();
+        try {
+            const updateQuery = `
+                UPDATE user_profiles
+                SET membership = $1
+                WHERE id = $2
+                RETURNING *;
+            `;
+            const { rows } = await client.query(updateQuery, [newMembershipType, userProfileId]);
+
+            if (rows.length === 0) {
+                throw new Error(`User profile not found for ID ${userProfileId}.`);
+            }
+
+            return rows[0]; // Return the updated user profile
+        } catch (err) {
+            console.error('Error upgrading user membership', err);
+            throw new Error('Error upgrading user membership');
+        } finally {
+            client.release();
+        }
+    }
+
+    /**
      * Retrieves the user_profile_id corresponding to a given user_credentials_id.
      */
     static async getUserProfileIdByCredentialsId(credentialsId) {
@@ -327,32 +370,12 @@ class UserModel {
     }
 
     /**
-     * Verifies the user token and returns the user's ID if valid.
-     */
-    static async verifyUserToken(token) {
-        const client = await this.poolConnect();
-        try {
-            const { rows } = await client.query('SELECT id FROM user_credentials WHERE auth_token = $1', [token]);
-            return rows.length > 0 ? rows[0].id : null;
-        } catch (err) {
-            console.error('Error verifying user token', err);
-            throw new Error('Error verifying user token');
-        } finally {
-            client.release();
-        }
-    }
-
-  static async
-
-    /**
      * Checks the authentication token status for a given email.
      */
-    static async getCredentialsByHashedEmail(hashedEmail) {
+    static async getAuthTokenByHashedEmail(hashedEmail) {
         const client = await this.poolConnect();
         try {
-            const result = await client.query('SELECT * FROM user_credentials WHERE hashed_email = $1', [
-                hashedEmail,
-            ]);
+            const result = await client.query('SELECT * FROM user_credentials WHERE hashed_email = $1', [hashedEmail]);
             if (result.rows.length > 0) {
                 return result.rows[0];
             }
@@ -409,27 +432,30 @@ class UserModel {
      * Retrieves user profile data by profile ID, including credentials and any associated XRPL wallet address.
      * main profile data used for front end ui
      */
-    static async getUserProfileDataById(userProfileId) {
+    static async getUserProfileData(userProfileId) {
+        console.log('user profile id: ', userProfileId);
         const client = await this.poolConnect();
         try {
-            // Modified query to include counts for total_documents and total_signatures
             const { rows } = await client.query(
                 `SELECT
-                uc.public_key,
-                up.first_name,
-                up.last_name,
-                up.membership,
-                xw.wallet_address AS xrpl_wallet,
-                (SELECT COUNT(*) FROM documents WHERE user_profile_id = up.id) AS total_documents,
-                (SELECT COUNT(*) FROM signatures WHERE user_profile_id = up.id) AS total_signatures
-             FROM
+            uc.public_key,
+            up.id as profile_id,
+            up.first_name,
+            up.last_name,
+            up.membership,
+            up.document_limit,
+            xw.wallet_address,
+            ucot.email
+            FROM
                 user_profiles up
-             JOIN
+            JOIN
                 user_credentials uc ON up.user_credentials_id = uc.id
-             LEFT JOIN
+            LEFT JOIN
                 xrpl_wallets xw ON up.id = xw.user_profile_id
-             WHERE
-                up.id = $1;`,
+            LEFT JOIN
+                user_contacts ucot ON up.id = ucot.user_profile_id
+            WHERE
+            up.id = $1;`,
                 [userProfileId]
             );
             if (rows.length === 0) {
@@ -439,6 +465,27 @@ class UserModel {
         } catch (err) {
             console.error('Error retrieving user profile data by ID', err);
             throw new Error(err.message);
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getDocumentLimit(userProfileId) {
+        const client = await this.poolConnect();
+        try {
+            const query = `
+            SELECT document_limit
+            FROM user_profiles
+            WHERE id = $1;
+        `;
+            const { rows } = await client.query(query, [userProfileId]);
+            if (rows.length === 0) {
+                throw new Error('User profile not found.');
+            }
+            return rows[0].document_limit; // Assuming document_limit is directly stored in the user_profiles table
+        } catch (err) {
+            console.error('Error retrieving document limit', err);
+            throw new Error('Error retrieving document limit');
         } finally {
             client.release();
         }
@@ -476,8 +523,8 @@ class UserModel {
                 `SELECT COUNT(DISTINCT docs.id) AS total_documents, COUNT(DISTINCT sigs.id) AS total_signatures
                 FROM user_profiles up
                 LEFT JOIN documents docs ON up.id = docs.user_profile_id
-                LEFT JOIN signatures sigs ON up.id = sigs.user_id
-                WHERE up.id = $1 GROUP BY up.id`,
+                LEFT JOIN signatures sigs ON docs.id = sigs.document_id
+                WHERE up.id = $1 GROUP BY up.id;`,
                 [userProfileId]
             );
             return rows.length > 0 ? rows[0] : { total_documents: 0, total_signatures: 0 };
@@ -489,27 +536,79 @@ class UserModel {
         }
     }
 
-    /**
-     * Updates the XRP ledger wallet address for a user profile.
-     */
-    static async updateUserXrplWalletAddress(newWalletAddress, userProfileId) {
+    static async getEmailByProfileId(profileId) {
+        const client = await this.poolConnect();
+
+        try {
+            const result = await client.query(`SELECT email FROM user_contacts WHERE user_profile_id = $1`, [
+                profileId,
+            ]);
+            return result.rows.length > 0 ? result.rows[0].email : null;
+        } catch (error) {
+            console.error('Error retrieving email by profile ID', error);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async findUserXrplWallet(profileId) {
+        const client = await this.poolConnect();
+        try {
+            const res = await client.query('SELECT * FROM xrpl_wallets WHERE user_profile_id = $1', [profileId]);
+            return res.rows[0]; // Return the first row (wallet) if exists, or undefined
+        } finally {
+            client.release();
+        }
+    }
+
+    static async addOrUpdateUserXrplWallet(newWalletAddress, userProfileId) {
+        const existingWallet = await this.findUserXrplWallet(userProfileId);
         const client = await this.poolConnect();
         try {
             await client.query('BEGIN');
-            await client.query(`UPDATE xrpl_wallets SET wallet_address = $1 WHERE user_profile_id = $2`, [
-                newWalletAddress,
-                userProfileId,
-            ]);
+            if (existingWallet) {
+                await client.query(`UPDATE xrpl_wallets SET wallet_address = $1 WHERE user_profile_id = $2`, [
+                    newWalletAddress,
+                    userProfileId,
+                ]);
+            } else {
+                await client.query(`INSERT INTO xrpl_wallets (user_profile_id, wallet_address) VALUES ($1, $2)`, [
+                    userProfileId,
+                    newWalletAddress,
+                ]);
+            }
             await client.query('COMMIT');
             return true;
         } catch (err) {
             await client.query('ROLLBACK');
-            console.error('Error updating XRPL wallet address', err);
-            throw new Error('Error updating XRPL wallet address');
+            throw err;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async deleteUserXrplWallet(userProfileId) {
+        const client = await this.poolConnect();
+        try {
+            await client.query('BEGIN');
+
+            // Delete the wallet address associated with the user profile ID
+            const deleteQuery = `DELETE FROM xrpl_wallets WHERE user_profile_id = $1`;
+            const result = await client.query(deleteQuery, [userProfileId]);
+
+            await client.query('COMMIT');
+
+            // Return the number of rows deleted to confirm the operation
+            return result.rowCount;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            console.error('Error deleting user XRPL wallet:', err);
+            throw err;
         } finally {
             client.release();
         }
     }
 }
 
-export UserModel;
+export default UserModel;

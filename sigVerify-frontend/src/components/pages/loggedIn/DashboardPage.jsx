@@ -1,8 +1,11 @@
-// import { useContext } from 'react';
-// import { AccountContext } from '../../../App';
-import Tile from '../../helperComponents/Tile/Tile';
 import styled from 'styled-components';
 import logoImg from '../../../assets/svLogo.png';
+import { Link } from 'react-router-dom';
+import { CgProfile } from 'react-icons/cg';
+import { FaFileSignature } from 'react-icons/fa6';
+import { IoDocumentOutline } from 'react-icons/io5';
+import { BsFingerprint } from 'react-icons/bs';
+import { RiUserSearchFill } from 'react-icons/ri';
 
 const OutterDashboardContainer = styled.div`
     display: flex;
@@ -10,8 +13,8 @@ const OutterDashboardContainer = styled.div`
     justify-content: center;
     align-items: center;
     width: 100%;
-    gap: 20px;
-    padding: 0px 0px;
+    gap: 10px;
+    padding: 0px 10px;
     margin-top: 0px;
     z-index: 10;
     max-width: 550px;
@@ -19,12 +22,12 @@ const OutterDashboardContainer = styled.div`
 `;
 
 const DashboardSubSection = styled.section`
-    width: 100%;
+    width: fit-content;
     height: fit-content;
     display: flex;
     align-items: start;
-    justify-content: center;
-    margin-inline: auto;
+    justify-content: start;
+    /* margin-inline: auto; */
     margin-top: 1vh;
     flex-wrap: wrap;
 `;
@@ -32,88 +35,91 @@ const DashboardSubSection = styled.section`
 const MainTitle = styled.h1`
     color: #696969;
     width: 100%;
-    max-width: 320px;
+    max-width: 270px;
     margin-top: 6vh;
     margin-bottom: 2vh;
     text-align: start;
     font-size: 2em;
-    padding-inline: 20px;
+    padding-inline: 10px;
     font-family: 'Exo';
 
     @media (min-width: 560px) {
-        max-width: 460px;
+        max-width: 456px;
     }
 `;
 
-// const DashboardHero = styled.div`
-//   width: 100%:
-//   display: flex;
-//   max-width: 350px;
-//   padding: 10px 20px 20px 20px;
-
-//   h1 {
-//     margin-top: 0px;
-//   }
-
-//   div {
-//     display: flex;
-//     flex-direction: column;
-//     border: 1.5px solid black;
-//     border-radius: 20px;
-//     background-color: rgba(255, 255, 255, 0.5);
-//     color: #222;
-//     box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
-//     7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-//     0px 0px 0px 0px rgba(0, 0, 0, 0.1);
-
-//     img {
-//       width: 100%;
-//       padding: 10px;
-//     }
-
-//     p {
-//       font-size: 1.2em;
-//       padding-inline: 20px;
-//       max-width: 305px;
-//       margin-inline: auto;
-//     }
-//   }
-// `;
-
 const DashboardNavTiles = styled.div`
+    min-width: 270px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     padding: 10px;
-    padding-inline: 5vw;
-    padding-left: 20px;
-    width: 100%;
-    max-width: 320px;
     font-family: 'Kdam Thmor Pro', sans-serif;
     align-self: start;
 
-    a {
-        min-height: 120px;
-        border-radius: 15px;
-        background-color: white;
-        min-height: 150px;
+    @media (min-width: 560px) {
+        /* width: 90%; */
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+`;
+
+const DashLink = styled(Link)`
+    text-decoration: none;
+`;
+
+const NeumorphicButton = styled.button`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 140px;
+    align-items: center;
+    justify-content: center;
+    /* aspect-ratio: 0.7; */
+    border: none;
+    border-radius: 1rem;
+    color: hsl(0, 0%, 35.68627450980392%);
+    background-color: white;
+    gap: 10px;
+    padding: 10px;
+    box-shadow: -0.5rem -0.5rem 1rem hsl(0, 0% 100% / 0.75), 0.5rem 0.5rem 1rem hsl(0, 0% 50% / 0.5);
+    outline: none;
+    transition: all 0.1s;
+    font-size: 16px;
+
+    &:hover,
+    &:focus {
+        color: hsl(0, 0%, 14.901960784313726%);
+        transform: scale(1.1);
+    }
+
+    &:active {
+        box-shadow: inset 0.5rem 0.5rem 1rem hsl(0, 0% 50% / 0.5), inset -0.5rem -0.5rem 1rem hsl(0, 0% 100% / 0.75);
+        color: hsl(10, 80%, 50%);
     }
 
     @media (min-width: 560px) {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        max-width: 460px;
+        aspect-ratio: 0.6;
+        min-height: 168px;
+    }
+`;
+
+const ProfileLookup = styled.section`
+    width: 100%;
+    max-width: 490px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+
+    input {
+        max-width: 340px;
+        margin-inline: 20px;
     }
 `;
 
 const documentIcon = (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="1.5"
-        stroke="currentColor"
-        className="w-6 h-6"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
         <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -123,14 +129,7 @@ const documentIcon = (
 );
 
 const signatureIcon = (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
         <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -140,14 +139,7 @@ const signatureIcon = (
 );
 
 const profileIcon = (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
         <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -156,25 +148,32 @@ const profileIcon = (
     </svg>
 );
 
-const settingsIcon = (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495"
-        />
-    </svg>
-);
+// const settingsIcon = (
+//     <svg
+//         xmlns="http://www.w3.org/2000/svg"
+//         fill="none"
+//         viewBox="0 0 24 24"
+//         strokeWidth={1.5}
+//         stroke="currentColor"
+//         className="w-6 h-6"
+//     >
+//         <path
+//             strokeLinecap="round"
+//             strokeLinejoin="round"
+//             d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495"
+//         />
+//     </svg>
+// );
+
+const buttonsData = [
+    { title: 'Profile', icon: <CgProfile />, link: '/profile' },
+    { title: 'Documents', icon: <IoDocumentOutline />, link: '/documents' },
+    { title: 'Signatures', icon: <BsFingerprint />, link: '/signatures' },
+    { title: 'Search', icon: <RiUserSearchFill />, link: '/profile/search' },
+    // { title: 'Settings', icon: settingsIcon, link: '/settings' },
+];
 
 function Dashboard() {
-    // const [accountObject, setAccountObject] = useContext(AccountContext);
     return (
         <>
             <div className="backgroundLogoContainer">
@@ -183,19 +182,21 @@ function Dashboard() {
             <OutterDashboardContainer>
                 <MainTitle>Dashboard</MainTitle>
                 <DashboardSubSection>
-                    {/* <DashboardHero>
-            <div>
-              <img src={sigVerifyBanner} />
-              <p>SECURE DOCUMENT SIGNING, MADE EASY.</p>
-            </div>
-          </DashboardHero> */}
                     <DashboardNavTiles>
-                        <Tile title="Profile" icon={profileIcon} link="/profile" finePrint="" />
-                        <Tile title="Docs" icon={documentIcon} link="/documents" finePrint="" />
-                        <Tile title="Form Templates" icon={signatureIcon} link="/forms" finePrint="" />
-                        <Tile title="Contacts" icon={settingsIcon} link="/settings" finePrint="" />
+                        {buttonsData.map((button, index) => (
+                            <DashLink to={button.link} key={index}>
+                                <NeumorphicButton className="buttonPop">
+                                    {button.icon}
+                                    <span>{button.title}</span>
+                                </NeumorphicButton>
+                            </DashLink>
+                        ))}
                     </DashboardNavTiles>
                 </DashboardSubSection>
+                {/* <ProfileLookup>
+                    <MainTitle style={{ fontSize: '1.6em' }}>Profile Lookup:</MainTitle>
+                    <input type="text" placeholder="email address"></input>
+                </ProfileLookup> */}
             </OutterDashboardContainer>
         </>
     );

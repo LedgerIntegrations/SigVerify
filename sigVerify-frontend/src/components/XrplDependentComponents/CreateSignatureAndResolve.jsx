@@ -22,10 +22,10 @@ const CreateSignatureContainer = styled.div`
     margin-block: 5vh;
     box-shadow: 0px 10px 18px 0px #242a49cb;
     font-size: 0.8em;
-    z-index: 1005;
+    z-index: 60;
     left: 50%;
     transform: translateX(-50%);
-    top: 200px;
+    top: 250px;
 
     h1 {
         margin-top: 0px;
@@ -41,6 +41,7 @@ const CreateSignatureContainer = styled.div`
         margin-top: 1vh;
         padding: 5px 20px;
         border-radius: 20px;
+        z-index: 65;
     }
 
     @media (min-width: 440px) {
@@ -55,6 +56,7 @@ const CloseModalButton = styled.button`
     background-color: rgb(64, 99, 224);
     color: white;
     border: none;
+    z-index: 1010;
 `;
 
 const QrDiv = styled.div`
@@ -91,7 +93,7 @@ const GenerateQrButton = styled.button`
     border: none;
 `;
 // eslint-disable-next-line react/prop-types
-export default function CreateSignatureAndResolve({ setPayloadSigningComponentOpened, memoData, setSignatureStatus }) {
+export default function CreateSignatureAndResolve({ onClose, memoData, setSignatureStatus }) {
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [payloadDataState, setPayloadDataState] = useState({});
     const [payloadMessage, setPayloadMessage] = useState('Scan & sign with Xaman!');
@@ -100,9 +102,8 @@ export default function CreateSignatureAndResolve({ setPayloadSigningComponentOp
     console.log('AccountContext: ', accountObject);
 
     useEffect(() => {
-        // Reset button click state when the component is opened
-        setIsButtonClicked(false);
-    }, [setPayloadSigningComponentOpened]);
+        console.log('use effect inside create and resolve signature modal.');
+    }, []);
 
     const authenticateXaman = async () => {
         setIsButtonClicked(true);
@@ -132,7 +133,7 @@ export default function CreateSignatureAndResolve({ setPayloadSigningComponentOp
                 });
 
                 setPayloadDataState({});
-                setPayloadSigningComponentOpened(false);
+                onCLose();
             } else {
                 console.log('User Failed to sign encrypted form data via xrpl tx.');
                 setPayloadDataState({});
@@ -147,13 +148,7 @@ export default function CreateSignatureAndResolve({ setPayloadSigningComponentOp
 
     return (
         <CreateSignatureContainer>
-            <CloseModalButton
-                id="closeModalButton"
-                className="buttonPop"
-                onClick={() => {
-                    setPayloadSigningComponentOpened(false);
-                }}
-            >
+            <CloseModalButton id="closeModalButton" className="buttonPop" onClick={onClose}>
                 Close
             </CloseModalButton>
             <h1>Sign Document</h1>

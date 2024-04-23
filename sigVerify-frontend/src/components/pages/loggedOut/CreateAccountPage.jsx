@@ -1,11 +1,10 @@
-// Web2UserCreate.js
 import { useState, useEffect, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa'; // Import icons from react-icons
 import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
-import { ErrorMessage } from '../../Styles/CommonStyles';
+import { ErrorMessage } from '../../component-helpers/styled-elements/CommonStyles';
 import KeyPairGeneratorModal from '../../../utils/rsaKeyHandlers/KeyPairGeneratorModal';
 import { isValidPassword } from '../../../utils/regexValidityChecks';
 import { arrayBufferToHex } from '../../../utils/encoding';
@@ -66,6 +65,7 @@ const InsideFormContainer = styled.div`
         width: 80%;
         padding: 12px;
         margin-inline: auto;
+        margin-bottom: 8px;
         background-color: #424141;
         color: #fff;
         border: none;
@@ -82,7 +82,6 @@ const InsideFormContainer = styled.div`
 
 const InputGroup = styled.div`
     margin-bottom: 20px;
-
     // Targeting direct child input and input inside .input-with-icon class for focus
     > input:focus,
     > .input-with-icon > input:focus {
@@ -132,11 +131,25 @@ const useQuery = () => {
     return new URLSearchParams(useLocation().search);
 };
 
+function hashPassword(password) {
+    // Hashing logic...
+    return new Promise((resolve, reject) => {
+        // Example hashing function
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        crypto.subtle
+            .digest('SHA-256', data)
+            .then((hashed) => resolve(arrayBufferToHex(hashed)))
+            .catch((err) => reject(err));
+    });
+}
+
 const CreateAccountPage = () => {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
     const [showKeyPairModal, setShowKeyPairModal] = useState(false);
     const [publicKey, setPublicKey] = useState(null);
+    const [serverPayload, setServerPayload] = useState({});
 
     const handleKeyPairGenerated = (generatedPublicKey) => {
         // Convert the public key to a format that can be sent to the server (ArrayBuffer or Base64 encoding)
@@ -152,8 +165,8 @@ const CreateAccountPage = () => {
     });
 
     const query = useQuery();
-    console.log('url query parsed data: ', query);
     const token = query.get('token');
+    console.log('query token: ', token);
     if (token) {
         formData.token = token;
     }
@@ -209,41 +222,29 @@ const CreateAccountPage = () => {
         if (!formData.lastName) errors.lastName = 'Last name is required';
         if (!formData.token) errors.token = 'Auth token is required';
         if (!isValidPassword(formData.password))
-            errors.password =
-                'Password must be at least 8 characters, include one number, one uppercase letter, and one lowercase letter';
+            errors.password = 'Password must be at least 8 characters, include one number, one uppercase letter, and one lowercase letter';
         if (formData.password !== formData.passwordConfirm) errors.passwordConfirm = 'Passwords do not match';
 
         setFormErrors(errors);
 
-        // if (Object.keys(errors).length === 0) {
-        //     setShowKeyPairModal(true); // Open the modal to generate key pair
-        // }
-
-        // Only proceed if there are no errors
         if (Object.keys(errors).length === 0) {
-            // Hash the password
-            const encoder = new TextEncoder();
-            const data = encoder.encode(formData.password);
-            crypto.subtle
-                .digest('SHA-256', data)
-                .then((hashed) => {
-                    const hashedPassword = arrayBufferToHex(hashed); // Convert ArrayBuffer to Hex string for the hashed password
+            try {
+                const hashedPassword = await hashPassword(formData.password);
 
-                    // Extend formData with hashed password and remove passwordConfirm field
-                    setFormData((prevFormData) => {
-                        const { passwordConfirm, ...rest } = prevFormData; // Destructure to remove passwordConfirm from state object
-                        return {
-                            ...rest,
-                            password: hashedPassword,
-                        };
-                    });
+                const payload = {
+                    ...formData,
+                    password: hashedPassword,
+                    publicKey: null, // Placeholder for publicKey to be added later
+                };
+                delete payload.passwordConfirm;
 
-                    setShowKeyPairModal(true); // Open the modal to generate key pair
-                })
-                .catch((err) => {
-                    console.error('Error hashing the password', err);
-                    // Handle hashing error
-                });
+                // Save the payload in state for later use in handleModalClose
+                setServerPayload(payload);
+                setShowKeyPairModal(true);
+            } catch (err) {
+                console.error('Network or server error inside handleSumbit:', err);
+                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
+            }
         }
     };
 
@@ -252,13 +253,13 @@ const CreateAccountPage = () => {
         setShowKeyPairModal(false);
 
         if (publicKey) {
-            // Add the public key to the form data
-            const extendedFormData = {
-                ...formData,
+            // Update serverPayload with publicKey
+            const finalPayload = {
+                ...serverPayload,
                 publicKey: publicKey,
             };
 
-            console.log('final extendedform data: ', extendedFormData);
+            console.log('final finalPayload data: ', finalPayload);
 
             try {
                 const response = await fetch('http://localhost:3001/api/user/create', {
@@ -267,7 +268,7 @@ const CreateAccountPage = () => {
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
-                    body: JSON.stringify(extendedFormData),
+                    body: JSON.stringify(finalPayload),
                 });
 
                 const data = await response.json();
@@ -281,8 +282,7 @@ const CreateAccountPage = () => {
                     // Handle non-200 responses
                     setFormErrors({
                         server:
-                            data.error ||
-                            'Failed to create user, try clicking authentication link from email again or re-registering..',
+                            data.error || 'Failed to create user, try clicking authentication link from email again or re-registering..',
                     });
                 }
             } catch (err) {
@@ -304,12 +304,7 @@ const CreateAccountPage = () => {
                     <form onSubmit={handleSubmit}>
                         <InputGroup>
                             <label>First Name</label>
-                            <input
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
-                            />
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} />
                             {formErrors.firstName && <ErrorMessage>{formErrors.firstName}</ErrorMessage>}
                         </InputGroup>
                         <InputGroup>
@@ -341,9 +336,7 @@ const CreateAccountPage = () => {
                                         }}
                                     />
                                 )}
-                                <ToggleIcon onClick={togglePasswordVisibility}>
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </ToggleIcon>
+                                <ToggleIcon onClick={togglePasswordVisibility}>{showPassword ? <FaEyeSlash /> : <FaEye />}</ToggleIcon>
                             </InputWithIcon>
                             {formErrors.password && <ErrorMessage>{formErrors.password}</ErrorMessage>}
                         </InputGroup>
@@ -371,21 +364,18 @@ const CreateAccountPage = () => {
                                         }}
                                     />
                                 )}
-                                <ToggleIcon onClick={togglePasswordVisibility}>
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </ToggleIcon>
+                                <ToggleIcon onClick={togglePasswordVisibility}>{showPassword ? <FaEyeSlash /> : <FaEye />}</ToggleIcon>
                             </InputWithIcon>
                             {formErrors.passwordConfirm && <ErrorMessage>{formErrors.passwordConfirm}</ErrorMessage>}
                         </InputGroup>
 
                         <button type="submit">Create User</button>
                         {formErrors.submit && <ErrorMessage>{formErrors.submit}</ErrorMessage>}
+                        {formErrors.server && <ErrorMessage>{formErrors.server}</ErrorMessage>}
                     </form>
                 </InsideFormContainer>
             </CreateUserFormContainer>
-            {showKeyPairModal && (
-                <KeyPairGeneratorModal onClose={handleModalClose} onKeyPairGenerated={handleKeyPairGenerated} />
-            )}
+            {showKeyPairModal && <KeyPairGeneratorModal onClose={handleModalClose} onKeyPairGenerated={handleKeyPairGenerated} />}
         </CreateUserContainer>
     );
 };

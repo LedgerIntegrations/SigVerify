@@ -8,7 +8,7 @@ const authenticateToken = (req, res, next) => {
 
     // Check if token is not present
     if (!token) {
-        return res.status(401).json({ error: 'No token provided.' });
+      return res.status(401).json({ error: 'No token provided.' });
     }
 
     // Verify the token
@@ -27,7 +27,7 @@ const authenticateToken = (req, res, next) => {
             return res.status(401).json({ error: 'Invalid SigVerify authentication cookie.' });
       }
         // Token is valid, store user info in request object
-        req.user = decoded.profileId
+        req.user = decoded
         next();
     });
 };

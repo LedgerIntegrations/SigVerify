@@ -5,7 +5,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
-import { ErrorMessage } from '../../Styles/CommonStyles';
+import { ErrorMessage } from '../../component-helpers/styled-elements/CommonStyles';
 import { arrayBufferToHex } from '../../../utils/encoding';
 
 const LoginPageContainer = styled.div`
@@ -163,6 +163,19 @@ const VisibilityIconToggler = styled.span`
     color: #aaa;
 `;
 
+function hashPassword(password) {
+    // Hashing logic...
+    return new Promise((resolve, reject) => {
+        // Example hashing function
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        crypto.subtle
+            .digest('SHA-256', data)
+            .then((hashed) => resolve(arrayBufferToHex(hashed)))
+            .catch((err) => reject(err));
+    });
+}
+
 const LoginPage = () => {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
@@ -177,18 +190,6 @@ const LoginPage = () => {
     const [showpassword, setShowpassword] = useState(false);
     const togglepasswordVisibility = () => {
         setShowpassword(!showpassword);
-    };
-
-    const hashPassword = async (password) => {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        try {
-            const hashed = await crypto.subtle.digest('SHA-256', data);
-            return arrayBufferToHex(hashed);
-        } catch (error) {
-            console.error('Error hashing password:', error);
-            throw new Error('Failed to hash password.');
-        }
     };
 
     const handleInputChange = (event) => {
@@ -209,7 +210,11 @@ const LoginPage = () => {
       setFormErrors(errors);
 
       const hashedPassword = await hashPassword(formData.password);
-      setFormData({ ...formData, password: hashedPassword });
+
+      const payload = {
+          ...formData,
+          password: hashedPassword,
+      };
 
         if (Object.keys(errors).length === 0) {
             try {
@@ -220,7 +225,7 @@ const LoginPage = () => {
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include', // Important for cookies
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify(payload),
                 });
 
                 const data = await response.json();

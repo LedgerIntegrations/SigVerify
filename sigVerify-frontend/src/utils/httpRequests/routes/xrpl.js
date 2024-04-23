@@ -1,3 +1,5 @@
+// /utils/httpRequests/routes/xrpl.js
+
 import axiosInstance from '../axiosInstance';
 
 export const createMemoPaymentTxPayloadRequest = (rAddress, memoData) =>
@@ -6,5 +8,4 @@ export const createMemoPaymentTxPayloadRequest = (rAddress, memoData) =>
         memoData,
     });
 
-export const subscribeToXrplPayloadRequest = (uuid) =>
-    axiosInstance.post('/api/xrpl/subscribeToPayload', uuid);
+export const subscribeToXrplPayloadRequest = (uuid) => axiosInstance.post('/api/xrpl/subscribeToPayload', uuid);
