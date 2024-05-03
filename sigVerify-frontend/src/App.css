@@ -18,11 +18,11 @@ svg {
   align-items: center;
 }
 
-:root {
+/* :root {
   width: 100vw;
   margin: 0;
   text-align: center;
-}
+} */
 
 .buttonPop {
   box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
@@ -36,18 +36,23 @@ svg {
     0px 0px 0px 0px rgba(0, 0, 0, .1);
 }
 
-.backgroundLogoContainer {
-  width: 98%;
+/* .backgroundLogoContainer {
+  width: 100%;
   position: absolute;
   left: 0px;
   top: 25%;
-}
+  display: flex;
+  justify-content: center;
+} */
 
 .backgroundLogo {
-  width: 70%;
-  max-width: 400px;
-  opacity: .035;
+  width: 90vw;
+  max-width: 460px;
+  opacity: .045;
   margin-inline: auto;
+  position: absolute;
+  transform: translateY(50%);
+  transform: translateX(-50%);
 }
 
 #header-bar {

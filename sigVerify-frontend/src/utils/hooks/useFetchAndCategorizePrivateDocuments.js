@@ -18,19 +18,22 @@ function useFetchAndCategorizePrivateDocuments(accountObject) {
                 setDocuments((prev) => ({ ...prev, error: 'Failed to fetch documents' }));
                 return;
             }
-            const allDocuments = privateDocumentsResponse.data.documents;
+            const allUsersPrivateDocuments = privateDocumentsResponse.data.documents;
 
+            // fetch and attach signature status of each document to document object
             const documentsWithStatus = await Promise.all(
-                allDocuments.map(async (document) => {
+                allUsersPrivateDocuments.map(async (document) => {
                     try {
-                        const { data: signatureData } = await getSignaturesStatusForDoc(document.id);
-                        return { ...document, signatureStatus: signatureData };
+                        const { data: signatureStatus } = await getSignaturesStatusForDoc(document.id);
+                        return { ...document, signatureStatus };
                     } catch (error) {
                         console.error('Error fetching signature status for document:', document.id, error);
                         return { ...document, signatureStatus: { error: 'Failed to fetch status' } };
                     }
                 })
             );
+
+            console.log('documentsWithStatus: ', documentsWithStatus);
 
             setDocuments({
                 uploaded: documentsWithStatus.filter((doc) => doc.user_profile_id === accountObject.profile_id && doc.can_add_access),
@@ -39,9 +42,9 @@ function useFetchAndCategorizePrivateDocuments(accountObject) {
                     (doc) =>
                         doc.user_profile_id !== accountObject.profile_id &&
                         !doc.can_add_access &&
-                        doc.signatureStatus.signatureStatus !== 'completed'
+                        doc.signatureStatus.signatureStatus !== 'complete'
                 ),
-                completed: documentsWithStatus.filter((doc) => !doc.can_add_access && doc.signatureStatus.signatureStatus === 'completed'),
+                completed: documentsWithStatus.filter((doc) => !doc.can_add_access && doc.signatureStatus.signatureStatus === 'complete'),
                 error: null,
             });
         } catch (error) {

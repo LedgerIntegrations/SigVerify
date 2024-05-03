@@ -121,6 +121,13 @@
       UNIQUE(document_id, signer_wallet_address)
   );
 
+  -- -- Wallet To Email Mapper
+  -- CREATE TABLE WALLETMAP (
+  --   id serial8 PRIMARY KEY,
+  --   wallet_address character varying(35) NOT NULL,
+  --   email character varying(84) NOT NULL
+  -- )
+
   -- Functions to update the 'updated_at' timestamp
   CREATE OR REPLACE FUNCTION update_modified_at()
   RETURNS TRIGGER AS $$

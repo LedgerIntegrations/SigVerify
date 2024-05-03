@@ -13,7 +13,7 @@ const generateJwtAndSetAsAuthTokenCookie = (res, profileId, userEmail) => {
     res.cookie('authToken', authToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV !== 'development',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 4 * 60 * 60 * 1000, // 4 hours
     });
 };
 

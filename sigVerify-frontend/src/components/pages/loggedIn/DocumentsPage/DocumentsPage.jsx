@@ -154,14 +154,6 @@ function DocumentsPage() {
         completed,
     };
 
-  const categoryColors = {
-      public: '#43c3ea', // Blue
-      uploaded: '#FFC107', // Yellow
-      received: '#f64c21', // Red
-      sent: '#f48414', // Orange
-      completed: '#40bf4a', // Green
-  };
-
     return (
         <OutterDocumentsContainer>
             <DocumentsHeader>

@@ -161,13 +161,26 @@ const SubmitFormButtonContainer = styled.div`
 const LoadingComponent = styled.div``;
 
 const UploadComplete = styled.div`
+    transform: translateY(50%);
+    width: 80vw;
     font-size: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    h6 {
+        width: fit-content;
+        color: green;
+        font-family: 'exo';
+    }
 
     button {
         padding: 10px 20px;
-        font-size: 0.7em;
+        font-size: 0.5em;
         border-radius: 10px;
         border: 1px solid black;
+        font-family: 'Kdam Thmor Pro', sans-serif;
     }
 `;
 
@@ -423,7 +436,7 @@ const UploadDocumentComponent = () => {
                     </>
                 ) : (
                     <UploadComplete>
-                        <h6>File uploaded successfully!</h6>
+                        <h6>File upload successful!</h6>
                         <button className="buttonPop" onClick={() => navigate('/documents')}>
                             View document
                         </button>

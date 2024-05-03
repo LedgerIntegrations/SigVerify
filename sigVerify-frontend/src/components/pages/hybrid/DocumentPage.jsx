@@ -1,7 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AccountContext } from '../../../App';
-import TextFileViewer from '../loggedIn/DocumentsPage/subComponents/TextFileViewer';
 import SignatureModal from '../hybrid/subComponents/SignatureModal';
 import styled from 'styled-components';
 import logoImg from '../../../assets/svLogo.png';
@@ -12,6 +11,7 @@ import LoadingIcon from '../../component-helpers/components/LoadingIcon';
 import { IoIosWarning } from 'react-icons/io';
 import { TbError404 } from 'react-icons/tb';
 import SignaturesList from '../loggedIn/DocumentsPage/subComponents/SignaturesList';
+import DocumentEmbed from './subComponents/DocumentEmbed';
 
 const Loader = styled(LoadingIcon)`
     .loading-icon {
@@ -108,27 +108,12 @@ const Header = styled.header`
 const DocumentInterface = styled.div`
     display: grid;
     gap: 10px;
-    margin-top: 12px;
     width: 100%;
+    grid-template-columns: 1fr; // Default to single column layout on smaller screens
 
     @media (min-width: 620px) {
-        grid-template-columns: repeat(24, 1fr);
+        grid-template-columns: repeat(24, 1fr); // Then switch to more complex grid layout for wider screens
         height: 100%;
-    }
-`;
-
-const PdfViewer = styled.div`
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    padding: 0px 8px;
-    margin-top: 26px;
-    /* grid-column: 4/4; */
-
-    @media (min-width: 620px) {
-        margin-top: 0px;
-        grid-column: 9/24;
-        grid-row: 1;
     }
 `;
 
@@ -185,36 +170,6 @@ const DocumentSignaturesList = styled.div`
     margin: 20px 0px;
     border-radius: 10px;
 `;
-
-function documentEmbed(documentUrl, mimeType, filename) {
-    // Choose embed method based on MIME type
-    const isPdf = mimeType && mimeType === 'application/pdf';
-    const isText = mimeType && mimeType.startsWith('text/');
-    const embedStyle = { width: '100%', height: '100%' };
-
-    if (isPdf) {
-        return (
-            <PdfViewer>
-                <object data={documentUrl} type={mimeType} style={embedStyle}>
-                    <iframe src={documentUrl} style={embedStyle} frameBorder="0">
-                        Your browser does not support embedded documents.
-                    </iframe>
-                </object>
-            </PdfViewer>
-        );
-    }
-
-    if (isText) {
-        return <TextFileViewer presignedUrl={documentUrl} filename={filename} />;
-    }
-
-    // Fallback or for other MIME types, this can be adjusted as needed
-    return (
-        <iframe src={documentUrl} style={embedStyle} frameBorder="0">
-            Your browser does not support iframes.
-        </iframe>
-    );
-}
 
 const DocumentPage = () => {
     const { documentId } = useParams();
@@ -412,7 +367,11 @@ const DocumentPage = () => {
                         />
                     )}
                 </SignatureSection>
-                {documentEmbed(documentData.preSignedUrl, documentData.meta.content_type, documentData.meta.filename)}
+                <DocumentEmbed
+                    documentUrl={documentData.preSignedUrl}
+                    mimeType={documentData.meta.content_type}
+                    filename={documentData.meta.filename}
+                />
             </DocumentInterface>
             {showSignaturesList && (
                 <DocumentSignaturesList>

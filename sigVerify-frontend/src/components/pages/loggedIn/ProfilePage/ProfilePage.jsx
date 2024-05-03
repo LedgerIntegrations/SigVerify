@@ -5,10 +5,8 @@ import NavigationSlider from './subComponents/NavigationSlider';
 import MembershipUpgradeModal from './subComponents/UpgradeMembershipModal';
 import styled from 'styled-components';
 import logoImg from '../../../../assets/svLogo.png';
-// import { fetchUserPublicDocumentsByEmail } from '../../../../utils/httpRequests/routes/documents';
 import { getProfileData, getUserEmail } from '../../../../utils/httpRequests/routes/users';
 import XamanLogin from '../../../XrplDependentComponents/XamanLogin/XamanLogin';
-// import { MdExpandCircleDown } from 'react-icons/md';
 
 const ProfilePage = styled.div`
     display: flex;
@@ -32,7 +30,7 @@ const Block = styled.div`
     width: 100%;
     background-color: #ffffff9d;
     min-width: 280px;
-    height: clamp(340px, 70vh, 90%);
+    /* height: clamp(340px, 70vh, 90%); */
     align-items: center;
     justify-content: center;
     padding: 20px 20px;
@@ -300,9 +298,8 @@ function Profile() {
     };
 
     // Fetch profile and email data logic
-  useEffect(() => {
-
-            console.log('Profile page detected accountObject change:', accountObject);
+    useEffect(() => {
+        console.log('Profile page detected accountObject change:', accountObject);
 
         const fetchProfileData = async () => {
             try {
@@ -384,7 +381,7 @@ function Profile() {
                         )}
 
                         {accountObject.wallet_address && (
-                            <XrplWalletDisplay >
+                            <XrplWalletDisplay>
                                 <h2>Authenticated Wallet:</h2>
                                 <strong>{accountObject.wallet_address}</strong>
                             </XrplWalletDisplay>
@@ -412,9 +409,7 @@ function Profile() {
                                 </ContentStatSection>
                                 <ContentStatSection>
                                     <h5>Blockchain Signatures:</h5>
-                                    <em>
-                                        {accountSignatureTotal}
-                                    </em>
+                                    <em>{accountSignatureTotal}</em>
                                 </ContentStatSection>
                             </AccountTotalsSectionMainContent>
                         </ProfileTierLimitsSection>

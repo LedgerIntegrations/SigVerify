@@ -11,10 +11,6 @@ import DocumentModel from '../models/Document.js';
 
 dotenv.config();
 
-//hard coded routes
-const loginApiRoute = 'http://localhost:3001/api/user/login';
-const loginClientRoute = 'http://localhost:5173/login-user';
-
 const SIGNUP_TOKEN_LENGTH = 32;
 const HTTP_OK = 200;
 const HTTP_INTERNAL_SERVER_ERROR = 500;
@@ -160,9 +156,8 @@ const authenticateLogin = async (req, res) => {
         const hashedEmail = await hashEmail(email);
 
         const userCredentials = await UserModel.getAuthTokenByHashedEmail(hashedEmail);
-
         // first check if user email exists
-        if (userCredentials.auth_token === 1) {
+        if (userCredentials === 1) {
             return res.status(401).json({ error: 'Email does not exist.', loggedIn: false });
         }
 
@@ -199,8 +194,18 @@ const authenticateLogin = async (req, res) => {
             user: userProfileData,
         });
     } catch (err) {
-        console.error('Error processing request', err);
-        return res.status(500).json({ error: 'Internal server error inside user authenticateLogin' });
+        console.error('Error processing login request:', err);
+        if (err.code === 'ENOTFOUND') {
+            res.status(500).json({
+                error: 'Failed to connect to the database. Please check your network or database server.',
+                loggedIn: false,
+            });
+        } else {
+            res.status(500).json({
+                error: 'Internal server error while processing your login. Please try again later.',
+                loggedIn: false,
+            });
+        }
     }
 };
 

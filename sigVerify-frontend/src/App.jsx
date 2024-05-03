@@ -9,18 +9,18 @@ import { Navigate } from 'react-router-dom';
 import kickUnauthenticatedUser from './utils/httpRequests/kickUnauthenticatedUser';
 
 const AppWrapper = styled.div`
-    min-height: 100vh;
-    width: calc(100% - 0px);
+    height: 100%;
+    width: 100%;
     background-color: rgb(236, 235, 235);
 `;
 
 const PageWrapper = styled.div`
     background-color: rgb(236, 235, 235);
     padding: 20px;
-    padding-top: 12vh;
+    padding-top: 90px;
     width: 100%;
-    min-height: 100vh;
-    max-height: fit-content;
+    height: 100%;
+    min-height: 500px;
     display: flex;
     flex-flow: column;
     justify-content: start;
@@ -34,7 +34,7 @@ import EmailRegistrationPage from './components/pages/loggedOut/EmailRegistratio
 import CreateAccountPage from './components/pages/loggedOut/CreateAccountPage';
 import LoginPage from './components/pages/loggedOut/LoginPage';
 import DocumentPage from './components/pages/hybrid/DocumentPage';
-import AllRightsReserved from './components/pages/loggedOut/AllRightsReserved';
+// import AllRightsReserved from './components/pages/loggedOut/AllRightsReserved';
 import ProfileSearchPage from './components/pages/hybrid/ProfileSearchPage';
 // navigation added to all logged in pages
 import NavigationComponent from './components/Navigation/NavigationComponent';
@@ -144,7 +144,7 @@ function App() {
                                 }
                             />
 
-                            <Route path="/all-rights-reserved" element={React.createElement(withNavigation(AllRightsReserved))} />
+                            {/* <Route path="/all-rights-reserved" element={React.createElement(withNavigation(AllRightsReserved))} /> */}
 
                             <Route
                                 path="/document/:documentId"

@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom';
 import logoImage from '../../../assets/svLogo.png';
-// import eSignDoc from '../../../assets/eSignDoc.png';
 import styled from 'styled-components';
 import NavigationComponent from '../../Navigation/NavigationComponent';
-import { FaSignature } from 'react-icons/fa';
 import xummDl from '../../../assets/xummDl.png';
 import eSignDoc from '../../../assets/eSignDoc.png';
 
@@ -25,14 +23,10 @@ const LandingPageContainer = styled.div`
     justify-content: space-between;
     margin-inline: auto;
     padding-top: 115px;
-    width: 100%;
     height: 100%;
     position: relative;
-    overflow: hidden;
-
-    a {
-        text-decoration: none;
-    }
+    overflow-x: hidden; // Prevent horizontal overflow explicitly
+    overflow-y: auto; // Allow vertical scrolling if necessary
 `;
 
 const Navigation = styled(NavigationComponent)``;
@@ -47,6 +41,7 @@ const IntroSection1 = styled.div`
     align-items: center;
     padding: 0px 32px;
     height: 82vh;
+    min-height: 660px;
 
     img {
         width: 150px;
@@ -97,9 +92,7 @@ const CallToActionSmaller1 = styled.p`
     margin-inline: 0px;
     margin-top: 0px;
     position: relative;
-    /* color: rgb(99, 99, 99); */
     color: #0967f4;
-
     z-index: 10;
 `;
 
@@ -129,7 +122,7 @@ const RegisterButton = styled.div`
 
             &:hover {
                 background-color: #2f2d2d;
-                font-size: .94em;
+                font-size: 0.94em;
             }
         }
     }
@@ -147,10 +140,6 @@ const CallToActionImage = styled.section`
         left: 80px;
         opacity: 1;
 
-        @media (min-width: 500px) {
-            /* left: 60px; */
-        }
-
         @media (min-width: 860px) {
             width: 640px;
             left: 120px;
@@ -164,6 +153,7 @@ const SectionOne = styled.section`
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 100%;
 
     h5 {
         font-size: 20px;
@@ -452,7 +442,7 @@ function LandingPage() {
 
                 <section>
                     <h5>
-                        Copyright© 2024 <Link to="/all-rights-reserved">Ledger Integrations LLC - All Rights Reserved</Link>
+                        Copyright© 2024 <Link to="/">Ledger Integrations LLC - All Rights Reserved</Link>
                     </h5>
                     <div>
                         <Link to="/">Privacy Policy</Link>

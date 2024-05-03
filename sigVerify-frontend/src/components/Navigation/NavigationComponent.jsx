@@ -6,7 +6,6 @@ import { RiTwitterXLine } from 'react-icons/ri';
 import { FaLinkedinIn } from 'react-icons/fa6';
 import { SiDiscord } from 'react-icons/si';
 import { SiLinktree } from 'react-icons/si';
-import TogglerButton from './utils/TogglerButton';
 import { AccountContext } from '../../App';
 import kickUnauthenticatedUser from '../../utils/httpRequests/kickUnauthenticatedUser';
 import { deleteUserXrplWallet } from '../../utils/httpRequests/routes/users';
@@ -36,9 +35,10 @@ const NavigationContainer = styled.div`
     position: fixed;
     top: 0px;
     left: 0px;
-    background-color: rgb(236, 235, 235, 1);
+    background-color: rgb(236, 235, 235, 0.95);
     flex-direction: column;
     padding: 2vh 4vw;
+    min-height: 68px;
     height: 11vh;
     width: 100%;
     z-index: 20;
@@ -48,14 +48,6 @@ const NavigationHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* padding-inline: 10px; */
-`;
-
-const MiddleNav = styled.div`
-    position: absolute;
-    top: 38px;
-    left: 50%;
-    transform: translate(-50%, -50%);
 `;
 
 const NavIconsDiv = styled.div`
@@ -72,7 +64,6 @@ const NavigationMobileHamburger = styled.div`
     padding: 7px 10px;
     margin: 10px;
     margin-left: 0px;
-    // border: 1px solid black;
     border-radius: 10px;
     background-color: white;
 `;
@@ -85,23 +76,22 @@ const HamburgerLine = styled.div`
 
 const NavigationList = styled.ul`
     width: 100%;
-    height: 90vh;
+    height: calc(100vh - 65px);
     background-color: rgb(236, 235, 235, 0.95);
     list-style: none;
     display: flex;
-    gap: 2px;
     flex-direction: column;
     align-items: center;
     margin: 0px;
-    padding-block: 0px;
-    padding-inline: 0px;
-    padding-top: 3vh;
-    flex-grow: 1;
+    padding-block: 50px;
     position: absolute;
-    top: 14vh;
+    padding-inline-start: 0px;
+    top: 72px;
     left: 0px;
     z-index: 20;
+    overflow-y: auto;
     transform: translateX(-100%);
+    transition: transform 0.5s;
 `;
 
 const NavigationListAnimated = styled(NavigationList)`
@@ -112,10 +102,10 @@ const HamburgerButtonActivated = styled(NavigationMobileHamburger)`
     box-shadow: ${(props) =>
         props.$hamburgerIsOpen
             ? `inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
-       7px 7px 20px 0px rgba(0, 0, 0, .1),
+       7px 3px 5px 0px rgba(0, 0, 0, 0),
        0px 0px 0px 0px rgba(0, 0, 0, .1)`
             : `inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-       7px 7px 20px 0px rgba(0, 0, 0, .1),
+       7px 3px 5px 0px rgba(0, 0, 0, .1),
        4px 4px 5px 0px rgba(0, 0, 0, .1)`};
 
     ${HamburgerLine} {
@@ -133,10 +123,10 @@ const SettingsButtonActivated = styled(NavigationMobileHamburger)`
     box-shadow: ${(props) =>
         props.$settingsIsOpen
             ? `inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5),
-       7px 7px 20px 0px rgba(0, 0, 0, .1),
+       7px 3px 5px 0px rgba(0, 0, 0, 0),
        0px 0px 0px 0px rgba(0, 0, 0, .1)`
             : `inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-       7px 7px 20px 0px rgba(0, 0, 0, .1),
+       7px 3px 5px 0px rgba(0, 0, 0, .1),
        4px 4px 5px 0px rgba(0, 0, 0, .1)`};
     color: #777;
 
@@ -169,8 +159,6 @@ const SettingsListAnimated = styled(NavigationList)`
         font-size: 16px;
         font-style: italic;
         color: #9e9c9c;
-        /* border: 1px solid black; */
-        /* padding: 5px 20px; */
         border-radius: 5px;
     }
 `;
@@ -200,7 +188,6 @@ const SettingsItem = styled.li`
     width: 90%;
     max-width: 480px;
     padding: 14px 20px;
-    background-color: #ffffffac;
 
     p {
         text-align: start;
@@ -270,7 +257,7 @@ const LogoNavigation = styled(Link)`
 `;
 
 const CompanyName = styled.h4`
-    margin-top: 2.7vh;
+    margin-top: 22.5px;
     margin-bottom: 0px;
     color: black;
     font-size: 0.8em;
@@ -287,7 +274,6 @@ const LogoutButton = styled.button`
     border: none;
     align-self: center;
     margin-top: 20px;
-    /* background-color: #ededed; */
     background-color: #f24d4d;
 
     &:hover {
@@ -486,14 +472,6 @@ const NavigationComponent = () => {
                             <CompanyName>Sig Verify</CompanyName>
                         </BaseLogo>
                     )}
-                    {/* <MiddleNav>
-                    <CompanyName>Sig Verify</CompanyName>
-                    <SocialMediaBox>
-                        <SocialMediaLink>{twitterSvg}</SocialMediaLink>
-                        <SocialMediaLink>{linkedInSvg}</SocialMediaLink>
-                        <SocialMediaLink>{discordSvg}</SocialMediaLink>
-                    </SocialMediaBox>
-                </MiddleNav> */}
                     <NavIconsDiv>
                         {accountObject.loggedIn ? (
                             <>
@@ -587,17 +565,6 @@ const NavigationComponent = () => {
                                     </NavigationLink>
                                 </NavigationItem>
                             </>
-
-                            {/* <NavigationItem>
-                            <NavigationLink to="/documents" className="buttonPop">
-                                ABOUT
-                            </NavigationLink>
-                        </NavigationItem>
-                        <NavigationItem>
-                            <NavigationLink to="/xrpl-ui" className="buttonPop">
-                                FAQ
-                            </NavigationLink>
-                        </NavigationItem> */}
                         </>
                     )}
                 </NavigationListAnimated>
@@ -611,20 +578,6 @@ const NavigationComponent = () => {
                             Disconnect
                         </SettingsButton>
                     </SettingsItem>
-                    {/* <SettingsItem>
-                    <section>
-                        <strong>Upgrade membership plan.</strong>
-                        <SettingsButton className="buttonPop">Upgrade</SettingsButton>
-                    </section>
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
-                </SettingsItem>
-                <SettingsItem>
-                    <section>
-                        <strong>Allow current location.</strong>
-                        <TogglerButton />
-                    </section>
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Doloremque, molestiae!</p>
-                </SettingsItem> */}
                 </SettingsListAnimated>
             </NavigationContainer>
         </>

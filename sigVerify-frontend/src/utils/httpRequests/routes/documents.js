@@ -28,9 +28,7 @@ export const uploadDocument = async (formData) => {
 
 export const deletePrivateUnsentDocument = (documentId) => axiosInstance.delete(`/api/document/delete/unsent/${documentId}`)
 
-
 //! DOCUMENT ACCESS
-
 // * PUBLIC
 
 // * PRIVATE

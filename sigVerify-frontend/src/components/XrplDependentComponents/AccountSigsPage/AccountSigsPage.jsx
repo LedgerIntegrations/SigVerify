@@ -1,9 +1,9 @@
 import './AccountSigsPage.css';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AccountContext } from '../../../App';
 import SigCard from '../SigCard/SigCard';
 
-// currently taken out of application temporarily
+import { findAllAccountPaymentTransactions } from '../../../utils/httpRequests/routes/signatures';
 
 function AccountSigsPage() {
     const [accountObject, setAccountObject] = useContext(AccountContext);
@@ -11,25 +11,18 @@ function AccountSigsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    console.log(sigObjects)
+    console.log(sigObjects);
 
     useEffect(() => {
         const fetchSigObjects = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/user/findAllAccountPaymentTransactionsToSigVerifyWallet', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ rAddress: accountObject.wallet }),
-                });
+                const response = await findAllAccountPaymentTransactions(accountObject.wallet);
 
-                if (!response.ok) {
+                if (response.status !== 200) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
 
-                const result = await response.json();
-                setSigObjects(result);
+                setSigObjects(response.data);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -37,25 +30,31 @@ function AccountSigsPage() {
             }
         };
 
-        fetchSigObjects();
-    }, [accountObject.wallet]); // Added accountObject.wallet as a dependency
+        if (accountObject.wallet) {
+            fetchSigObjects();
+        }
+    }, [accountObject.wallet]); // Ensures this runs when accountObject.wallet changes
 
     return (
         <div id="accountSigsPageMainContainer">
             <div id="sigs-header">
-                <h2>ACCOUNT SIGNATURES <em>...{accountObject.wallet.slice(accountObject.wallet.length - 7, accountObject.wallet.length)}</em></h2>
-                <p>Signatures: <em>{sigObjects ? sigObjects.length : "No signatures found."}</em></p>
+                <h2>
+                    ACCOUNT SIGNATURES{' '}
+                    <em>...{accountObject.wallet.slice(accountObject.wallet.length - 7, accountObject.wallet.length)}</em>
+                </h2>
+                <p>
+                    Signatures: <em>{sigObjects ? sigObjects.length : 'No signatures found.'}</em>
+                </p>
             </div>
             {isLoading ? (
                 <div className="spinner-container">
-                    <div className="spinner-circle">
-                    </div>
+                    <div className="spinner-circle"></div>
                 </div>
             ) : error ? (
                 <p>Error: {error}</p>
             ) : sigObjects ? (
                 <div id="accountSigsPageContainer">
-                    {sigObjects.map(sigObject => (
+                    {sigObjects.map((sigObject) => (
                         <SigCard sigObject={sigObject} />
                     ))}
                 </div>

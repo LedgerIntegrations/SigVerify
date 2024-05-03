@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import axiosInstance from '../httpRequests/axiosInstance';
 import { buffToPem, pemToBuff } from './helpers';
 
+// currently taken out of application
+
 const KeyReadOnlyTextArea = styled.textarea`
     width: 100%;
     height: 100px;

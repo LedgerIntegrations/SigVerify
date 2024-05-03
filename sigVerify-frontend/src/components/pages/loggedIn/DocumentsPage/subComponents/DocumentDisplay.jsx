@@ -50,6 +50,7 @@ const Document = styled.article`
     font-size: 0.65em;
     box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 2px 2px 2px 0px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow-y: auto;
 `;
 
 const DocumentContents = styled.div`
@@ -57,6 +58,7 @@ const DocumentContents = styled.div`
     flex-direction: column;
     padding: 10px;
     width: 100%;
+    align-items: flex-start;
 
     .document-card-title {
         display: flex;
@@ -64,6 +66,7 @@ const DocumentContents = styled.div`
         justify-content: space-between;
         flex-wrap: wrap;
         padding: 0px 4px;
+        width: 100%;
 
         #uploadDate {
             margin-inline: 5px;
@@ -80,7 +83,6 @@ const DocumentContents = styled.div`
             text-decoration: underline;
             font-size: 1.5em;
             letter-spacing: 0.1px;
-
         }
 
         div {
@@ -93,25 +95,22 @@ const DocumentContents = styled.div`
                 color: #7070708a;
             }
         }
+
+        @media (max-width: 520px) {
+            font-size: 0.85em;
+        }
     }
 
     .main-content {
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        justify-content: space-between;
         padding: 0px 10px;
-        padding-left: 8px;
-        width: 100%;
-        max-width: 510px;
+        padding-left: 10px;
         margin-inline: auto;
         margin-top: 10px;
-        margin-left: 8px;
-        font-family: 'Exo', sans-serif;
-        font-size: 1.2em;
+        margin-left: 12px;
+        width: 90%;
 
-        @media (min-width: 560px) {
-            padding-inline: 30px;
+        @media (max-width: 520px) {
+            padding: 0 5px;
         }
 
         section {
@@ -182,7 +181,13 @@ const DocumentDetailsContent = styled.div`
     @media (min-width: 520px) {
         grid-template-columns: repeat(2, 1fr);
         gap: 3px;
-        grid-auto-rows: minmax(10px, auto);
+        font-size: 1.15em;
+        margin-left: 16px;
+    }
+    @media (max-width: 519px) {
+        grid-template-columns: 1fr;
+        gap: 1px;
+        margin-left: 8px;
     }
 `;
 
@@ -237,7 +242,6 @@ const RotatableIcon = styled(MdExpandMore)`
     transition: transform 0.2s;
     box-shadow: inset 0.5px 0.5px 1px 0px rgb(35, 35, 35);
     position: relative;
-
 `;
 
 const RecipientToggleBox = styled.div`
@@ -338,7 +342,11 @@ function getIcon(displayCategory) {
     switch (displayCategory) {
         case 'public':
             return {
-                icon: <FiBookOpen style={{ strokeWidth: '2px', height: '15px', width: '15px', position: 'relative', top: '1px', left:'.5px' }} />,
+                icon: (
+                    <FiBookOpen
+                        style={{ strokeWidth: '2px', height: '15px', width: '15px', position: 'relative', top: '1px', left: '.5px' }}
+                    />
+                ),
                 color: '#43c3ea',
             }; // Green
         case 'uploaded':
@@ -348,7 +356,7 @@ function getIcon(displayCategory) {
         case 'sent':
             return { icon: <BsSend style={{ strokeWidth: '1px', height: '13px', width: '13px' }} />, color: '#f48414' };
         case 'completed':
-        return { icon: <CiCircleCheck style={{ strokeWidth: '2px', height: '17px', width: '17px' }}/>, color: '#40bf4a' };
+            return { icon: <CiCircleCheck style={{ strokeWidth: '2px', height: '17px', width: '17px' }} />, color: '#40bf4a' };
         default:
             return { icon: <BsUnlock />, color: '#9E9E9E' };
     }

@@ -5,10 +5,7 @@ import * as signatureController from '../controllers/signatureControllers.js';
 
 const router = express.Router();
 
-// router.get('/api/signature/:signatureId', );
-
 // * GET ROUTES
-// router.get('/api/signatures/public/document/:documentId', signatureController.getPublicSignatures);
 router.get(
     '/api/signatures/document/:documentId',
     conditionallyAuthenticateToken,
@@ -16,7 +13,6 @@ router.get(
 );
 
 //! AUTHENTICATED ROUTES (MUST BE LOGGED IN)
-// router.get('/api/signatures/private/document/:documentId', authenticateToken, signatureController.getPrivateSignatures);
 router.get('/api/signatures/user', authenticateToken, signatureController.getSignaturesByUserProfileId);
 router.get(
     '/api/signatures/status/document/:documentId',

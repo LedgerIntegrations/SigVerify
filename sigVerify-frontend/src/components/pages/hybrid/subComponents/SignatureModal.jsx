@@ -24,7 +24,7 @@ const SignatureModalContainer = styled.div`
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 450px;
+    max-width: 360px;
     max-height: 80vh;
     overflow-y: auto;
     z-index: 1005;
@@ -33,6 +33,7 @@ const SignatureModalContainer = styled.div`
 const QrDiv = styled.div`
     color: white;
     display: flex;
+    margin-inline: auto;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -50,7 +51,7 @@ const QrDiv = styled.div`
 
     a {
         font-size: 0.75rem;
-        max-width: 60vw;
+        max-width: fit-content;
         padding: 0.7rem;
         color: white;
     }
@@ -71,7 +72,6 @@ const SignatureModal = ({ documentId, onClose, documentHash, onSignatureSuccess 
     const [waitingForSignature, setWaitingForSignature] = useState(false);
     const [showCustomAlert, setShowCustomAlert] = useState(false);
     const [customAlertMessage, setCustomAlertMessage] = useState('');
-    // const [shouldGeneratePayload, setShouldGeneratePayload] = useState(false);
     const [payloadResolved, setPayloadResolved] = useState(false);
     const [accountObject] = useContext(AccountContext);
     const navigate = useNavigate();

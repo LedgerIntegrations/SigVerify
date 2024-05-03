@@ -2,6 +2,10 @@
 import axiosInstance from '../axiosInstance';
 
 // * UNPROTECTED
+export const findAllAccountPaymentTransactions = (rAddress) => {
+    return axiosInstance.post('/api/user/findAllAccountPaymentTransactionsToSigVerifyWallet', { rAddress });
+};
+
 export const getDocumentSignatures = (documentId) => axiosInstance.get(`/api/signatures/document/${documentId}`);
 
 // get signature objects for an array of signature Ids

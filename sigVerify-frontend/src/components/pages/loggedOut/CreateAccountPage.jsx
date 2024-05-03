@@ -9,6 +9,8 @@ import KeyPairGeneratorModal from '../../../utils/rsaKeyHandlers/KeyPairGenerato
 import { isValidPassword } from '../../../utils/regexValidityChecks';
 import { arrayBufferToHex } from '../../../utils/encoding';
 
+import { createUser } from '../../../utils/httpRequests/routes/users';
+
 //TODO: When registering a email that already exists the error message shown to use is "Request failed with status code 400", need to make message more detailed for user.
 
 const CreateUserContainer = styled.div`
@@ -16,8 +18,11 @@ const CreateUserContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    height: 100dvh;
     background-color: #141414;
+    @media (min-width: 560px) {
+        padding-bottom: 30px;
+    }
 `;
 
 const MainTitle = styled.h1`
@@ -26,15 +31,15 @@ const MainTitle = styled.h1`
     color: #fff;
     text-align: start;
     width: 86vw;
-    margin-top: 8vh;
+    margin-top: 90px;
 `;
 
 const BackgroundLogo = styled.img`
-    height: 200px;
+    /* height: 200px;
     width: 200px;
     position: absolute;
     top: 30%;
-    opacity: 0.5;
+    opacity: 0.5; */
 `;
 
 const CreateUserFormContainer = styled.div`
@@ -166,7 +171,7 @@ const CreateAccountPage = () => {
 
     const query = useQuery();
     const token = query.get('token');
-    console.log('query token: ', token);
+
     if (token) {
         formData.token = token;
     }
@@ -262,27 +267,19 @@ const CreateAccountPage = () => {
             console.log('final finalPayload data: ', finalPayload);
 
             try {
-                const response = await fetch('http://localhost:3001/api/user/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(finalPayload),
-                });
+                const response = await createUser(finalPayload);
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    console.log('Successfully created a user!', data);
-                    const userData = data.user;
+                if (response.status === 200) {
+                    console.log('Successfully created a user!', response.data);
+                    const userData = response.data.user;
 
                     setAccountObject({ ...userData, loggedIn: true });
                 } else {
                     // Handle non-200 responses
                     setFormErrors({
                         server:
-                            data.error || 'Failed to create user, try clicking authentication link from email again or re-registering..',
+                            response.data.error ||
+                            'Failed to create user, try clicking authentication link from email again or re-registering.',
                     });
                 }
             } catch (err) {
@@ -298,7 +295,7 @@ const CreateAccountPage = () => {
                 Create Your <br />
                 Account
             </MainTitle>
-            <BackgroundLogo src={logoImage} />
+            <BackgroundLogo className="backgroundLogo" src={logoImage} />
             <CreateUserFormContainer>
                 <InsideFormContainer>
                     <form onSubmit={handleSubmit}>

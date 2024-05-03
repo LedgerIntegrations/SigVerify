@@ -175,17 +175,18 @@ class DocumentAccessModel {
      * @param {number} userProfileId - The ID of the user profile to fetch accessible documents for.
      * @returns {Promise<Array>} An array of documents accessible to the user.
      */
-    // TODO: modify to search by not only profileId, but also wallet_address or email from the document_access table
+  // TODO: modify to search by not only profileId, but also wallet_address or email from the document_access table
+  // currently gets all user documents and
     static async getAllGivenAccessAndUploadedPrivateDocuments(userProfileId, userEmail) {
         const client = await this.poolConnect();
         try {
             const query = `
-          SELECT DISTINCT d.* FROM documents d
-          LEFT JOIN document_access da ON da.document_id = d.id
-          WHERE (d.user_profile_id = $1 OR da.email = $2)
-          AND d.public = false
-          ORDER BY d.can_add_access DESC, d.id DESC;
-        `;
+              SELECT DISTINCT d.* FROM documents d
+              LEFT JOIN document_access da ON da.document_id = d.id
+              WHERE (d.user_profile_id = $1 OR da.email = $2)
+              AND d.public = false
+              ORDER BY d.can_add_access DESC, d.id DESC;
+            `;
 
             const params = [userProfileId, userEmail];
 

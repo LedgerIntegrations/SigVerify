@@ -1,11 +1,14 @@
 import { sendEmail } from '../utils/index.js';
 
 const sendAuthTokenEmail = async (email, token) => {
+
+    const BASE_URL = process.env.NODE_ENV === 'production' ? "https://sigverify.com" : 'http://localhost:5173';
+
     const emailBody = `
         <html>
             <body>
                 <p>Please click the link below to verify your email:</p>
-                <a href="http://localhost:5173/create-user/?token=${token}" target="_blank">Verify Email</a>
+                <a href="${BASE_URL}/create-user/?token=${token}" target="_blank">Verify Email</a>
                 <p>If you did not request this, please ignore this email.</p>
             </body>
         </html>

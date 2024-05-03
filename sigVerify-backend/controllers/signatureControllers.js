@@ -4,7 +4,6 @@ import SignatureModel from '../models/Signature.js';
 import DocumentModel from '../models/Document.js';
 import DocumentAccessModel from '../models/DocumentAccess.js';
 
-
 const checkAccess = async (documentId, userEmail) => {
     const accessObjects = await DocumentAccessModel.getAccessObjectsByDocumentId(documentId);
     return accessObjects.some((object) => object.email === userEmail);
@@ -75,27 +74,28 @@ export const getDocumentSignatureStatus = async (req, res) => {
     try {
         // if document is still being processed (private and can_add_access still)
         const document = await DocumentModel.getAnyDocumentById(documentId);
+
+        if (!document) {
+            return res.status(400).json({ message: 'This document does not exist, or was not found.' });
+        }
+
         if (!document.public && document.can_add_access) {
             return res.status(200).json({
                 signatureStatus: 'edit',
             });
         }
 
-        // checks total signatures vs total recipients returns signature_status prop as ('completed', 'partial', or 'pending')
-        // TODO: need to imporove the accuracy of this comparison
-        const signatureStatus = await SignatureModel.getDocumentSignatureStatus(documentId);
+        const documentSignatures = await SignatureModel.getSignaturesByDocumentId(documentId);
+        const documentAccessObjects = await DocumentAccessModel.getAccessObjectsByDocumentId(documentId);
 
-        // Check if the signature status could not be found or retrieved
-        if (!signatureStatus) {
-            return res.status(404).json({ message: 'Document not found or no signatures exist.' });
+        if (documentSignatures.length === documentAccessObjects.length) {
+            return res.status(200).json({
+                signatureStatus: 'complete',
+            });
         }
 
-        // Return the signature status in the response
         return res.status(200).json({
-            documentId: signatureStatus.document_id,
-            totalRecipients: signatureStatus.total_recipients,
-            totalSignatures: signatureStatus.total_signatures,
-            signatureStatus: signatureStatus.signature_status,
+            signatureStatus: 'pending',
         });
     } catch (error) {
         // Log the error and respond with a generic server error message

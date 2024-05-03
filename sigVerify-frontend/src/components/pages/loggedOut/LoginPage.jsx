@@ -8,13 +8,16 @@ import styled from 'styled-components';
 import { ErrorMessage } from '../../component-helpers/styled-elements/CommonStyles';
 import { arrayBufferToHex } from '../../../utils/encoding';
 
+import { loginUser } from '../../../utils/httpRequests/routes/users';
+
 const LoginPageContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    height: 100dvh;
     background-color: #141414;
+
 `;
 
 const BackgroundLogo = styled.img`
@@ -40,6 +43,7 @@ const LoginPageTitle = styled.h1`
     text-align: start;
     width: 86vw;
     margin-top: 8vh;
+    margin-top: 90px;
     z-index: 5;
 `;
 
@@ -207,41 +211,40 @@ const LoginPage = () => {
         if (!formData.email) errors.email = 'Email is required';
         if (!formData.password) errors.password = 'Password is required.';
 
-      setFormErrors(errors);
-
-      const hashedPassword = await hashPassword(formData.password);
-
-      const payload = {
-          ...formData,
-          password: hashedPassword,
-      };
+        setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
             try {
+                const hashedPassword = await hashPassword(formData.password);
+                const payload = {
+                    ...formData,
+                    password: hashedPassword,
+                };
+                const response = await loginUser(payload);
 
-                const response = await fetch('http://localhost:3001/api/user/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // Important for cookies
-                    body: JSON.stringify(payload),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    console.log('Successfully logged in!', data);
-                    const userData = data.user;
-                    setAccountObject({ ...userData, loggedIn: true });
-                    setIsLogged(true); // Set logged in state only on success
+                if (response.status === 200) {
+                    console.log('Successfully logged in!', response.data);
+                    setAccountObject({ ...response.data.user, loggedIn: true });
+                    setIsLogged(true);
                 } else {
-                    // Handle non-200 responses
+                    // Parses the response to get error message
+                    const data = await response.json(); // Ensure the response is parsed as JSON
+                    // Set the error message from the server if available
                     setFormErrors({ server: data.error || 'Failed to login.' });
                 }
             } catch (err) {
-                console.error('Network or server error:', err);
-                setFormErrors({ server: err.message || 'Failed to login due to a network or server error.' });
+                // Checks if the error is due to an unsuccessful response or a network issue
+                if (err.isAuthError && err.response) {
+                    // If the error is identified as an authentication error and has a response
+                    setFormErrors({ server: err.response.data.error || 'Authentication error.' });
+                } else if (err.response) {
+                    // If the error comes with a response, handle it
+                    setFormErrors({ server: err.response.data.error || 'Failed to login.' });
+                } else {
+                    // If the error is not from a response, handle it as a network error
+                    console.error('Network or server error:', err);
+                    setFormErrors({ server: err.message || 'Failed to login due to a network or server error.' });
+                }
             }
         }
     };
@@ -284,9 +287,7 @@ const LoginPage = () => {
                             </InputGroup>
 
                             <button type="submit">Login</button>
-                            {formErrors.server && (
-                                <ErrorMessage style={{ marginTop: '10px' }}>{formErrors.server}</ErrorMessage>
-                            )}
+                            {formErrors.server && <ErrorMessage style={{ marginTop: '10px' }}>{formErrors.server}</ErrorMessage>}
                         </form>
                     )}
                 </LoginFormContainer>
