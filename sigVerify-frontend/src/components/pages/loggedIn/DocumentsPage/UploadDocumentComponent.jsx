@@ -1,15 +1,11 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserPublicKeyAndWalletByHashedEmail } from '../../../../utils/httpRequests/routes/users';
-import { webCryptoApiHybridEncrypt } from '../../../../utils/rsaKeyHandlers/helpers';
 import { uploadDocument } from '../../../../utils/httpRequests/routes/documents';
 import ErrorModal from '../../../../utils/reusedComponents/ErrorModal';
 import { AccountContext } from '../../../../App';
-import LoadingIcon from '../../../helperComponents/LoadingIcon/LoadingIcon';
-import { FaTrashAlt } from 'react-icons/fa';
-
-// import { upload } from '../../../../../../sigVerify-backend/config/s3Bucket';
+import LoadingIcon from '../../../component-helpers/components/LoadingIcon';
+// import { FaTrashAlt } from 'react-icons/fa';
 
 //? becoming large component, potential need to modularize functionality
 //!! NEED TO MODULARIZE COMPONENT SOON GETTING TOO LARGE
@@ -146,132 +142,85 @@ const SubmitFormButtonContainer = styled.div`
         color: #888;
 
         &:hover {
+            /* color: black; */
+        }
+
+        &:not(:disabled) {
+            cursor: pointer; /* Reset cursor for enabled state */
             color: black;
+        }
+
+        &:disabled {
+            color: lightgray; /* Text color for disabled state */
+            background-color: #f9f9f9; /* Background color for disabled state */
+            border: 1px solid #ccc; /* Lighter border color for disabled state */
         }
     }
 `;
 
-const RecipientTextInput = styled.input`
-    font-size: 0.8em;
-`;
-
 const LoadingComponent = styled.div``;
 
-const UploadComplete = styled.div``;
+const UploadComplete = styled.div`
+    transform: translateY(50%);
+    width: 80vw;
+    font-size: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
-const EncryptDocumentInput = styled.div`
+    h6 {
+        width: fit-content;
+        color: green;
+        font-family: 'exo';
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 0.5em;
+        border-radius: 10px;
+        border: 1px solid black;
+        font-family: 'Kdam Thmor Pro', sans-serif;
+    }
+`;
+
+const PublicDocumentInput = styled.div`
     input {
         width: 50%;
     }
 `;
 
-const EmailTextInputBoxesContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-`;
-
-const AddEmailInputButton = styled.button`
-    font-size: 0.8em;
-`;
-
-const DeleteEmailIcon = styled(FaTrashAlt)`
-    cursor: pointer;
-    margin-left: 10px;
-    color: red;
-`;
-
 const UploadDocumentComponent = () => {
     const navigate = useNavigate();
-
-    // eslint-disable-next-line no-unused-vars
-    const [accountObject, setAccountObject] = useContext(AccountContext);
+    const [accountObject, setAccountObject] = useContext(AccountContext); // Assuming this is correct context usage
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
-
     const [isDragActive, setIsDragActive] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [isHashing, setIsHashing] = useState(false);
+    const [publicDocument, setPublicDocument] = useState(false);
+
     const [loading, setLoading] = useState(false); // array of temp uploaded files
     const [uploadComplete, setUploadComplete] = useState(false);
-    const [documents, setDocuments] = useState([]); // This will hold all documents
-    const [encryptDocument, setEncryptDocument] = useState(true); // encryption by default
-
-    const [signerEmails, setSignerEmails] = useState([]);
-    const [viewerEmails, setViewerEmails] = useState([]);
 
     const [customFormData, setCustomFormData] = useState({
         title: '',
         description: '',
         category: '',
+        publicFlag: false, // This will be updated directly in the state
     });
+    const [isFormValid, setIsFormValid] = useState(false);
 
-    const handleSignerEmailChange = (index, value) => {
-        const updatedEmails = [...signerEmails];
-        updatedEmails[index] = value;
-        setSignerEmails(updatedEmails);
-    };
-
-    const handleViewerEmailChange = (index, value) => {
-        const updatedEmails = [...viewerEmails];
-        updatedEmails[index] = value;
-        setViewerEmails(updatedEmails);
-    };
-
-    // Functions to add a new email field
-    const addSignerEmailField = () => {
-        setSignerEmails([...signerEmails, '']);
-    };
-
-    const addViewerEmailField = () => {
-        setViewerEmails([...viewerEmails, '']);
-    };
-
-    const removeSignerEmailField = (index) => {
-        setSignerEmails(signerEmails.filter((_, i) => i !== index));
-    };
-
-    const removeViewerEmailField = (index) => {
-        setViewerEmails(viewerEmails.filter((_, i) => i !== index));
-    };
-
-    async function returnArrayOfSha256HashedEmails(arrayOfEmails) {
-        const hashedEmailPromises = arrayOfEmails.map((email) => return256Hash(email.trim()));
-        const hashedEmailArray = await Promise.all(hashedEmailPromises);
-        console.log('hashed email array: ', hashedEmailArray);
-        return hashedEmailArray;
-    }
-
-    //! later want to seperate this to return pubKeys and wallets seperately for unecrypted docs to unauthenticated users (no reg wallet yet)
-    //* [ raw email ] --> [ { emailHash, publicKey, wallet } ]
-    async function fetchPublicKeysAndWalletsForEmails(emailsArray, usersMustHaveAuthenticatedWallets) {
-        // Hash the emails
-        const hashedEmails = await returnArrayOfSha256HashedEmails(emailsArray);
-
-        // Fetch public keys and wallets for each hashed email
-        const publicKeyHashedEmailAndWalletPromises = hashedEmails.map(async (hashedEmail, index) => {
-            try {
-                const response = await fetchUserPublicKeyAndWalletByHashedEmail(hashedEmail);
-                const userData = response.data.data;
-
-                if (usersMustHaveAuthenticatedWallets && userData.verifiedWallet === null) {
-                    throw new Error('Found a user without an authenticated xrpl wallet.');
-                }
-                return {
-                    emailHash: hashedEmail,
-                    publicKeyBase64: userData.publicKey,
-                    wallet: userData.verifiedWallet,
-                };
-            } catch (error) {
-                setErrorMessage(
-                    `Either the user does not exist or they have not authenticated a xrpl wallet for email: ${emailsArray[index]} `
-                );
-                setShowErrorModal(true);
-                throw new Error('Invalid email or a recipient user wallet not authenticated.');
-            }
-        });
-
-        // Return the array of public keys and wallets
-        return Promise.all(publicKeyHashedEmailAndWalletPromises);
-    }
+    // Form validation effect
+    useEffect(() => {
+        const isValid =
+            customFormData.title.trim() &&
+            customFormData.description.trim() &&
+            customFormData.category.trim() &&
+            uploadedFile && // Ensure a file is selected
+            !isHashing; // Ensure hashing is completed
+        setIsFormValid(isValid);
+    }, [customFormData, uploadedFile, isHashing]); // This effect depends on these values
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -281,179 +230,85 @@ const UploadDocumentComponent = () => {
         }));
     };
 
-    async function readFileAsArrayBuffer(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => resolve(event.target.result);
-            reader.onerror = (error) => reject(error);
-            reader.readAsArrayBuffer(file);
-        });
-    }
-
-    const arrayBufferToBase64 = async (buffer) => {
-        const bytes = await new Uint8Array(buffer);
-        const binary = await bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
-        return btoa(binary);
-    };
-
-    async function return256Hash(data) {
-        const encoder = new TextEncoder();
-        const buffer = encoder.encode(data);
-        const hashBuffer = await window.crypto.subtle.digest('SHA-256', buffer);
-        return Array.from(new Uint8Array(hashBuffer))
-            .map((b) => b.toString(16).padStart(2, '0'))
-            .join('');
-    }
-
-    const return512HashOfArrayBuffer = async (data) => {
-        const hashedData = await window.crypto.subtle.digest('SHA-512', data);
-        return hashedData;
+    const handlePublicChange = (e) => {
+        const checked = e.target.checked;
+        setPublicDocument(checked);
+        setCustomFormData((prevState) => ({
+            ...prevState,
+            publicFlag: checked,
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        //TODO: can modify for only encrypted document handling to throw error later
-        if (!accountObject.xrplWalletAddress) {
-            setErrorMessage(
-                "You must first authenticate a XRPL wallet if you want to use our document functionality. Navigate to the 'Profile Page' and click authenticate wallet."
-            );
-            setShowErrorModal(true);
-            throw new Error('You must first authenticate a XRPL wallet if you want to use our document functionality.');
-        }
-
+        // set loading after submitting document upload
         setLoading(true);
 
-        try {
-            // hashing and encoding raw uploaded file data
-            const arrayBufferOfFile = await readFileAsArrayBuffer(uploadedFile);
-            const sha512HashOfOriginalFileArrayBuffer = await return512HashOfArrayBuffer(arrayBufferOfFile);
-            const base64EncodedSha512HashOfOriginalFileArrayBuffer = await arrayBufferToBase64(
-                sha512HashOfOriginalFileArrayBuffer
-            );
-
-            // payload placeholder, will be updated depending on encryption status
-            let payload;
-
-            //* list of signer, viewer, all recipient, and unique all recipients [ { emailHash, publicKey, wallet } ]
-            const arrayOfSignersPublicKeysEmailsAndWallets = await fetchPublicKeysAndWalletsForEmails(
-                signerEmails,
-                true
-            );
-            const arrayOfViewersPublicKeysEmailsAndWallets = await fetchPublicKeysAndWalletsForEmails(
-                viewerEmails,
-                false
-            );
-            const arrayOfAllPublicKeysEmailsAndWallets = [
-                ...arrayOfSignersPublicKeysEmailsAndWallets,
-                ...arrayOfViewersPublicKeysEmailsAndWallets,
-            ];
-            // in case user enters same email for signer and cc
-            const uniqueArrayOfAllPublicKeysEmailsAndWallets = arrayOfAllPublicKeysEmailsAndWallets.reduce(
-                (accumulator, current) => {
-                    if (!accumulator.some((item) => item.emailHash === current.emailHash)) {
-                        accumulator.push(current);
-                    }
-                    return accumulator;
-                },
-                []
-            );
-
-            // dynamically change document payload to be encrypted or unencrypted based on user selection
-            if (encryptDocument) {
-                // send list of all signers and cc users that can view encrypted to encryption function to return users with aesKeys
-                const documentEncryptionResults = await webCryptoApiHybridEncrypt(
-                    uniqueArrayOfAllPublicKeysEmailsAndWallets,
-                    arrayBufferOfFile
-                );
-
-                console.log('documentEncryptionResults:', documentEncryptionResults);
-
-                const accessControls =
-                    documentEncryptionResults.arrayOfUsersWithCorrespondingEncryptedAesKeyUsingEachPublicKey.reduce(
-                        (accumulator, { emailHash, encryptedAesKeyBase64 }) => {
-                            accumulator[emailHash] = encryptedAesKeyBase64;
-                            return accumulator;
-                        },
-                        {}
-                  );
-
-                // construct encrypted document payload to send to server
-                payload = {
-                    originalFileName: uploadedFile.name,
-                    originalFileFormat: uploadedFile.type,
-                    originalFileSize: uploadedFile.size,
-                    base64EncodedSha512HashOfOriginalFileArrayBuffer,
-                    requiredSignersWallets: arrayOfSignersPublicKeysEmailsAndWallets.map(({ wallet }) => wallet),
-                    author: accountObject.xrplWalletAddress,
-                    metadata: {
-                        title: customFormData.title,
-                        description: customFormData.description,
-                        category: customFormData.category,
-                        creationDate: new Date().toISOString(),
-                    },
-                    encrypted: true,
-                    data: {
-                        data: documentEncryptionResults.aesEncryptedDocumentDataArrayBufferBase64Encoded,
-                        encryptionAesKeyHash:
-                            documentEncryptionResults.sha512HashedArrayBufferOfExportedAesKeyBase64Encoded,
-                        accessControls: accessControls,
-                        ivBase64: documentEncryptionResults.ivUint8ArrayBase64Encoded,
-                        encoding: 'base64',
-                        documentDataEncryptionAlgorithm: 'AES-GCM',
-                        encryptionAesKeyLength: 256,
-                        aesKeysEncryptionAlgorithm: 'RSA-OAEP',
-                    },
-                };
-            } else {
-                const unencryptedDataBase64 = await arrayBufferToBase64(arrayBufferOfFile);
-                // construct unencrypted document payload to send to server
-                payload = {
-                    originalFileName: uploadedFile.name,
-                    originalFileFormat: uploadedFile.type,
-                    originalFileSize: uploadedFile.size,
-                    base64EncodedSha512HashOfOriginalFileArrayBuffer,
-                    requiredSignersWallets: arrayOfSignersPublicKeysEmailsAndWallets.map(({ wallet }) => wallet),
-                    author: accountObject.xrplWalletAddress,
-                    metadata: {
-                        title: customFormData.title,
-                        description: customFormData.description,
-                        category: customFormData.category,
-                        creationDate: new Date().toISOString(),
-                    },
-                    encrypted: false,
-                    data: {
-                        data: unencryptedDataBase64,
-                        encoding: 'base64',
-                        accessControls: uniqueArrayOfAllPublicKeysEmailsAndWallets.map(({ emailHash }) => emailHash),
-                    },
-                };
+        if (isFormValid && !isHashing) {
+            // Only proceed if hashing is done
+            const formData = new FormData();
+            formData.append('files', uploadedFile);
+            formData.append('customFormData', JSON.stringify(customFormData)); // This now includes the hash
+            // Proceed with the upload...
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
             }
-            console.log('payload:::: ', payload);
+            try {
+                const response = await uploadDocument(formData);
+                console.log('response from file upload axios post: ', response);
+                setLoading(false);
+                setUploadComplete(true);
+                // navigate('/documents');
 
-            // Upload document payload
-            const responseData = await uploadDocument(payload);
-            console.log('Document upload response data: ', responseData);
-
-            setUploadComplete(true);
-            setLoading(false);
-            setUploadedFile(null);
-        } catch (error) {
-            console.error('Error during document upload:', error);
-            setLoading(false); // Stop loading
+                // handle errors (error modal)
+            } catch (err) {
+                if (err.isAuthError) {
+                    // Redirect to login page
+                    navigate('/login-user');
+                } else if (err.response) {
+                    // Other errors
+                    console.error(`Error ${err.response.status}: ${err.response.statusText}`);
+                    setLoading(false);
+                    setErrorMessage(err.response.data.error);
+                    setShowErrorModal(true);
+                } else {
+                    console.log('Error', err.message);
+                }
+            }
         }
+
+        //redirect to documents page
     };
 
-    const onUpload = (newDocument) => {
-        setDocuments([...documents, newDocument]);
-    };
+    // const onUpload = (newDocument) => {
+    //     setDocuments([...documents, newDocument]);
+    // };
 
     const onDelete = () => {
         setUploadedFile(null);
     };
 
-    const handleFileChange = (event) => {
-        processFile(event.target.files[0]);
+    // const handleFileChange = (event) => {
+    //     processFile(event.target.files[0]);
+    // };
+
+    const handleFileChange = async (file) => {
+        if (file) {
+            setIsHashing(true); // Indicate that hashing has started
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+            console.log('SHA-256 Hash:', hashHex);
+
+            setUploadedFile(file); // Store the file
+            setCustomFormData((prevState) => ({
+                ...prevState,
+                hash: hashHex, // Include the hash in the form data
+            }));
+            setIsHashing(false); // Hashing complete
+        }
     };
 
     const onDrop = (event) => {
@@ -468,11 +323,12 @@ const UploadDocumentComponent = () => {
         event.preventDefault();
     };
 
+    // set to only handle single file
     const processFile = (file) => {
         if (file) {
             console.log('file inside processFile: ', file);
             setUploadedFile(file); // Add new file to the array
-            onUpload({ name: file.name, isSigned: false });
+            handleFileChange(file);
         }
     };
 
@@ -480,156 +336,120 @@ const UploadDocumentComponent = () => {
         document.getElementById('hiddenFileInput').click();
     };
 
+    // const handlePublicChange = (e) => {
+    //     const { checked } = e.target;
+    //     setPublicDocument(checked); // Update the publicDocument state
+
+    //     // Update customFormData state to reflect the new state of the publicDocument checkbox
+    //     setCustomFormData(
+    //         (prevState) => ({
+    //             ...prevState,
+    //             public: checked,
+    //         }),
+    //         validateForm
+    //     ); // Call validateForm directly here if needed
+
+    //     validateForm(); // Explicitly call validateForm to ensure the form is validated with the latest state
+    // };
+
     return (
         <Container className="pageContainer">
             <UploadDocumentContainer>
-                <UploadDragBox
-                    $isDragActive={isDragActive}
-                    onClick={openFileDialog}
-                    onDrop={onDrop}
-                    onDragOver={handleDragOver}
-                    onDragEnter={() => setIsDragActive(true)}
-                    onDragLeave={() => setIsDragActive(false)}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                        />
-                    </svg>
-                    Drag and drop a file here, or click to select a file
-                    <HiddenUploadInput id="hiddenFileInput" type="file" onChange={handleFileChange} />
-                </UploadDragBox>
-                {loading && (
-                    <LoadingComponent>
-                        <h6>Uploading Document to IPFS...</h6>
-                        <LoadingIcon />
-                    </LoadingComponent>
-                )}
-                {uploadComplete && !showErrorModal && (
-                    <UploadComplete>
-                        <h6>File uploaded successfully!</h6>
-                        <button
-                            onClick={() => {
-                                navigate('/documents');
-                            }}
+                {!uploadComplete ? (
+                    <>
+                        <UploadDragBox
+                            $isDragActive={isDragActive}
+                            onClick={openFileDialog}
+                            onDrop={onDrop}
+                            onDragOver={handleDragOver}
+                            onDragEnter={() => setIsDragActive(true)}
+                            onDragLeave={() => setIsDragActive(false)}
                         >
-                            view document
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                                />
+                            </svg>
+                            Drag and drop a file here, or click to select a file
+                            <HiddenUploadInput id="hiddenFileInput" type="file" onChange={(e) => processFile(e.target.files[0])} />
+                        </UploadDragBox>
+                        {uploadedFile && !loading && (
+                            <UploadFileBox>
+                                <UplaodedFileDiv>
+                                    <span>{uploadedFile.name}</span>
+                                    <button onClick={onDelete} className="buttonPop">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="w-6 h-6"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                            />
+                                        </svg>
+                                    </button>
+                                </UplaodedFileDiv>
+                                <DocumentForm onSubmit={handleSubmit}>
+                                    <div>
+                                        <label>Title:</label>
+                                        <input type="text" name="title" value={customFormData.title} onChange={handleChange} />
+                                    </div>
+                                    <div>
+                                        <label>Description:</label>
+                                        <textarea name="description" value={customFormData.description} onChange={handleChange} />
+                                    </div>
+                                    <div>
+                                        <label>Category:</label>
+                                        <select name="category" value={customFormData.category} onChange={handleChange}>
+                                            <option value="">Select a Category</option>
+                                            <option value="medical">Medical</option>
+                                            <option value="insurance">Insurance</option>
+                                            <option value="financial">Financial</option>
+                                            <option value="real estate">Real Estate</option>
+                                            <option value="custom">Other</option>
+                                        </select>
+                                    </div>
+                                    <PublicDocumentInput>
+                                        <label>Public Document:</label>
+                                        <input
+                                            style={{ width: '50px' }}
+                                            type="checkbox"
+                                            checked={publicDocument}
+                                            onChange={handlePublicChange}
+                                        />
+                                    </PublicDocumentInput>
+                                    <SubmitFormButtonContainer>
+                                        <button type="submit" disabled={!isFormValid} className="buttonPop">
+                                            Submit
+                                        </button>
+                                    </SubmitFormButtonContainer>
+                                </DocumentForm>
+                            </UploadFileBox>
+                        )}
+                    </>
+                ) : (
+                    <UploadComplete>
+                        <h6>File upload successful!</h6>
+                        <button className="buttonPop" onClick={() => navigate('/documents')}>
+                            View document
                         </button>
                     </UploadComplete>
                 )}
 
-                {uploadedFile && !loading && (
-                    <UploadFileBox>
-                        <UplaodedFileDiv>
-                            <span>{uploadedFile.name}</span>
-                            <button onClick={onDelete} className="buttonPop">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="w-6 h-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                                    />
-                                </svg>
-                            </button>
-                        </UplaodedFileDiv>
-                        <DocumentForm onSubmit={handleSubmit}>
-                            <div>
-                                <label>Title:</label>
-                                <input type="text" name="title" value={customFormData.title} onChange={handleChange} />
-                            </div>
-                            <div>
-                                <label>Description:</label>
-                                <textarea
-                                    name="description"
-                                    value={customFormData.description}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div>
-                                <label>Category:</label>
-                                <select name="category" value={customFormData.category} onChange={handleChange}>
-                                    <option value="">Select a Category</option>
-                                    <option value="medical">Medical</option>
-                                    <option value="insurance">Insurance</option>
-                                    <option value="financial">Financial</option>
-                                    <option value="real estate">Real Estate</option>
-                                    <option value="custom">Other</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>Required Signer Emails:</label>
-                                <EmailTextInputBoxesContainer>
-                                    {signerEmails.map((email, index) => (
-                                        <div key={index}>
-                                            <input
-                                                type="text"
-                                                value={email}
-                                                onChange={(e) => handleSignerEmailChange(index, e.target.value)}
-                                                placeholder="Enter signer email"
-                                            />
-                                            {signerEmails.length > 0 && (
-                                                <DeleteEmailIcon onClick={() => removeSignerEmailField(index)} />
-                                            )}
-                                        </div>
-                                    ))}
-                                    <AddEmailInputButton type="button" onClick={addSignerEmailField}>
-                                        Add Signer Email
-                                    </AddEmailInputButton>
-                                </EmailTextInputBoxesContainer>
-                            </div>
-                            <div>
-                                <label>CC Emails (Viewers):</label>
-                                <EmailTextInputBoxesContainer>
-                                    {viewerEmails.map((email, index) => (
-                                        <div key={index}>
-                                            <input
-                                                type="text"
-                                                value={email}
-                                                onChange={(e) => handleViewerEmailChange(index, e.target.value)}
-                                                placeholder="Enter viewer email"
-                                            />
-                                            {viewerEmails.length > 0 && (
-                                                <DeleteEmailIcon onClick={() => removeViewerEmailField(index)} />
-                                            )}
-                                        </div>
-                                    ))}
-                                    <AddEmailInputButton type="button" onClick={addViewerEmailField}>
-                                        Add Viewer Email
-                                    </AddEmailInputButton>
-                                </EmailTextInputBoxesContainer>
-                            </div>
-                            <EncryptDocumentInput>
-                                <label>Encrypt Document:</label>
-                                <input
-                                    style={{ width: '50px' }}
-                                    type="checkbox"
-                                    checked={encryptDocument}
-                                    onChange={() => setEncryptDocument(!encryptDocument)}
-                                />
-                            </EncryptDocumentInput>
-                            <SubmitFormButtonContainer>
-                                <button type="submit" className="buttonPop">
-                                    Submit
-                                </button>
-                            </SubmitFormButtonContainer>
-                        </DocumentForm>
-                    </UploadFileBox>
+                {loading && (
+                    <LoadingComponent>
+                        <h6>Uploading Document...</h6>
+                        <LoadingIcon />
+                    </LoadingComponent>
                 )}
+
                 {showErrorModal && <ErrorModal message={errorMessage} onClose={() => setShowErrorModal(false)} />}
             </UploadDocumentContainer>
         </Container>

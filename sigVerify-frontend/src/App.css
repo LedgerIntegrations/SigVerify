@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Abel&family=Exo:wght@700&family=Kdam+Thmor+Pro&family=Roboto+Condensed:wght@300&family=Sulphur+Point:wght@700&display=swap');
-
+/* 0 */
+@import url('https://fonts.googleapis.com/css2?family=Exo&family=Teko:wght@300..700&display=swap');
+/* font-family: 'Teko', sans-serif; */
+@import url('https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap');
+/* font-family: "Saira",sans-serif; */
 .w-6 {
   width: 22px;
 }
@@ -14,11 +18,11 @@ svg {
   align-items: center;
 }
 
-:root {
+/* :root {
   width: 100vw;
   margin: 0;
   text-align: center;
-}
+} */
 
 .buttonPop {
   box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
@@ -32,59 +36,24 @@ svg {
     0px 0px 0px 0px rgba(0, 0, 0, .1);
 }
 
-.backgroundLogoContainer {
-  width: 98%;
+/* .backgroundLogoContainer {
+  width: 100%;
   position: absolute;
   left: 0px;
   top: 25%;
-}
+  display: flex;
+  justify-content: center;
+} */
 
 .backgroundLogo {
-  width: 70%;
-  max-width: 400px;
-  opacity: .035;
+  width: 90vw;
+  max-width: 460px;
+  opacity: .045;
   margin-inline: auto;
+  position: absolute;
+  transform: translateY(50%);
+  transform: translateX(-50%);
 }
-
-/* UploadDocumentComponent Viewer Styles */
-/* #react-dov-viewer {
-  height: 60%;
-} */
-/* #file-name {
-  color: white;
-}
-
-#search-plus-icon {
-  fill: white;
-}
-
-#pdf-zoom-reset svg path{
-  fill: white;
-  color: white;
-} */
-
-/* #doc-nav-info {
-  margin: 0px;
-  margin-top: 2px;
-}
-
-#txt-renderer {
-  font-size: 12px;
-  text-align: start;
-}
-
-#pdf-download {
-  display: none;
-}
-
-#no-renderer {
-  width: 100%;
-  padding: 20px;
-}
-
-#no-renderer-download {
-  display: none;
-} */
 
 #header-bar {
   font-size: 12px;

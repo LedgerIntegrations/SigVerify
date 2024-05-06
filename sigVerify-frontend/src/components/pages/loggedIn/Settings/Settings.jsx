@@ -17,27 +17,26 @@ const OutterSettingsContainer = styled.div`
 `;
 
 const InnerSettingsContainer = styled.div`
-  width: 100%;
-`
+    width: 100%;
+`;
 
 const FormContainer = styled.div`
-display: flex;
-justify-content: center;
-  form {
-      display: flex;
-      flex-direction: column;
-      align-items: start;
-      max-width: 400px;
-      gap: 5px;
-
-      label {
-        width: 100%;
+    display: flex;
+    justify-content: center;
+    form {
         display: flex;
-        justify-content: space-between;
-        gap: 15px;
-      }
-  }
+        flex-direction: column;
+        align-items: start;
+        max-width: 400px;
+        gap: 5px;
 
+        label {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+    }
 `;
 
 function Settings() {
@@ -61,9 +60,9 @@ function Settings() {
     };
 
     const handleSubmit = async (event) => {
-      event.preventDefault();
-     const patientInfoString = JSON.stringify(patientInfo);
-     console.log(patientInfoString);
+        event.preventDefault();
+        const patientInfoString = JSON.stringify(patientInfo);
+        console.log(patientInfoString);
 
         try {
             const response = await fetch('http://localhost:3000/encrypt', {
@@ -75,7 +74,7 @@ function Settings() {
             if (!response.ok) {
                 throw new Error(`Error: ${response.status}`);
             }
-          console.log("raw response: ", response)
+            console.log('raw response: ', response);
 
             // Handle response here
             const result = await response.json();
@@ -89,7 +88,8 @@ function Settings() {
 
     return (
         <OutterSettingsContainer>
-            <InnerSettingsContainer>
+            <h4> Under Development..</h4>
+            {/* <InnerSettingsContainer>
                 <h1>Patient Information Form</h1>
                 <p>This section will be used to capture patient details.</p>
 
@@ -131,7 +131,7 @@ function Settings() {
                         <button type="submit">Submit</button>
                     </form>
                 </FormContainer>
-            </InnerSettingsContainer>
+            </InnerSettingsContainer> */}
         </OutterSettingsContainer>
     );
 }

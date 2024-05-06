@@ -49,7 +49,6 @@ const Button = styled.button`
             : 'none'};
 `;
 
-
 const FormsList = styled.ul`
     width: 100%;
     max-width: 600px;
@@ -104,8 +103,8 @@ function FormsPage() {
     const [viewMode, setViewMode] = useState('create'); // 'create' or 'view'
 
     const handleFormTypeClick = (formType) => {
-      setSelectedFormType(formType);
-      setViewMode(formType)
+        setSelectedFormType(formType);
+        setViewMode(formType);
     };
     // Example form templates
     // manages the different document form component to render
@@ -207,7 +206,7 @@ function FormsPage() {
     return (
         <OutterFormsContainer>
             <FormsHeader>
-                <h2>Form Templates</h2>
+                <h2>Form Templates (Under Development...)</h2>
             </FormsHeader>
             <FormTypesNav>
                 <Button clicked={selectedFormType === 'create'} onClick={() => handleFormTypeClick('create')}>

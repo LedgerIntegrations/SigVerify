@@ -1,0 +1,14 @@
+{
+  "name": "sigverify",
+  "version": "1.0.0",
+  "description": "Your premier platform for secure and transparent document signing and signature validation powered by the [XRP Ledger](https://xrpl.org). In an era defined by digital transactions, the integrity and authenticity of important documents are of utmost importance. While traditional methods falter in transparency and are prone to tampering, XRP SigVerify rises above by leveraging the robust features of blockchain technology.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd sigVerify-frontend && npm i && npm run build",
+    "start": "cd sigVerify-backend && npm i && npm run start "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

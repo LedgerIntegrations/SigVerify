@@ -2,24 +2,25 @@
 
 .loginComponent {
     min-height: fit-content;
-    width: 70vw;
+    /* width: 70vw;
     max-width: 320px;
-    min-width: 250px;
+    min-width: 250px; */
+    width: 100%;
     display: flex;
-    position: absolute;
+    /* position: absolute; */
     background-color: white;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 1.5rem;
     padding-top: 15px;
-    border-radius: 24px;
-    margin-block: 5vh;
-    box-shadow: 0px 10px 18px 0px #242a49cb;
+    border-radius: 10px;
+    margin-top: 1vh;
+    box-shadow: 0px 5px 9px 0px #959595cb;
     font-size: .8em;
     z-index: 1005;
-    left: 50%;
-    transform: translateX(-50%);
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
 }
 
 .loginComponent h1 {

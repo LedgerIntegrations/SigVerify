@@ -1,32 +1,31 @@
 import React from 'react';
 import './App.css';
 import styled from 'styled-components';
-import createAxiosInstance from './utils/httpRequests/axiosInstance';
+import axiosInstance from './utils/httpRequests/axiosInstance';
 import { AxiosProvider } from './utils/httpRequests/AxiosContext';
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
-// import { removeUserAuthTokenCookie } from './utils/httpRequests/routes/users';
 import kickUnauthenticatedUser from './utils/httpRequests/kickUnauthenticatedUser';
 
-// styled components
 const AppWrapper = styled.div`
-    width: 100vw;
-    min-height: 100vh;
-    max-height: fit-content;
+    height: 100%;
+    width: 100%;
     background-color: rgb(236, 235, 235);
 `;
 
 const PageWrapper = styled.div`
     background-color: rgb(236, 235, 235);
     padding: 20px;
-    padding-top: 14vh;
-    width: 100vw;
-    min-height: 75vh;
-    max-height: fit-content;
+    padding-top: 90px;
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
     display: flex;
     flex-flow: column;
     justify-content: start;
+    align-items: center;
+    overflow-x: hidden;
 `;
 
 //web2 user profile handler pages (shown to logged out users)
@@ -34,20 +33,21 @@ import LandingPage from './components/pages/loggedOut/LandingPage';
 import EmailRegistrationPage from './components/pages/loggedOut/EmailRegistrationPage';
 import CreateAccountPage from './components/pages/loggedOut/CreateAccountPage';
 import LoginPage from './components/pages/loggedOut/LoginPage';
-
+import DocumentPage from './components/pages/hybrid/DocumentPage';
+// import AllRightsReserved from './components/pages/loggedOut/AllRightsReserved';
+import ProfileSearchPage from './components/pages/hybrid/ProfileSearchPage';
 // navigation added to all logged in pages
 import NavigationComponent from './components/Navigation/NavigationComponent';
 
 // pages (shown to logged in users, wrapped with Navigation component)
 import Dashboard from './components/pages/loggedIn/DashboardPage';
 import DocumentsPage from './components/pages/loggedIn/DocumentsPage/DocumentsPage';
-// import XrplUiPage from './components/pages/loggedIn/XrplUiPage/XrplUiPage';
+import SignaturesPage from './components/pages/loggedIn/SignaturesPage/SignaturePage';
 import Profile from './components/pages/loggedIn/ProfilePage/ProfilePage';
 import Settings from './components/pages/loggedIn/Settings/Settings';
 import UploadDocumentComponent from './components/pages/loggedIn/DocumentsPage/UploadDocumentComponent';
-import DocumentPreparation from './components/pages/loggedIn/DocumentsPage/DocumentPreperation';
-
 import FormsPage from './components/pages/loggedIn/FormsPage/FormsPage';
+
 // GLOBAL ACCOUNT INFORMATION
 export const AccountContext = createContext();
 
@@ -91,36 +91,27 @@ function useSessionStorage(key, initialValue) {
 }
 
 function App() {
-    // used to store the user's account information, initialized and managed using the useSessionStorage custom hook.
-    // const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
     const [accountObject, setAccountObject] = useSessionStorage('accountObject', { loggedIn: false });
-    console.log('account object from app component: ', accountObject);
-    // Initialize Axios instance with setAccountObject
-    const axiosInstance = createAxiosInstance(setAccountObject);
 
     useEffect(() => {
         // Function to check the authentication cookie
         const checkAuthenticationCookie = async () => {
             try {
-                // Make an Axios request to 'api/authenticateCookie' with the 'withCredentials' option set to true
                 const response = await axiosInstance.post('api/authenticateCookie', {});
-                console.log(response.status);
-                // Assuming 'api/authenticateCookie' returns a success status code (e.g., 200), update the accountObject if authentication is successful.
+                console.log('check authentication cookie response: ', response.status);
                 if (response.status === 200) {
                     setAccountObject({ loggedIn: true, ...response.data.user });
                 } else {
                     await kickUnauthenticatedUser(setAccountObject);
                 }
             } catch (error) {
-                // Handle any errors here, such as network errors or authentication failure.
                 console.error('Authentication failed:', error);
                 if (error.response.status === 401) {
                     await kickUnauthenticatedUser(setAccountObject);
                 }
             }
         };
-
-        // Call the checkAuthenticationCookie function when the component mounts
+        // can potentially add a timer to run validate cookie every x
         checkAuthenticationCookie();
     }, []);
 
@@ -131,21 +122,10 @@ function App() {
                     <AppWrapper>
                         <Routes>
                             {/* LOGGED OUT ROUTES */}
-                            <Route
-                                path="/"
-                                element={
-                                    accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />
-                                }
-                            />
+                            <Route path="/" element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
                             <Route
                                 path="/login-user"
-                                element={
-                                    accountObject.loggedIn ? (
-                                        <Navigate to="/dashboard" replace />
-                                    ) : (
-                                        React.createElement(LoginPage)
-                                    )
-                                }
+                                element={accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(LoginPage)}
                             />
                             <Route
                                 path="/register-user"
@@ -160,30 +140,42 @@ function App() {
                             <Route
                                 path="/create-user"
                                 element={
-                                    accountObject.loggedIn ? (
-                                        <Navigate to="/dashboard" replace />
-                                    ) : (
-                                        React.createElement(CreateAccountPage)
-                                    )
+                                    accountObject.loggedIn ? <Navigate to="/dashboard" replace /> : React.createElement(CreateAccountPage)
                                 }
                             />
+
+                            {/* <Route path="/all-rights-reserved" element={React.createElement(withNavigation(AllRightsReserved))} /> */}
+
+                            <Route
+                                path="/document/:documentId"
+                                element={
+                                    accountObject.loggedIn
+                                        ? React.createElement(withNavigation(DocumentPage))
+                                        : // <Navigate to="/login-user" replace />
+                                          React.createElement(DocumentPage)
+                                }
+                            />
+
+                            <Route path="/profile/search" element={React.createElement(withNavigation(ProfileSearchPage))} />
 
                             {/* LOGGED IN ROUTES */}
                             <Route
                                 path="/dashboard"
                                 element={
-                                    accountObject.loggedIn ? (
-                                        React.createElement(withNavigation(Dashboard))
-                                    ) : (
-                                        <Navigate to="/" replace />
-                                    )
+                                    accountObject.loggedIn ? React.createElement(withNavigation(Dashboard)) : <Navigate to="/" replace />
                                 }
                             />
                             <Route
                                 path="/profile"
                                 element={
+                                    accountObject.loggedIn ? React.createElement(withNavigation(Profile)) : <Navigate to="/" replace />
+                                }
+                            />
+                            <Route
+                                path="/signatures"
+                                element={
                                     accountObject.loggedIn ? (
-                                        React.createElement(withNavigation(Profile))
+                                        React.createElement(withNavigation(SignaturesPage))
                                     ) : (
                                         <Navigate to="/" replace />
                                     )
@@ -192,11 +184,7 @@ function App() {
                             <Route
                                 path="/settings"
                                 element={
-                                    accountObject.loggedIn ? (
-                                        React.createElement(withNavigation(Settings))
-                                    ) : (
-                                        <Navigate to="/" replace />
-                                    )
+                                    accountObject.loggedIn ? React.createElement(withNavigation(Settings)) : <Navigate to="/" replace />
                                 }
                             />
                             <Route
@@ -222,14 +210,10 @@ function App() {
                             <Route
                                 path="/forms"
                                 element={
-                                    accountObject.loggedIn ? (
-                                        React.createElement(withNavigation(FormsPage))
-                                    ) : (
-                                        <Navigate to="/" replace />
-                                    )
+                                    accountObject.loggedIn ? React.createElement(withNavigation(FormsPage)) : <Navigate to="/" replace />
                                 }
                             />
-                            <Route
+                            {/* <Route
                                 path="/prepare"
                                 element={
                                     accountObject.loggedIn ? (
@@ -238,7 +222,7 @@ function App() {
                                         <Navigate to="/" replace />
                                     )
                                 }
-                            />
+                            /> */}
                         </Routes>
                     </AppWrapper>
                 </AxiosProvider>

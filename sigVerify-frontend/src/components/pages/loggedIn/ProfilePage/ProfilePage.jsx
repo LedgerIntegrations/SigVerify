@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { AccountContext } from '../../../../App';
-import ProfileWelcome from './ProfileWelcome';
-import NavigationSlider from './NavigationSlider';
+import ProfileWelcome from './subComponents/ProfileWelcome';
+import NavigationSlider from './subComponents/NavigationSlider';
+import MembershipUpgradeModal from './subComponents/UpgradeMembershipModal';
 import styled from 'styled-components';
 import logoImg from '../../../../assets/svLogo.png';
-
+import { getProfileData, getUserEmail } from '../../../../utils/httpRequests/routes/users';
 import XamanLogin from '../../../XrplDependentComponents/XamanLogin/XamanLogin';
 
 const ProfilePage = styled.div`
@@ -12,37 +13,36 @@ const ProfilePage = styled.div`
     flex-direction: column;
     justify-content: center;
     width: 100%;
+    max-width: 730px;
     gap: 20px;
-    padding: 0px 40px;
-    margin-top: 40px;
+    padding: 0px;
+    margin-top: 0px;
     z-index: 10;
+`;
+
+const GridBox = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 `;
 
 const Block = styled.div`
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
+    background-color: #ffffff9d;
+    min-width: 280px;
+    /* height: clamp(340px, 70vh, 90%); */
+    align-items: center;
     justify-content: center;
-    align-items: start;
-    gap: 4vw;
-`;
+    padding: 20px 20px;
+    margin: 5px;
+    font-size: 12.5px;
+    position: relative;
+    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 
-const ProfileTierLimits = styled.section`
-    width: 95%;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    max-width: 300px;
-`;
-
-const ProfileIntroWithWalletConnect = styled.section`
-    width: 95%;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    max-width: 300px;
+    @media (min-width: 620px) {
+        width: clamp(45%, 280px, 40vw);
+    }
 `;
 
 const ProfileTierLimitsSection = styled.section`
@@ -50,11 +50,11 @@ const ProfileTierLimitsSection = styled.section`
     display: flex;
     flex-direction: column;
     background-color: white;
-    padding: 18px 20px;
+    padding: 12px 20px;
     border-radius: 10px;
-    font-size: 0.8em;
-    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-        0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
 
     h4 {
         text-align: start;
@@ -74,6 +74,8 @@ const ProfileTierLimitsSection = styled.section`
         margin-bottom: 0px;
         padding: 10px;
         padding-bottom: 3px;
+        width: 100%;
+        justify-content: space-between;
     }
 `;
 
@@ -92,7 +94,7 @@ const ContentTotal = styled.div`
     justify-content: flex-start;
     align-items: center;
     font-family: 'Exo', sans-serif;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 
     button {
         background-color: #333;
@@ -100,13 +102,14 @@ const ContentTotal = styled.div`
         color: white;
         border-radius: 3px;
         padding: 4px 6px;
-        font-size: 8px;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-            'Open Sans', 'Helvetica Neue', sans-serif;
+        font-size: 0.76em;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+            'Helvetica Neue', sans-serif;
         font-weight: 500;
 
         &:hover {
             background-color: #111;
+            cursor: pointer;
         }
     }
 `;
@@ -119,7 +122,7 @@ const ContentStatSection = styled.div`
     align-items: center;
     padding-block: 1px;
     font-family: 'Exo', sans-serif;
-    font-size: 1em;
+    font-size: 1.4em;
 
     h5 {
         font-family: 'Abel', sans-serif;
@@ -146,7 +149,7 @@ const Warning = styled.div`
     }
 
     button {
-        font-size: 10px;
+        font-size: 0.9em;
         width: fit-content;
         padding: 6px 12px;
         padding-top: 8.5px;
@@ -162,58 +165,70 @@ const Warning = styled.div`
 `;
 
 const XrplWalletDisplay = styled.div`
-    background-color: white;
     text-align: start;
-    /* min-width: 250px;
-    max-width: 540px; */
     width: 100%;
-    padding: 20px;
-    margin-block: 10px;
+    padding: 14px 10px;
+    margin-top: 15px;
     border-radius: 10px;
-    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1),
-        4px 4px 5px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 2px 2px 2px 1px rgba(59, 59, 59, 0.5), 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+    word-break: break-all;
+    background-color: #c2c2c210;
+    color: #333;
+
+    @media (min-width: 420px) {
+        font-size: 1.1em;
+    }
+
+    @media (min-width: 470px) {
+        font-size: 1.2em;
+    }
+
+    @media (min-width: 620px) {
+        font-size: 0.95em;
+    }
 
     h2 {
         text-align: start;
-        font-size: 1em;
+        font-size: 1.1em;
         margin-bottom: 0px;
         margin-top: 0px;
-        color: #666;
         text-decoration: underline;
+        padding: 2px;
     }
 
-    em {
-        font-size: 9px;
+    strong {
+        font-size: 0.82em;
         text-align: start;
         font-weight: 800;
+        padding: 2px;
     }
 `;
 
 const WalletForm = styled.form`
+    width: 100%;
     min-height: fit-content;
-    width: 70vw;
-    max-width: 320px;
-    min-width: 250px;
     display: flex;
-    position: absolute;
     background-color: white;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 2rem;
-    border-radius: 24px;
-    margin-block: 5vh;
-    box-shadow: 0px 10px 18px 0px #242a49cb;
-    font-size: 0.8em;
+    border-radius: 12px;
+    margin-top: 2vh;
+    box-shadow: 0px 6px 9px 0px #9b9b9bc9;
+    font-size: 1em;
     z-index: 10;
-    left: 50%;
-    transform: translateX(-50%);
 
     button {
         position: relative;
         top: -10px;
         right: -47%;
-        padding-block: 2px;
+        padding: 3px 8px;
+        padding-top: 5px;
+        border: none;
+        border-radius: 3px;
+        background-color: #b44c4c;
+        color: white;
     }
 
     label {
@@ -227,7 +242,7 @@ const WalletForm = styled.form`
         font-size: 10px;
         width: fit-content;
         padding: 6px 12px;
-        padding-top: 8.5px;
+        padding-top: 7px;
         color: white;
         background-color: #333;
         border: none;
@@ -242,86 +257,78 @@ function Profile() {
     const [showWalletProviders, setShowWalletProviders] = useState(false);
     const [selectedWalletProvider, setSelectedWalletProvider] = useState('');
 
-    const [maxDocuments, setMaxDocuments] = useState(0);
-    const [maxSignatures, setMaxSignatures] = useState(0);
     const [accountDocumentTotal, setAccountDocumentTotal] = useState(0);
     const [accountSignatureTotal, setAccountSignatureTotal] = useState(0);
 
-    // const handleWalletProviderSelect = (provider) => {
-    //     setSelectedWalletProvider(provider);
-    //     setShowWalletProviders(false);
-
-    //     // If Xaman is selected, open the Xaman login component
-    //     if (provider === 'Xaman-xrpl') {
-    //         setWalletAuthOpened(true);
-    //     }
-    //     // Add similar conditions for other providers if needed
-    // };
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
     const handleWalletProviderSubmit = (event) => {
         event.preventDefault();
         const provider = event.target.walletProvider.value;
 
         setSelectedWalletProvider(provider);
-        setShowWalletProviders(false);
-
-        // Open the login component based on the selected provider
-        if (provider === 'Xaman-xrpl') {
+        // Assuming we only show the XamanLogin when a provider is selected
+        if (provider === 'Xaman-xrpl' || provider === 'xdc') {
             setWalletAuthOpened(true);
-        } else if (provider === 'xdc') {
-            // Implement the login logic for 'xdc'
-            console.log('XDC wallet provider selected');
-            // setWalletAuthOpened(true); // Uncomment and modify this line as per the logic for 'xdc'
+            // No need to show the wallet providers form anymore
+            setShowWalletProviders(false);
         }
     };
 
-    // Switch statement to set limits based on membership
+    const toggleWalletProviderForm = () => {
+        if (walletAuthOpened) {
+            // If XamanLogin is open, close it
+            setWalletAuthOpened(false);
+        }
+        // Toggle the visibility of wallet providers form
+        setShowWalletProviders(!showWalletProviders);
+    };
+
+    const closeWalletAuthModals = () => {
+        setWalletAuthOpened(false);
+        setShowWalletProviders(false);
+    };
+
+    const handleUpgradeModalClose = () => {
+        setIsUpgradeModalOpen(false);
+    };
+
+    const handleUpgradeButtonClick = () => {
+        setIsUpgradeModalOpen(true);
+    };
+
+    // Fetch profile and email data logic
     useEffect(() => {
+        console.log('Profile page detected accountObject change:', accountObject);
+
         const fetchProfileData = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/user/profileData', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // This is necessary to include cookies
-                });
-
-                if (!response.ok) {
-                    throw new Error('/api/user/profileData response was not ok');
+                const profileResponse = await getProfileData();
+                if (profileResponse.status !== 200) {
+                    throw new Error('Profile data request failed');
                 }
+                const { total_documents, total_signatures } = profileResponse.data.data;
+                setAccountDocumentTotal(total_documents);
+                setAccountSignatureTotal(total_signatures);
 
-                const data = await response.json();
+                const emailResponse = await getUserEmail();
+                if (emailResponse.status !== 200) {
+                    throw new Error('Email data request failed');
+                }
+                const email = emailResponse.data.email;
 
-                setAccountDocumentTotal(data.data.totalDocuments);
-                setAccountSignatureTotal(data.data.totalSignatures);
-
-                console.log('response from /api/user/profileData endpoint in useEffect: ', data);
+                // Optional: log final fetched data
+                console.log('data fetched in profile useEffect: ', {
+                    profileData: profileResponse.data.data,
+                    email: email,
+                });
             } catch (error) {
-                console.error('Error fetching profile data:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
         fetchProfileData();
-
-        switch (accountObject.membership) {
-            case 'free':
-                setMaxDocuments(5);
-                setMaxSignatures(10);
-                break;
-            case 'standard':
-                setMaxDocuments(50);
-                setMaxSignatures(100);
-                break;
-            case 'premium':
-                setMaxDocuments(Infinity); // Use Infinity for unlimited
-                setMaxSignatures(Infinity);
-                break;
-            default:
-                setMaxDocuments(0);
-                setMaxSignatures(0);
-        }
-    }, [accountObject.membership]);
+    }, [accountObject]);
 
     console.log('Profile page rendering...');
     return (
@@ -332,31 +339,28 @@ function Profile() {
             </div>
 
             <ProfilePage>
-                <Block>
-                    <ProfileIntroWithWalletConnect>
+                <GridBox>
+                    <Block>
                         <ProfileWelcome
-                            membership={
-                                accountObject.membership?.charAt(0).toUpperCase() + accountObject.membership?.slice(1)
-                            }
+                            membership={accountObject.membership?.charAt(0).toUpperCase() + accountObject.membership?.slice(1)}
                         />
-                        {!accountObject.xrplWalletAddress && (
+                        {!accountObject.wallet_address && (
                             <>
                                 <Warning>
                                     <p>WARNING! - Wallet not connected for blockchain signatures.</p>
-                                    <button
-                                        className="buttonPop"
-                                        onClick={() => setShowWalletProviders(!showWalletProviders)}
-                                    >
-                                        {showWalletProviders ? 'Close Providers' : 'Connect Wallet'}
-                                    </button>
+                                    {showWalletProviders || walletAuthOpened ? (
+                                        <button className="buttonPop" onClick={closeWalletAuthModals}>
+                                            Close
+                                        </button>
+                                    ) : (
+                                        <button className="buttonPop" onClick={toggleWalletProviderForm}>
+                                            Connect Wallet
+                                        </button>
+                                    )}
                                 </Warning>
-
                                 {showWalletProviders && (
                                     <WalletForm onSubmit={handleWalletProviderSubmit}>
-                                        <button
-                                            className="buttonPop"
-                                            onClick={() => setShowWalletProviders(!showWalletProviders)}
-                                        >
+                                        <button className="buttonPop" onClick={() => setShowWalletProviders(!showWalletProviders)}>
                                             X
                                         </button>
                                         <label htmlFor="walletProvider">Choose a wallet provider:</label>
@@ -370,22 +374,22 @@ function Profile() {
                                         <input type="submit" value="Connect" className="buttonPop" />
                                     </WalletForm>
                                 )}
+                                {walletAuthOpened && selectedWalletProvider === 'Xaman-xrpl' && (
+                                    <XamanLogin setWalletAuthOpened={setWalletAuthOpened} />
+                                )}
                             </>
                         )}
 
-                        {walletAuthOpened && selectedWalletProvider === 'Xaman-xrpl' && (
-                            <XamanLogin setWalletAuthOpened={setWalletAuthOpened} />
-                        )}
-                        {accountObject.xrplWalletAddress && (
+                        {accountObject.wallet_address && (
                             <XrplWalletDisplay>
-                                <h2>Authenticated Wallet</h2>
-                                <em>{accountObject.xrplWalletAddress}</em>
+                                <h2>Authenticated Wallet:</h2>
+                                <strong>{accountObject.wallet_address}</strong>
                             </XrplWalletDisplay>
                         )}
                         {/* Add logic to render the component for 'xdc' provider if selected */}
-                    </ProfileIntroWithWalletConnect>
+                    </Block>
 
-                    <ProfileTierLimits>
+                    <Block>
                         <ProfileTierLimitsSection>
                             <div>
                                 <h4>Tier Level:</h4>
@@ -393,27 +397,27 @@ function Profile() {
                             </div>
                             <AccountTotalsSectionMainContent>
                                 <ContentTotal>
-                                    <button className="buttonPop">Upgrade</button>
+                                    <button className="buttonPop" onClick={handleUpgradeButtonClick}>
+                                        Upgrade
+                                    </button>
                                 </ContentTotal>
                                 <ContentStatSection>
                                     <h5>Maximum documents:</h5>
                                     <em>
-                                        {accountDocumentTotal} / {maxDocuments}
+                                        {accountDocumentTotal} / {accountObject.document_limit}
                                     </em>
                                 </ContentStatSection>
                                 <ContentStatSection>
                                     <h5>Blockchain Signatures:</h5>
-                                    {/* TODO: add max membership level signatures dynamically*/}
-                                    <em>
-                                        {accountSignatureTotal} / {maxSignatures}
-                                    </em>
+                                    <em>{accountSignatureTotal}</em>
                                 </ContentStatSection>
                             </AccountTotalsSectionMainContent>
                         </ProfileTierLimitsSection>
-                        <NavigationSlider navigateTo="/documents" pageName="documents"></NavigationSlider>
-                        <NavigationSlider navigateTo="/forms" pageName="forms"></NavigationSlider>
-                    </ProfileTierLimits>
-                </Block>
+                        <NavigationSlider navigateTo="/documents" pageName="DOCUMENTS"></NavigationSlider>
+                        <NavigationSlider navigateTo="/signatures" pageName="SIGNATURES"></NavigationSlider>
+                    </Block>
+                    <MembershipUpgradeModal isOpen={isUpgradeModalOpen} onClose={handleUpgradeModalClose} />
+                </GridBox>
             </ProfilePage>
         </>
     );

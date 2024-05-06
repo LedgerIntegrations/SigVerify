@@ -16,10 +16,28 @@ const ModalBackdrop = styled.div`
 
 const ModalContent = styled.div`
     background-color: white;
-    padding: 20px;
+    padding: 20px 50px;
     border-radius: 10px;
-    max-width: 500px;
+    max-width: 400px;
     width: 90%;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+
+    h2 {
+        font-size: 16px;
+        margin-bottom: 40px;
+    }
+
+    button {
+        margin-inline: auto;
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid gray;
+        background-color: #ffffff;
+        color: black;
+        padding: 5px;
+    }
 `;
 
 const KeyDisplay = styled.div`
@@ -78,7 +96,8 @@ const KeyPairGeneratorModal = ({ onClose, onKeyPairGenerated }) => {
     return (
         <ModalBackdrop onClick={onClose}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
-                <h2>Your Key Pair</h2>
+                <h2>key pair generation for future P2P encryption feature, ignore for demo.</h2>
+                {/* <h2>Your Key Pair</h2>
                 <div>
                     <strong>Public Key:</strong>
                     <KeyDisplay>{keys.publicKey ? keys.publicKey : 'Generating...'}</KeyDisplay>
@@ -86,8 +105,10 @@ const KeyPairGeneratorModal = ({ onClose, onKeyPairGenerated }) => {
                 <div>
                     <strong>Private Key:</strong>
                     <KeyDisplay>{keys.privateKey ? keys.privateKey : 'Generating...'}</KeyDisplay>
-                </div>
-                <button onClick={onClose}>Close</button>
+                </div> */}
+                <button className="buttonPop" onClick={onClose}>
+                    Close
+                </button>
             </ModalContent>
         </ModalBackdrop>
     );

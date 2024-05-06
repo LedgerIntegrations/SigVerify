@@ -4,21 +4,37 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './config/db.js'; // Ensure to add '.js' extension
 
-import xrplRoutes from './routes/xrplRoutes.js'; // Ensure to add '.js' extension
-import documentRoutes from './routes/documentRoutes.js'; // Ensure to add '.js' extension
-import userRoutes from './routes/userRoutes.js'; // Ensure to add '.js' extension
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import userRoutes from './routes/userRoutes.js';
+import xrplRoutes from './routes/xrplRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import signatureRoutes from './routes/signatureRoutes.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const PORT = process.env.PORT || 3001;
 
-// Create an instance of express
 const app = express();
 
+// Determine the environment and set base URL and CORS origins accordingly
+const environment = process.env.NODE_ENV || 'development';
+
+console.log("server environment: ", environment)
+const baseUrl = environment === 'production' ? process.env.PROD_BASE_URL : 'http://localhost';
+
+const corsOrigins =
+    // environment === 'production' ? [process.env.PROD_BASE_URL] : ['http://localhost:5173', 'http://localhost:3000'];
+   ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
+
+
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: corsOrigins,
     credentials: true, // This allows cookies and credentials to be sent
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
 };
@@ -27,16 +43,20 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-// test route not needed can delete
-app.get('/', (req, res) => {
-  res.send("You have reached the sigVerify server!");
-});
-
-// imported routes
+// modular routes
 app.use(userRoutes);
-app.use(documentRoutes);
 app.use(xrplRoutes);
+app.use(documentRoutes);
+app.use(signatureRoutes);
+
+// Serve static files and support client-side routing in production
+if (environment === 'production') {
+    app.use(express.static(path.join(__dirname, '../sigVerify-frontend/dist')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../sigVerify-frontend/dist', 'index.html'));
+    });
+}
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on ${baseUrl}:${PORT}`);
 });

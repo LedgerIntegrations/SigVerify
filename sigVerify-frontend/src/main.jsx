@@ -1,7 +1,7 @@
 import 'normalize.css';
 
-import { Buffer } from 'Buffer';
-window.Buffer = Buffer;
+// import { Buffer } from 'buffer';
+// window.Buffer = Buffer;
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'

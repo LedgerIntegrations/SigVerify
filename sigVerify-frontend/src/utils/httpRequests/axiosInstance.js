@@ -1,19 +1,22 @@
+// /utils/httpRequests/axiosInstance.js
 import axios from 'axios';
 
-const serverUrl = 'http://localhost:3001';
+//will always be production if running from built dist folder with vite defaults
+console.log("axios instance environment check: ", process.env.NODE_ENV);
+
+const serverUrl = process.env.NODE_ENV === 'production' ? 'https://sigverify.com' : 'http://localhost:3001';
+
+console.log("SERVER URL: ", serverUrl);
+
 const axiosInstance = axios.create({
     withCredentials: true,
     baseURL: serverUrl,
 });
 
-// Response interceptor
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          // Modify the error and reject the promise
-
-
             return Promise.reject({ ...error, isAuthError: true });
         }
         return Promise.reject(error);
@@ -21,35 +24,3 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-
-// utils/httpRequests/axiosInstance.js
-
-// import axios from 'axios';
-// import kickUnauthenticatedUser from './kickUnauthenticatedUser';
-// const serverUrl = 'http://localhost:3001';
-
-
-// // Function to initialize Axios instance with interceptor
-// const createAxiosInstance = (setAccountObject) => {
-//     const axiosInstance = axios.create({
-//         withCredentials: true,
-//         baseURL: serverUrl,
-//     });
-
-//     axiosInstance.interceptors.response.use(
-//         (response) => response,
-//         async (error) => {
-//             if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-//                 // Call kickUnauthenticatedUser
-//                 await kickUnauthenticatedUser(setAccountObject);
-
-//                 return Promise.reject({ ...error, isAuthError: true });
-//             }
-//             return Promise.reject(error);
-//         }
-//     );
-
-//     return axiosInstance;
-// };
-
-// export default createAxiosInstance;

@@ -766,3 +766,41 @@ const unencryptedDocumentSchemaAsJsObject = {
         },
     },
 };
+
+const checkObject = {
+    schema: 'ipfs://Qma6Tnpzycw36LhFarF8gEwFRWrLSxmosi27S6Mh8zSBxn',
+    nftType: 'encrypted_document.v0',
+    name: 'testtxt',
+    description: 'testing doc upload',
+    image: 'ipfs://QmcqQ4W2pFFuQg5jcdzBXE9Jm566yCgX43dDwhQsKzKKnF',
+    collection: { name: 'SigVerify Document Collection', family: 'encrypted_document' },
+    encrypted: true,
+    author: 'rUBCFsgC2cMueUh8sNFA9KsSbzYoUnbUk8',
+    requiredSignersWallets: 'rDeZVeUM9TNgQbomYWnjsvCu1XDA8ZUBb2',
+    document: {
+        originalFileName: 'tester.txt',
+        originalFileFormat: 'text/plain',
+        originalFileSize: 229,
+        originalFileHash: 'co5BE4k0EftoogvnPax0yFvGzQuK+B8ZODzx4+u6yhc2xn11TT7JzKxbAuWCPgVaXjYF+oXk9QnvCXXXKgZvfQ==',
+        metadata: {
+            title: 'testtxt',
+            description: 'testing doc upload',
+            category: 'custom',
+            creationDate: '2024-01-25T22:05:46.305Z',
+        },
+        data: {
+            data: 'LharBiau8fbsW3fFKb12L/ZoOmE9+BjovC/NmbYXDup5aCseHNKDj8xz6WZ4nOE8hULJ5YtLt4D1mgQfe7qAPe5iaAquSihRUYwL/PbgOq6QEIsBMhx1WABqBy/655sTsw9ffj3Awo46U4D+OMeBxEgN4J8DE3mXCHamQ7n58WQFPukrvZv+5iW1zMd246kO0mlE0hXrhpdxqbD0fDQfRzfX7HHz23IXW+iuYEJnsfyV6HLiyV+UD+g/8wws6GQ5bhwlZS+B7kZ8Rb/NoX2Mn9WT/D1/zDX4TWIDv1Sum361zOlm4Xw6LWq2VqhQsz3SscSDgBM=',
+            encryptionAesKeyHash:
+                '+MAw67Wj8EDGeM5fhrIl8ex5B87p/ZaczQOaL0LlvIGnbdzZbtO1aFX2pTqXMqVOLDNk/1+ThP63DDRQu5jNCQ==',
+            accessControls: {
+                f8aa8a95b86d15a9ff3084e476c6067a5a465090c6e5b91c9704c1995727c081:
+                    'XBlGhet+ZDDB7vd2yWjjbaumQjAKzBbUgAhzTJrDapeJKs62G64zl5EHSHHXbPvjPqG19Z2qiCVJGilddHfdVYhM4L0eG5EByEHY9Uaoxq9sHaZ2zl8frPwfkdtQfBH+eR672ZKzVwcWaZ8nrx8eYlvnlyNJQny6YV6TD6tccDdE8TzMWwNHbw1sMopiXvSqPpCZ5XkubGoI8KnTx45wpkZbdPP8FyiiSRt9pzoXUl/qT6OCJdormrNq89htUu7VlMCTGmjlwiw2WzTFNBqyEP6vYRnXLHUXfUbSr5G4AgzjyHjKFQGVwlfPcLmI7h4QdIwJmRm3j5FVmZ3PIXPo9w==',
+            },
+            ivBase64: '8ssRMkeLv+hfKT3r',
+            encoding: 'base64',
+            documentDataEncryptionAlgorithm: 'AES-GCM',
+            encryptionAesKeyLength: 256,
+            aesKeysEncryptionAlgorithm: 'RSA-OAEP',
+        },
+    },
+};

@@ -5,15 +5,19 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
-import { ErrorMessage } from '../../Styles/CommonStyles';
+import { ErrorMessage } from '../../component-helpers/styled-elements/CommonStyles';
+import { arrayBufferToHex } from '../../../utils/encoding';
+
+import { loginUser } from '../../../utils/httpRequests/routes/users';
 
 const LoginPageContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    height: 100dvh;
     background-color: #141414;
+
 `;
 
 const BackgroundLogo = styled.img`
@@ -39,6 +43,7 @@ const LoginPageTitle = styled.h1`
     text-align: start;
     width: 86vw;
     margin-top: 8vh;
+    margin-top: 90px;
     z-index: 5;
 `;
 
@@ -162,20 +167,33 @@ const VisibilityIconToggler = styled.span`
     color: #aaa;
 `;
 
+function hashPassword(password) {
+    // Hashing logic...
+    return new Promise((resolve, reject) => {
+        // Example hashing function
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        crypto.subtle
+            .digest('SHA-256', data)
+            .then((hashed) => resolve(arrayBufferToHex(hashed)))
+            .catch((err) => reject(err));
+    });
+}
+
 const LoginPage = () => {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
 
     const [formData, setFormData] = useState({
-        Email: '',
-        Password: '',
+        email: '',
+        password: '',
     });
     const [formErrors, setFormErrors] = useState({});
     const [isLogged, setIsLogged] = useState(false);
 
-    const [showPassword, setShowPassword] = useState(false);
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+    const [showpassword, setShowpassword] = useState(false);
+    const togglepasswordVisibility = () => {
+        setShowpassword(!showpassword);
     };
 
     const handleInputChange = (event) => {
@@ -190,37 +208,43 @@ const LoginPage = () => {
         event.preventDefault();
         const errors = {};
 
-        if (!formData.Email) errors.Email = 'Email is required';
-        if (!formData.Password) errors.Password = 'Password is required';
+        if (!formData.email) errors.email = 'Email is required';
+        if (!formData.password) errors.password = 'Password is required.';
 
         setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
             try {
-                const response = await fetch('http://localhost:3001/api/user/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // Important for cookies
-                    body: JSON.stringify(formData),
-                });
+                const hashedPassword = await hashPassword(formData.password);
+                const payload = {
+                    ...formData,
+                    password: hashedPassword,
+                };
+                const response = await loginUser(payload);
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    console.log('Successfully logged in!', data);
-                    const userData = data.user;
-                    setAccountObject({ ...userData, loggedIn: true });
-                    setIsLogged(true); // Set logged in state only on success
-
+                if (response.status === 200) {
+                    console.log('Successfully logged in!', response.data);
+                    setAccountObject({ ...response.data.user, loggedIn: true });
+                    setIsLogged(true);
                 } else {
-                    // Handle non-200 responses
+                    // Parses the response to get error message
+                    const data = await response.json(); // Ensure the response is parsed as JSON
+                    // Set the error message from the server if available
                     setFormErrors({ server: data.error || 'Failed to login.' });
                 }
             } catch (err) {
-                console.error('Network or server error:', err);
-                setFormErrors({ server: err.message || 'Failed to login due to a network or server error.' });
+                // Checks if the error is due to an unsuccessful response or a network issue
+                if (err.isAuthError && err.response) {
+                    // If the error is identified as an authentication error and has a response
+                    setFormErrors({ server: err.response.data.error || 'Authentication error.' });
+                } else if (err.response) {
+                    // If the error comes with a response, handle it
+                    setFormErrors({ server: err.response.data.error || 'Failed to login.' });
+                } else {
+                    // If the error is not from a response, handle it as a network error
+                    console.error('Network or server error:', err);
+                    setFormErrors({ server: err.message || 'Failed to login due to a network or server error.' });
+                }
             }
         }
     };
@@ -242,32 +266,28 @@ const LoginPage = () => {
                     ) : (
                         <form onSubmit={handleSubmit}>
                             <InputGroup>
-                                <label>Email</label>
-                                <input type="email" name="Email" value={formData.Email} onChange={handleInputChange} />
-                                {formErrors.Email && <ErrorText>{formErrors.Email}</ErrorText>}
+                                <label>email</label>
+                                <input type="email" name="email" value={formData.email} onChange={handleInputChange} />
+                                {formErrors.email && <ErrorText>{formErrors.email}</ErrorText>}
                             </InputGroup>
                             <InputGroup>
-                                <label>Password</label>
+                                <label>password</label>
                                 <InputWithIcon>
                                     <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="Password"
-                                        value={formData.Password}
+                                        type={showpassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={formData.password}
                                         onChange={handleInputChange}
                                     />
-                                    <VisibilityIconToggler onClick={togglePasswordVisibility}>
-                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    <VisibilityIconToggler onClick={togglepasswordVisibility}>
+                                        {showpassword ? <FaEyeSlash /> : <FaEye />}
                                     </VisibilityIconToggler>
                                 </InputWithIcon>
-                                {formErrors.Password && <ErrorText>{formErrors.Password}</ErrorText>}
+                                {formErrors.password && <ErrorText>{formErrors.password}</ErrorText>}
                             </InputGroup>
 
                             <button type="submit">Login</button>
-                            {formErrors.server && (
-                                <ErrorMessage style={{ marginTop: '10px' }}>
-                                    {formErrors.server}
-                                </ErrorMessage>
-                            )}
+                            {formErrors.server && <ErrorMessage style={{ marginTop: '10px' }}>{formErrors.server}</ErrorMessage>}
                         </form>
                     )}
                 </LoginFormContainer>

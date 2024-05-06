@@ -27,12 +27,18 @@ const upload = multer({
 });
 
 const returnSignedUrlFromS3BucketKey = async (documentKey) => {
-    const command = new GetObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: documentKey,
-    });
-    const signedUrl = await getSignedUrl(client, command, { expiresIn: 7200 });
-    return signedUrl;
+    try {
+        const command = new GetObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: documentKey,
+            Expires: 60 * 5, // URL expires in 5 minutes
+        });
+        const signedUrl = await getSignedUrl(client, command);
+        return signedUrl;
+    } catch (err) {
+        console.error('Error generating presigned URL', err);
+        throw err;
+    }
 };
 
 export { upload, returnSignedUrlFromS3BucketKey };

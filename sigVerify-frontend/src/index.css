@@ -4,11 +4,14 @@
   margin: 0;
 }
 
+html,
 body {
-  min-height: 100vh;
+  height: 100%;
   width: 100vw;
-  padding: 0px;
-  margin: 0px;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(236, 235, 235);
+  overflow-x: hidden;
 }
 
 * {

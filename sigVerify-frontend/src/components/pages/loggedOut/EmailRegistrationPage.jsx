@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logoImage from '../../../assets/svLogo.png';
-import LoadingIcon from '../../helperComponents/LoadingIcon/LoadingIcon';
-import axios from 'axios';
+import LoadingIcon from '../../component-helpers/components/LoadingIcon';
 import styled from 'styled-components';
+
+import { registerUser } from '../../../utils/httpRequests/routes/users';
 
 // TODO: when valid email entered and register button clicked "Email registered! Authentication e-mail sent to: lollylol123@gmail.com ." appears in color: red
 
@@ -12,7 +13,7 @@ const RegisterEmailPage = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    height: 100dvh;
     width: 100%;
     background-color: #141414;
 `;
@@ -31,7 +32,8 @@ const MainTitle = styled.h2`
     color: #fff;
     text-align: start;
     width: 86vw;
-    margin-top: 8vh;
+    margin-top: 90px;
+    z-index: 2;
 `;
 
 const EmailInputContainer = styled.div`
@@ -138,26 +140,22 @@ function EmailRegistrationPage() {
 
         setIsLoading(true);
 
-        await axios
-            .post('http://localhost:3001/api/user/register', { email })
-          .then((response) => {
-              console.log(response)
-              const { emailSent, message } = response.data;
+        try {
+            const response = await registerUser(email);
+            console.log(response);
+            const { emailSent, message } = response.data;
 
-                if (!emailSent) {
-                    throw new Error(message || 'Failed to register.');
-                }
+            if (!emailSent) {
+                throw new Error(message || 'Failed to register.');
+            }
 
-                setCurrentMessage(message);
-
-                console.log('Email submitted:', email);
-            })
-            .catch((err) => {
-                setError(err.message);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+            setCurrentMessage(message);
+            console.log('Email submitted:', email);
+        } catch (err) {
+            setError(err.message || 'Failed to register.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -171,21 +169,14 @@ function EmailRegistrationPage() {
 
             <EmailInputContainer>
                 <h2>Register Email</h2>
-                <EmailInput
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                />
+                <EmailInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
                 <button className={isLoading ? 'loading' : ''} disabled={isLoading} onClick={handleSubmit}>
                     {isLoading ? <LoadingIcon /> : ''}
                     Register
                 </button>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 {currentMessage && (
-                    <p style={{ color: 'green', maxWidth: '310px', fontSize: '.9em', textAlign: 'start' }}>
-                        {currentMessage}
-                    </p>
+                    <p style={{ color: 'green', maxWidth: '310px', fontSize: '.9em', textAlign: 'start' }}>{currentMessage}</p>
                 )}
                 <SignInRedirect>
                     <em>Already have an acccount?</em>

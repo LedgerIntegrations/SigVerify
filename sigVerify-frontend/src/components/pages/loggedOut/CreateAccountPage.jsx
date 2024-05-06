@@ -1,12 +1,15 @@
-// Web2UserCreate.js
 import { useState, useEffect, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa'; // Import icons from react-icons
 import logoImage from '../../../assets/svLogo.png';
 import { AccountContext } from '../../../App';
 import styled from 'styled-components';
-import { ErrorMessage } from '../../Styles/CommonStyles';
+import { ErrorMessage } from '../../component-helpers/styled-elements/CommonStyles';
 import KeyPairGeneratorModal from '../../../utils/rsaKeyHandlers/KeyPairGeneratorModal';
+import { isValidPassword } from '../../../utils/regexValidityChecks';
+import { arrayBufferToHex } from '../../../utils/encoding';
+
+import { createUser } from '../../../utils/httpRequests/routes/users';
 
 //TODO: When registering a email that already exists the error message shown to use is "Request failed with status code 400", need to make message more detailed for user.
 
@@ -15,8 +18,11 @@ const CreateUserContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    height: 100dvh;
     background-color: #141414;
+    @media (min-width: 560px) {
+        padding-bottom: 30px;
+    }
 `;
 
 const MainTitle = styled.h1`
@@ -25,15 +31,15 @@ const MainTitle = styled.h1`
     color: #fff;
     text-align: start;
     width: 86vw;
-    margin-top: 8vh;
+    margin-top: 90px;
 `;
 
 const BackgroundLogo = styled.img`
-    height: 200px;
+    /* height: 200px;
     width: 200px;
     position: absolute;
     top: 30%;
-    opacity: 0.5;
+    opacity: 0.5; */
 `;
 
 const CreateUserFormContainer = styled.div`
@@ -64,6 +70,7 @@ const InsideFormContainer = styled.div`
         width: 80%;
         padding: 12px;
         margin-inline: auto;
+        margin-bottom: 8px;
         background-color: #424141;
         color: #fff;
         border: none;
@@ -80,7 +87,6 @@ const InsideFormContainer = styled.div`
 
 const InputGroup = styled.div`
     margin-bottom: 20px;
-
     // Targeting direct child input and input inside .input-with-icon class for focus
     > input:focus,
     > .input-with-icon > input:focus {
@@ -130,24 +136,25 @@ const useQuery = () => {
     return new URLSearchParams(useLocation().search);
 };
 
-// Utility function for email validation
-const isValidEmail = (email) => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    return emailRegex.test(email);
-};
-
-// Utility function for password validation (at least 8 characters, at least one number, one uppercase letter, one lowercase letter)
-const isValidPassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    return passwordRegex.test(password);
-};
+function hashPassword(password) {
+    // Hashing logic...
+    return new Promise((resolve, reject) => {
+        // Example hashing function
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        crypto.subtle
+            .digest('SHA-256', data)
+            .then((hashed) => resolve(arrayBufferToHex(hashed)))
+            .catch((err) => reject(err));
+    });
+}
 
 const CreateAccountPage = () => {
     // eslint-disable-next-line no-unused-vars
     const [accountObject, setAccountObject] = useContext(AccountContext);
-
     const [showKeyPairModal, setShowKeyPairModal] = useState(false);
     const [publicKey, setPublicKey] = useState(null);
+    const [serverPayload, setServerPayload] = useState({});
 
     const handleKeyPairGenerated = (generatedPublicKey) => {
         // Convert the public key to a format that can be sent to the server (ArrayBuffer or Base64 encoding)
@@ -155,61 +162,18 @@ const CreateAccountPage = () => {
     };
 
     const [formData, setFormData] = useState({
-        FirstName: '',
-        LastName: '',
-        Password: '',
-        PasswordConfirm: '',
-        Token: '',
+        firstName: '',
+        lastName: '',
+        password: '',
+        passwordConfirm: '',
+        token: '',
     });
-
-    const handleModalClose = async () => {
-        setShowKeyPairModal(false);
-
-        if (publicKey) {
-            // Add the public key to the form data
-            const extendedFormData = {
-                ...formData,
-                PublicKey: publicKey,
-            };
-
-            console.log('final extendedform data: ', extendedFormData);
-
-            try {
-                const response = await fetch('http://localhost:3001/api/user/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(extendedFormData),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    console.log('Successfully created a user!', data);
-                    const userData = data.user;
-
-                    setAccountObject({ ...userData, loggedIn: true });
-                } else {
-                    // Handle non-200 responses
-                    setFormErrors({
-                        server:
-                            data.error ||
-                            'Failed to create user, try clicking authentication link from email again or re-registering..',
-                    });
-                }
-            } catch (err) {
-                console.error('Network or server error:', err);
-                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
-            }
-        }
-    };
 
     const query = useQuery();
     const token = query.get('token');
+
     if (token) {
-        formData.Token = token;
+        formData.token = token;
     }
 
     useEffect(() => {
@@ -220,7 +184,7 @@ const CreateAccountPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [validFields, setValidFields] = useState({});
 
-    //helper functions
+    // password view toggler
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -228,18 +192,17 @@ const CreateAccountPage = () => {
     const validateInput = (name, value) => {
         let isValid = false;
         switch (name) {
-            case 'FirstName':
-            case 'LastName':
+            case 'firstName':
                 isValid = value.trim() !== '';
                 break;
-            case 'Email':
-                isValid = isValidEmail(value);
+            case 'lastName':
+                isValid = value.trim() !== '';
                 break;
-            case 'Password':
+            case 'password':
                 isValid = isValidPassword(value);
                 break;
-            case 'PasswordConfirm':
-                isValid = value === formData.Password;
+            case 'passwordConfirm':
+                isValid = value === formData.password;
                 break;
             default:
                 break;
@@ -255,22 +218,74 @@ const CreateAccountPage = () => {
         });
     };
 
+    // if all input form fields are valid, will toggle key generation modal which triggers new user creation when closed
     const handleSubmit = async (event) => {
         event.preventDefault();
         const errors = {};
 
-        if (!formData.FirstName) errors.FirstName = 'First name is required';
-        if (!formData.LastName) errors.LastName = 'Last name is required';
-        if (!formData.Token) errors.Token = 'Auth token is required';
-        if (!isValidPassword(formData.Password))
-            errors.Password =
-                'Password must be at least 8 characters, include one number, one uppercase letter, and one lowercase letter';
-        if (formData.Password !== formData.PasswordConfirm) errors.PasswordConfirm = 'Passwords do not match';
+        if (!formData.firstName) errors.firstName = 'First name is required';
+        if (!formData.lastName) errors.lastName = 'Last name is required';
+        if (!formData.token) errors.token = 'Auth token is required';
+        if (!isValidPassword(formData.password))
+            errors.password = 'Password must be at least 8 characters, include one number, one uppercase letter, and one lowercase letter';
+        if (formData.password !== formData.passwordConfirm) errors.passwordConfirm = 'Passwords do not match';
 
         setFormErrors(errors);
 
         if (Object.keys(errors).length === 0) {
-            setShowKeyPairModal(true); // Open the modal to generate key pair
+            try {
+                const hashedPassword = await hashPassword(formData.password);
+
+                const payload = {
+                    ...formData,
+                    password: hashedPassword,
+                    publicKey: null, // Placeholder for publicKey to be added later
+                };
+                delete payload.passwordConfirm;
+
+                // Save the payload in state for later use in handleModalClose
+                setServerPayload(payload);
+                setShowKeyPairModal(true);
+            } catch (err) {
+                console.error('Network or server error inside handleSumbit:', err);
+                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
+            }
+        }
+    };
+
+    // triggers creation of new user profile when key generation modal is closed
+    const handleModalClose = async () => {
+        setShowKeyPairModal(false);
+
+        if (publicKey) {
+            // Update serverPayload with publicKey
+            const finalPayload = {
+                ...serverPayload,
+                publicKey: publicKey,
+            };
+
+            console.log('final finalPayload data: ', finalPayload);
+
+            try {
+                const response = await createUser(finalPayload);
+
+                if (response.status === 200) {
+                    console.log('Successfully created a user!', response.data);
+                    const userData = response.data.user;
+
+                    setAccountObject({ ...userData, loggedIn: true });
+                } else {
+                    // Handle non-200 responses
+                    setFormErrors({
+                        server:
+                            response.data.error ||
+                            'Failed to create user, try clicking authentication link from email again or re-registering.',
+                    });
+                }
+            } catch (err) {
+                console.error('Network or server error:', err);
+                setFormErrors({ server: err.message || 'Failed to create user due to a network or server error.' });
+            }
         }
     };
 
@@ -280,38 +295,33 @@ const CreateAccountPage = () => {
                 Create Your <br />
                 Account
             </MainTitle>
-            <BackgroundLogo src={logoImage} />
+            <BackgroundLogo className="backgroundLogo" src={logoImage} />
             <CreateUserFormContainer>
                 <InsideFormContainer>
                     <form onSubmit={handleSubmit}>
                         <InputGroup>
                             <label>First Name</label>
-                            <input
-                                type="text"
-                                name="FirstName"
-                                value={formData.FirstName}
-                                onChange={handleInputChange}
-                            />
-                            {formErrors.FirstName && <ErrorMessage>{formErrors.FirstName}</ErrorMessage>}
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} />
+                            {formErrors.firstName && <ErrorMessage>{formErrors.firstName}</ErrorMessage>}
                         </InputGroup>
                         <InputGroup>
                             <label>Last Name</label>
-                            <input type="text" name="LastName" value={formData.LastName} onChange={handleInputChange} />
-                            {formErrors.LastName && <ErrorMessage>{formErrors.LastName}</ErrorMessage>}
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} />
+                            {formErrors.lastName && <ErrorMessage>{formErrors.lastName}</ErrorMessage>}
                         </InputGroup>
                         <InputGroup>
                             <label>Password</label>
                             <InputWithIcon>
                                 <input
                                     type={showPassword ? 'text' : 'password'}
-                                    name="Password"
-                                    value={formData.Password}
+                                    name="password"
+                                    value={formData.password}
                                     onChange={(e) => {
                                         handleInputChange(e);
                                         validateInput(e.target.name, e.target.value);
                                     }}
                                 />
-                                {validFields.Password && (
+                                {validFields.password && (
                                     <FaCheck
                                         style={{
                                             color: 'green',
@@ -323,25 +333,23 @@ const CreateAccountPage = () => {
                                         }}
                                     />
                                 )}
-                                <ToggleIcon onClick={togglePasswordVisibility}>
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </ToggleIcon>
+                                <ToggleIcon onClick={togglePasswordVisibility}>{showPassword ? <FaEyeSlash /> : <FaEye />}</ToggleIcon>
                             </InputWithIcon>
-                            {formErrors.Password && <ErrorMessage>{formErrors.Password}</ErrorMessage>}
+                            {formErrors.password && <ErrorMessage>{formErrors.password}</ErrorMessage>}
                         </InputGroup>
                         <InputGroup>
                             <label>Confirm Password</label>
                             <InputWithIcon>
                                 <input
                                     type={showPassword ? 'text' : 'password'}
-                                    name="PasswordConfirm"
-                                    value={formData.PasswordConfirm}
+                                    name="passwordConfirm"
+                                    value={formData.passwordConfirm}
                                     onChange={(e) => {
                                         handleInputChange(e);
                                         validateInput(e.target.name, e.target.value);
                                     }}
                                 />
-                                {validFields.PasswordConfirm && (
+                                {validFields.passwordConfirm && (
                                     <FaCheck
                                         style={{
                                             color: 'green',
@@ -353,21 +361,18 @@ const CreateAccountPage = () => {
                                         }}
                                     />
                                 )}
-                                <ToggleIcon onClick={togglePasswordVisibility}>
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </ToggleIcon>
+                                <ToggleIcon onClick={togglePasswordVisibility}>{showPassword ? <FaEyeSlash /> : <FaEye />}</ToggleIcon>
                             </InputWithIcon>
-                            {formErrors.PasswordConfirm && <ErrorMessage>{formErrors.PasswordConfirm}</ErrorMessage>}
+                            {formErrors.passwordConfirm && <ErrorMessage>{formErrors.passwordConfirm}</ErrorMessage>}
                         </InputGroup>
 
                         <button type="submit">Create User</button>
                         {formErrors.submit && <ErrorMessage>{formErrors.submit}</ErrorMessage>}
+                        {formErrors.server && <ErrorMessage>{formErrors.server}</ErrorMessage>}
                     </form>
                 </InsideFormContainer>
             </CreateUserFormContainer>
-            {showKeyPairModal && (
-                <KeyPairGeneratorModal onClose={handleModalClose} onKeyPairGenerated={handleKeyPairGenerated} />
-            )}
+            {showKeyPairModal && <KeyPairGeneratorModal onClose={handleModalClose} onKeyPairGenerated={handleKeyPairGenerated} />}
         </CreateUserContainer>
     );
 };
