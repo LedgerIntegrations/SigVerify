@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import styled from 'styled-components';
 import axiosInstance from './utils/httpRequests/axiosInstance';
-import { AxiosProvider } from './utils/httpRequests/AxiosContext';
 import { createContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
@@ -34,6 +33,7 @@ import EmailRegistrationPage from './components/pages/loggedOut/EmailRegistratio
 import CreateAccountPage from './components/pages/loggedOut/CreateAccountPage';
 import LoginPage from './components/pages/loggedOut/LoginPage';
 import DocumentPage from './components/pages/hybrid/DocumentPage';
+import ConstructedDocumentPage from './components/pages/loggedIn/ConstructedDocumentsPage/ConstructedDocumentPage';
 // import AllRightsReserved from './components/pages/loggedOut/AllRightsReserved';
 import ProfileSearchPage from './components/pages/hybrid/ProfileSearchPage';
 // navigation added to all logged in pages
@@ -118,7 +118,6 @@ function App() {
     return (
         <Router>
             <AccountContext.Provider value={[accountObject, setAccountObject]}>
-                <AxiosProvider>
                     <AppWrapper>
                         <Routes>
                             {/* LOGGED OUT ROUTES */}
@@ -198,6 +197,16 @@ function App() {
                                 }
                             />
                             <Route
+                                path="/documents/construct"
+                                element={
+                                    accountObject.loggedIn ? (
+                                        React.createElement(withNavigation(ConstructedDocumentPage))
+                                    ) : (
+                                        <Navigate to="/" replace />
+                                    )
+                                }
+                            />
+                            <Route
                                 path="/upload"
                                 element={
                                     accountObject.loggedIn ? (
@@ -225,7 +234,6 @@ function App() {
                             /> */}
                         </Routes>
                     </AppWrapper>
-                </AxiosProvider>
             </AccountContext.Provider>
         </Router>
     );

@@ -83,6 +83,14 @@
       updated_at timestamp DEFAULT current_timestamp
   );
 
+  CREATE TABLE composed_document (
+    id serial8 PRIMARY KEY,
+    user_profile_id bigint NOT NULL REFERENCES user_profiles(id),
+    document_data jsonb,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
+  );
+
   CREATE TABLE document_blobs (
       id serial8 PRIMARY KEY,
       document_id bigint NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
@@ -174,6 +182,10 @@
 
   CREATE TRIGGER change_updated_at_documents
   BEFORE UPDATE ON documents
+  FOR EACH ROW EXECUTE FUNCTION update_modified_at();
+
+  CREATE TRIGGER change_updated_at_composed_document
+  BEFORE UPDATE ON composed_document
   FOR EACH ROW EXECUTE FUNCTION update_modified_at();
 
   CREATE TRIGGER change_updated_at_document_access

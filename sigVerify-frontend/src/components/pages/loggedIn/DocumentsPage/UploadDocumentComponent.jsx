@@ -5,6 +5,8 @@ import { uploadDocument } from '../../../../utils/httpRequests/routes/documents'
 import ErrorModal from '../../../../utils/reusedComponents/ErrorModal';
 import { AccountContext } from '../../../../App';
 import LoadingIcon from '../../../component-helpers/components/LoadingIcon';
+import { Link } from 'react-router-dom';
+
 // import { FaTrashAlt } from 'react-icons/fa';
 
 //? becoming large component, potential need to modularize functionality
@@ -187,6 +189,30 @@ const UploadComplete = styled.div`
 const PublicDocumentInput = styled.div`
     input {
         width: 50%;
+    }
+`;
+
+const SegmentDocumentCreateButton = styled(Link)`
+    margin-inline: auto;
+    width: 95%;
+    border-radius: 5px;
+
+    button {
+        width: 100%;
+        padding: 12px 10px;
+        border-radius: 5px;
+        border: 1px solid rgb(32, 109, 252);
+        background-color: rgb(227, 234, 245);
+        font-family: 'Kdam Thmor Pro', sans-serif;
+        word-spacing: 2px;
+        letter-spacing: 0.5px;
+        color: #666;
+
+        &:hover {
+            border: 1px solid rgb(102, 148, 233);
+            cursor: pointer;
+            color: #222;
+        }
     }
 `;
 
@@ -375,6 +401,11 @@ const UploadDocumentComponent = () => {
                             Drag and drop a file here, or click to select a file
                             <HiddenUploadInput id="hiddenFileInput" type="file" onChange={(e) => processFile(e.target.files[0])} />
                         </UploadDragBox>
+                        {!uploadedFile && (
+                            <SegmentDocumentCreateButton to="/documents/construct">
+                                <button className="buttonPop">Construct Segmented Document</button>
+                            </SegmentDocumentCreateButton>
+                        )}
                         {uploadedFile && !loading && (
                             <UploadFileBox>
                                 <UplaodedFileDiv>

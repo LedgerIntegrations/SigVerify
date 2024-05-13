@@ -1,42 +1,44 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 // import { DraggableCore } from 'react-draggable';
 import { useLocation } from 'react-router-dom';
-import DocumentViewer from '../DocumentsPage/DocumentViewer';
-import SignatureBox from '../DocumentsPage/SignatureBox';
+import DocumentViewer from './DocumentViewer';
+import SignatureBox from './SignatureBox';
 import styled from 'styled-components';
-import media from '../../../Styles/media';
+import media from '../../../../component-helpers/styled-elements/media'
 
 const DocumentPreperationContainer = styled.div`
+    /* height: 100%; */
+
     display: flex;
     flex-wrap: wrap;
     padding: 30px;
-    justify-content: space-around;
 `;
 
 const DocumentPreperationActionsModal = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    position: absolute;
+width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     padding: 20px;
-    bottom: 0px;
     background-color: gray;
+    /* max-height: 200px; */
 
     @media ${media.tablet} {
-        flex-direction: column;
+        /* flex-direction: column; */
     }
 `;
 
 const DocumentViewerContainer = styled.div`
-    min-width: 320px;
-    max-width: 600px;
-    min-height: 50vh;
+    width: 100%;
+    /* min-width: 320px;
+    max-width: 700px;
+    min-height: 65vh; */
 
     &:first-child {
-        min-width: 500px;
+        /* min-width: 500px; */
     }
 `;
 
-function DocumentPreparation() {
+function DocumentPreparation({ document }) {
     const [documentViewerSize, setDocumentViewerSize] = useState({ width: 0, height: 0 });
     const documentViewerRef = useRef(null);
     console.log(documentViewerRef);
@@ -66,7 +68,7 @@ function DocumentPreparation() {
     const [draggingBox, setDraggingBox] = useState(null);
 
     const location = useLocation();
-    const document = location.state?.document;
+    // const document = location.state?.document;
 
     const handleDrag = (e, data, boxId) => {
         const relativeX = (data.x / documentViewerSize.width) * 100;
@@ -114,10 +116,6 @@ function DocumentPreparation() {
                     onDragStop={handleDragStop}
                     documentViewerSize={documentViewerSize}
                 />
-                <button onClick={addSignatureBox}>Add Signature Box</button>
-                <button onClick={addSignatureBox}>Add Signature Box</button>
-                <button onClick={addSignatureBox}>Add Signature Box</button>
-                <button onClick={addSignatureBox}>Add Signature Box</button>
                 <button onClick={addSignatureBox}>Add Signature Box</button>
                 <button onClick={savePositions}>Save Positions</button>
             </DocumentPreperationActionsModal>

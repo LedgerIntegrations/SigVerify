@@ -23,15 +23,6 @@ const Loader = styled(LoadingIcon)`
 const Loading = styled.div`
     min-height: 100vh;
 
-    Header {
-        min-height: 20vh;
-
-        h3 {
-            margin-top: 0px;
-            padding-top: 36px;
-        }
-    }
-
     p {
         font-size: 36px;
     }
@@ -46,6 +37,16 @@ const Loading = styled.div`
             height: 100px;
             width: 100px;
         }
+    }
+`;
+
+const LoadingHeader = styled.header`
+    min-height: 20vh;
+
+    h3 {
+        margin-top: 0px;
+        padding-top: 36px;
+        margin-left: 70px;
     }
 `;
 
@@ -92,7 +93,6 @@ const DocumentPageContainer = styled.div`
 
 const Header = styled.header`
     h3 {
-        margin-top: ${(props) => (props.loggedIn ? '12px' : '34px')};
         margin-bottom: 34px;
         margin-left: 12px;
         font-family: 'Saira', sans-serif;
@@ -294,12 +294,12 @@ const DocumentPage = () => {
     if (!documentData) {
         return (
             <Loading>
-                <Header loggedIn={accountObject.loggedIn}>
+                <LoadingHeader>
                     <h3>SigVerify Document Interface</h3>
                     <LogoLink to="/">
                         <img src={logoImg} alt="SigVerify Logo" />
                     </LogoLink>
-                </Header>
+                </LoadingHeader>
                 {!accessDenied && !notFound && (
                     <>
                         <p>Loading...</p>
@@ -331,7 +331,7 @@ const DocumentPage = () => {
 
     return (
         <DocumentPageContainer>
-            <Header loggedIn={accountObject.loggedIn}>
+            <Header>
                 <h3>SigVerify Document Interface</h3>
                 <LogoLink to="/">
                     <img src={logoImg} alt="SigVerify Logo" />

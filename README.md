@@ -104,26 +104,13 @@ Building on the tried-and-tested foundation of the XRPL, we're not only enhancin
 ## Steps To Run Project
 
 1. Clone the project from GitHub.
-2. Navigate to the `sigVerify-frontend` directory in the terminal and run 'npm i' to install all front-end dependencies.
-3. Navigate to the `sigVerify-backend` directory in the terminal and run 'npm i' to install all back-end dependencies.
-4. Copy the `.env.dist` file in the root of the `sigVerify-backend` directory to create a new file named `.env`. Add your API key and secret for Xaman API in the `.env` file. <br />
-   ```bash
-   Xaman_API_KEY="api key here"
-   Xaman_API_SECRET="api secret here"
-   POSTGRES_HOST="sigverify-database"
-   POSTGRES_USER="postgres"
-   POSTGRES_PASSWORD="postgres"
-   POSTGRES_DB="sigverifydb"
 
-   MAIL_HOST="sigverify-mailcatcher"
-   MAIL_PORT=1025
-   MAIL_USERNAME=""
-   MAIL_PASSWORD=""
-   MAIL_FROM_ADDRESS="noreply@ledgerintegrations.com"
-   MAIL_FROM_NAME="Ledger Integrations"
-   ```
-5. Execute 'docker-compose up -d' in the `sigVerify-backend` terminal.
-6. Open a second terminal, navigate to `sigVerify-frontend`, and execute 'npm run dev' in the terminal. Then, navigate to the outputted localhost URL.
-7. For current development and testing, switch Xaman's advanced setting to use XRPL test node: `wss://testnet.xrpl-labs.com`. The XRPL backend web socket is already pre-configured to the XRPL testnet: `wss://s.altnet.rippletest.net:51233` for you.
+2. Copy the `.env.dist` file in the root of the `sigVerify-backend` and paste it inside a new file named `.env`. Add your API key and secret for Xaman API in the `.env` file as well as any other necessary env variables like aws s3 bucket to store files in etc. <br />
+
+3. Navigate to the `sigVerify-frontend` directory in the terminal and run 'npm i' to install all front-end dependencies then 'npm run dev' to start vite development environemnt.
+
+4. Open second terminal and Navigate to the `sigVerify-backend/docker`  folder, and inside this folder in terminal run 'docker-compose up --build'. This will start the mailcatcher server on port 1080, as well as the postgres database on port 5432, and server on port 3001.
+
+5. For current development and testing, switch Xaman's advanced setting to use XRPL test node: `wss://testnet.xrpl-labs.com`. The XRPL backend web socket is already pre-configured to the XRPL testnet: `wss://s.altnet.rippletest.net:51233` for you.
 
 

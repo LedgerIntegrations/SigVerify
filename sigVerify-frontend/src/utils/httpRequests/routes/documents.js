@@ -10,7 +10,6 @@ export const fetchUserPublicDocumentsByEmail = (userEmail) => axiosInstance.get(
 export const fetchPrivateDocument = (documentId) => axiosInstance.get(`/api/document/private/${documentId}`);
 export const fetchUserPrivateDocuments = () => axiosInstance.get('/api/documents/private/user');
 export const fetchUserUploadedDocuments = () => axiosInstance.get('/api/documents/uploaded/user');
-
 export const uploadDocument = async (formData) => {
     try {
         // Remove the Content-Type header to let the browser set it automatically
@@ -25,7 +24,6 @@ export const uploadDocument = async (formData) => {
         throw error; // Re-throw the error for the caller to handle
     }
 };
-
 export const deletePrivateUnsentDocument = (documentId) => axiosInstance.delete(`/api/document/delete/unsent/${documentId}`)
 
 //! DOCUMENT ACCESS
@@ -35,7 +33,6 @@ export const deletePrivateUnsentDocument = (documentId) => axiosInstance.delete(
 export const fetchAccessObjectsForDocument = (documentId) => axiosInstance.get(`/api/document/access/${documentId}`);
 export const fetchAllDocumentsUserHasAccessTo = () => axiosInstance.get('/api/documents/access/user');
 export const fetchAllDocumentsUserUploadedAndWasGivenAccess = () => axiosInstance.get('/api/documents/access/all')
-
 export const addDocumentAccess = async (documentId, email = null, walletAddress = null) => {
     try {
         const payload = {
@@ -58,7 +55,6 @@ export const addDocumentAccess = async (documentId, email = null, walletAddress 
         throw err; // Rethrow the error if you need calling code to handle it
     }
 };
-
 export const disableDocumentAccess = async (documentId) => {
     try {
         const response = await axiosInstance.put(`/api/document/access/disable/${documentId}`);
@@ -73,7 +69,6 @@ export const disableDocumentAccess = async (documentId) => {
         throw error; // Re-throw the error for the caller to handle
     }
 };
-
 export const deleteDocumentAccessEntry = async (accessId) => {
     try {
         const response = await axiosInstance.delete(`/api/document/access/${accessId}`);

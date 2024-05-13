@@ -3,7 +3,6 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import styled from 'styled-components';
 import TextFileViewer from '../../loggedIn/DocumentsPage/subComponents/TextFileViewer';
 
-// Set up the worker for PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const PdfViewer = styled.div`
@@ -69,6 +68,13 @@ function DocumentEmbed({ documentUrl, mimeType, filename }) {
                 </div>
                 <Document file={documentUrl} onLoadSuccess={onLoadSuccess} loading={<div>Loading PDF...</div>}>
                     <Page pageNumber={pageNumber} />
+                    {/* {Array.from(new Array(numPages), (el, index) => (
+                        <Page
+                            key={`page_${index + 1}`}
+                            pageNumber={index + 1}
+                            renderTextLayer={false} // This disables the text layer
+                        />
+                    ))} */}
                 </Document>
             </PdfViewer>
         );

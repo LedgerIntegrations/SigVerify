@@ -22,15 +22,11 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-// Determine the environment and set base URL and CORS origins accordingly
 const environment = process.env.NODE_ENV || 'development';
-
-console.log("server environment: ", environment)
-const baseUrl = environment === 'production' ? process.env.PROD_BASE_URL : 'http://localhost';
+const baseUrl = 'http://localhost';
 
 const corsOrigins =
-    // environment === 'production' ? [process.env.PROD_BASE_URL] : ['http://localhost:5173', 'http://localhost:3000'];
-   ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
+   ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', "https://sigverify.com"];
 
 
 const corsOptions = {
